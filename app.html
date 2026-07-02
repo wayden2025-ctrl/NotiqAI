@@ -965,6 +965,13 @@
         <button class="btn-ghost" id="yt-add">Add</button>
       </div>
       <p style="font-size:12px; color:var(--muted); margin-top:6px;">Works for videos with captions/subtitles — Notiq reads the transcript.</p>
+      <div id="yt-help" class="hidden" style="font-size:13px; background:color-mix(in srgb, var(--coral) 7%, transparent); border:1px solid color-mix(in srgb, var(--coral) 20%, transparent); border-radius:10px; padding:12px 14px; margin-top:10px; line-height:1.65;">
+        <b>YouTube is blocking our server right now — here's the 10-second workaround:</b><br>
+        1. Open the video on YouTube<br>
+        2. Under the title, click <b>...more</b> &rarr; <b>Show transcript</b><br>
+        3. Select the whole transcript, copy it<br>
+        4. Paste it in the <b>"Or paste text directly"</b> box below and hit Add
+      </div>
       <label class="field-label" style="margin-top:20px;">Or paste text directly</label>
       <textarea class="paste-area" id="paste-area" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
       <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
@@ -1299,10 +1306,15 @@ $("yt-add").addEventListener("click", async () => {
     });
     if (error) throw error;
     $("yt-url").value = "";
+    $("yt-help").classList.add("hidden");
     setStatus("res-status", `Transcript added: "${j.title || "YouTube video"}".`);
     await loadResources();
     renderAll();
-  } catch (e) { setStatus("res-status", e.message, true); }
+  } catch (e) {
+    setStatus("res-status", e.message, true);
+    $("yt-help").classList.remove("hidden");
+    $("paste-name").value = $("paste-name").value || "YouTube: ";
+  }
 });
 
 $("paste-add").addEventListener("click", async () => {
