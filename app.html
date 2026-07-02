@@ -907,9 +907,16 @@ async function groq(messages, jsonMode) {
     max_tokens: 6000,
   };
   if (jsonMode) body.response_format = { type: "json_object" };
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  // If a key is pasted in config.js (local testing), call Groq directly.
+  // Otherwise use the /api/groq serverless function, which holds the key
+  // privately on Vercel (set GROQ_API_KEY in Vercel env variables).
+  const hasLocalKey = (NOTIQ_CONFIG.GROQ_API_KEY || "").startsWith("gsk_");
+  const url = hasLocalKey ? "https://api.groq.com/openai/v1/chat/completions" : "/api/groq";
+  const headers = { "Content-Type": "application/json" };
+  if (hasLocalKey) headers["Authorization"] = "Bearer " + NOTIQ_CONFIG.GROQ_API_KEY;
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + NOTIQ_CONFIG.GROQ_API_KEY },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {
