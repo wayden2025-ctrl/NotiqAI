@@ -202,7 +202,7 @@
   .dash-quote::before { content: "“"; color: var(--amber); font-size: 24px; }
   .dash-quote::after { content: "”"; color: var(--amber); font-size: 24px; }
   .stat-row { display: flex; gap: 34px; flex-wrap: wrap; }
-  .stat b { display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 34px; color: var(--coral); line-height: 1; }
+  .stat b { display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 34px; color: var(--amber); line-height: 1; }
   .stat span { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
   .stat.exam b { color: #ef5330; }
 
@@ -296,7 +296,7 @@
 
   /* ============ POWER TOOLS ============ */
   .power-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .bento-card .chip { width: 40px; height: 40px; border-radius: 12px; background: color-mix(in srgb, var(--coral) 12%, transparent); color: var(--coral); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .bento-card .chip { width: 40px; height: 40px; border-radius: 12px; background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
   .bento-card .chip svg { width: 20px; height: 20px; }
 
   .tb-question { background: linear-gradient(135deg, var(--g1b), var(--g2)); color: #fff; border-radius: 16px; padding: 22px 24px; font-size: 17px; line-height: 1.55; margin-bottom: 16px; }
@@ -325,7 +325,7 @@
   }
 
   /* ============ FOCUS TIMER + MASTERY ============ */
-  .focus-time { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 58px; color: var(--coral); line-height: 1; letter-spacing: -1px; }
+  .focus-time { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 58px; color: var(--amber); line-height: 1; letter-spacing: -1px; }
   .focus-float {
     position: fixed; top: 18px; right: 22px; z-index: 850; cursor: pointer;
     display: flex; align-items: center; gap: 14px;
@@ -338,11 +338,11 @@
   .focus-float:hover { transform: translateY(-2px); }
   @keyframes floatIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
   .focus-float .fdot {
-    width: 12px; height: 12px; border-radius: 50%; background: var(--coral); flex: none;
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--coral) 18%, transparent);
+    width: 12px; height: 12px; border-radius: 50%; background: var(--amber); flex: none;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--amber) 18%, transparent);
     animation: pulseGlow 2.2s ease-in-out infinite;
   }
-  .focus-float b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 32px; color: var(--coral); line-height: 1; }
+  .focus-float b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 32px; color: var(--amber); line-height: 1; }
   .focus-float .flabel { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
   .focus-msg { font-size: 13.5px; color: var(--muted); margin-top: 10px; max-width: 52ch; line-height: 1.5; }
   .focus-msg.fail { color: #a33520; font-weight: 700; }

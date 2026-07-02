@@ -255,6 +255,42 @@ const NOTIQ_THEMES = {
     bgA: "#e2f4f4", bgB: "#fdeae4", bgC1: "#f2fafa", bgC2: "#f7efe9",
     orb1: "#b5e2e4", orb2: "#2596a0", orb4: "#05282b", orbBtn: "#0a3a3f",
     tipbg: "#1e2828", tipfg: "#ffffff" },
+
+  blossom: { name: "Blossom (pink)", dark: false,
+    coral: "#b83d72", amber: "#e87bb0", g1: "#c9508a", g1b: "#cd558e", g2: "#7a2450",
+    ink: "#2a2026", muted: "#7d7178", line: "rgba(42,32,38,.11)", glass: "rgba(255,255,255,.58)",
+    card1: "#ffffff", card2: "#faf0f5", field: "#ffffff",
+    surface: "rgba(255,255,255,.72)", panel: "rgba(253,250,252,.98)", rail: "rgba(255,255,255,.62)",
+    bgA: "#fbecf3", bgB: "#f7e2ec", bgC1: "#fcf6f9", bgC2: "#f6ecf1",
+    orb1: "#f4c6dd", orb2: "#c9508a", orb4: "#3f0f27", orbBtn: "#571836",
+    tipbg: "#2a2026", tipfg: "#ffffff" },
+
+  cyan: { name: "Cyan", dark: false,
+    coral: "#0e7fa6", amber: "#3fb1d8", g1: "#1490bd", g1b: "#1996c3", g2: "#0a5673",
+    ink: "#1e262a", muted: "#6e7b81", line: "rgba(30,38,42,.11)", glass: "rgba(255,255,255,.58)",
+    card1: "#ffffff", card2: "#ecf6fa", field: "#ffffff",
+    surface: "rgba(255,255,255,.72)", panel: "rgba(248,252,253,.98)", rail: "rgba(255,255,255,.62)",
+    bgA: "#e4f4fa", bgB: "#d8edf6", bgC1: "#f2fafc", bgC2: "#e6f2f6",
+    orb1: "#b6e3f2", orb2: "#2596c3", orb4: "#052a3a", orbBtn: "#0a3d54",
+    tipbg: "#1e262a", tipfg: "#ffffff" },
+
+  teal: { name: "Teal", dark: false,
+    coral: "#0f766e", amber: "#38b2a3", g1: "#14867c", g1b: "#198c82", g2: "#0a4f4a",
+    ink: "#1e2826", muted: "#6e7b78", line: "rgba(30,40,38,.11)", glass: "rgba(255,255,255,.58)",
+    card1: "#ffffff", card2: "#ebf6f4", field: "#ffffff",
+    surface: "rgba(255,255,255,.72)", panel: "rgba(248,252,251,.98)", rail: "rgba(255,255,255,.62)",
+    bgA: "#e2f4f1", bgB: "#d6ede9", bgC1: "#f1faf8", bgC2: "#e4f1ee",
+    orb1: "#b2e4dd", orb2: "#209286", orb4: "#04302c", orbBtn: "#0a423d",
+    tipbg: "#1e2826", tipfg: "#ffffff" },
+
+  indigo: { name: "Indigo", dark: false,
+    coral: "#4535b8", amber: "#7c6ff0", g1: "#5140cf", g1b: "#5645d4", g2: "#2c2280",
+    ink: "#232030", muted: "#75727f", line: "rgba(35,32,48,.11)", glass: "rgba(255,255,255,.58)",
+    card1: "#ffffff", card2: "#f0eefb", field: "#ffffff",
+    surface: "rgba(255,255,255,.72)", panel: "rgba(250,250,254,.98)", rail: "rgba(255,255,255,.62)",
+    bgA: "#eceafa", bgB: "#e2dff6", bgC1: "#f5f4fc", bgC2: "#eae8f5",
+    orb1: "#cbc4f2", orb2: "#5a48d0", orb4: "#161040", orbBtn: "#221a58",
+    tipbg: "#232030", tipfg: "#ffffff" },
 };
 
 const NOTIQ_VAR_KEYS = ["coral","amber","g1","g1b","g2","ink","muted","line","glass","card1","card2","field","surface","panel","rail","bgA","bgB","bgC1","bgC2","orb1","orb2","orb4","orbBtn","tipbg","tipfg"];
