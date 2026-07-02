@@ -215,3 +215,29 @@ function notiqApplyTheme(id) {
   document.documentElement.dataset.notiqTheme = id;
 }
 notiqApplyTheme(notiqTheme());
+
+// For light-canvas pages (features, sign-in, share, reset): keep the page light,
+// take only the palette's accents. Dark themes contribute readable deep variants.
+const NOTIQ_LIGHT_ACCENTS = {
+  slate:    { coral: "#2a4d8a", amber: "#4a7cc9" },
+  ember:    { coral: "#a8791f", amber: "#c9812e" },
+  graphite: { coral: "#3d4654", amber: "#6b7484" },
+  pine:     { coral: "#2e6355", amber: "#52907c" },
+  scarlet:  { coral: "#a83228", amber: "#c94a3d" },
+  noir:     { coral: "#2b2b2b", amber: "#6a6a6a" },
+  nebula:   { coral: "#5b48c0", amber: "#7a90e8" },
+  abyss:    { coral: "#14707f", amber: "#3fa6b8" },
+};
+function notiqLightCanvas() {
+  const id = notiqTheme();
+  const t = NOTIQ_THEMES[id] || NOTIQ_THEMES.midnight;
+  const s = document.documentElement.style;
+  const L = NOTIQ_THEMES.midnight;
+  ["ink","muted","line","glass","card1","card2","field","surface","panel","rail","bgA","bgB","bgC1","bgC2","tipbg","tipfg"]
+    .forEach(k => s.setProperty("--" + k, L[k]));
+  if (t.dark) {
+    const a = NOTIQ_LIGHT_ACCENTS[id] || {};
+    if (a.coral) s.setProperty("--coral", a.coral);
+    if (a.amber) s.setProperty("--amber", a.amber);
+  }
+}
