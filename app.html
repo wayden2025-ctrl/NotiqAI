@@ -613,7 +613,12 @@
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
       <span class="eyebrow">Folder</span>
       <h1 class="page-title" id="folder-title">Folder</h1>
-      <p class="page-sub" id="folder-sub"></p>
+      <p class="page-sub" id="folder-sub" style="margin-bottom:14px;"></p>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
+        <button class="btn-ghost" id="share-btn" onclick="toggleShare()">Share this folder</button>
+        <button class="btn-ghost hidden" id="copy-share-btn" onclick="copyShareLink()">Copy link</button>
+        <span class="save-note" id="share-note"></span>
+      </div>
       <div class="item-grid" id="folder-items"></div>
     </div>
 
@@ -1452,10 +1457,14 @@ $("nt-save").addEventListener("click", () =>
 // ================= FOLDER VIEW & ITEM VIEWER =================
 const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes" };
 
+let curFolder = null;
+
 async function openFolder(id) {
   currentFolderId = id;
   const f = folders.find(x => x.id === id);
+  curFolder = f;
   $("folder-title").innerHTML = `<em>${esc(f?.name || "Folder")}</em>`;
+  updateShareUI();
   showView("folder");
   $("folder-items").innerHTML = `<p class="empty-hint">Loading...</p>`;
   const { data, error } = await sb.from("saved_items").select("id, type, title, created_at").eq("folder_id", id).order("created_at", { ascending: false });
@@ -1469,6 +1478,41 @@ async function openFolder(id) {
         <div class="idate">${new Date(i.created_at).toLocaleDateString()}</div>
       </div>`).join("")
     : `<p class="empty-hint">Nothing saved here yet. Generate flashcards, a quiz, a study guide or notes — then hit <b>Save to folder</b>.</p>`;
+}
+
+// ---- folder sharing ----
+function updateShareUI() {
+  const shared = !!(curFolder && curFolder.is_shared);
+  $("share-btn").textContent = shared ? "Stop sharing" : "Share this folder";
+  $("copy-share-btn").classList.toggle("hidden", !shared);
+  $("share-note").textContent = shared ? "Anyone with the link can view this folder" : "";
+}
+function shareLink() {
+  return location.origin + location.pathname.replace(/[^/]*$/, "") + "share.html?f=" + curFolder.share_id;
+}
+async function toggleShare() {
+  if (!curFolder) return;
+  if (curFolder.share_id === undefined) {
+    $("share-note").textContent = "Run the sharing SQL block in Supabase first (see SETUP.md).";
+    return;
+  }
+  const { data, error } = await sb.from("folders")
+    .update({ is_shared: !curFolder.is_shared }).eq("id", curFolder.id).select().single();
+  if (error) { $("share-note").textContent = error.message; return; }
+  curFolder = data;
+  const i = folders.findIndex(x => x.id === data.id);
+  if (i > -1) folders[i] = data;
+  updateShareUI();
+  if (data.is_shared) copyShareLink();
+}
+async function copyShareLink() {
+  const url = shareLink();
+  try {
+    await navigator.clipboard.writeText(url);
+    $("share-note").textContent = "Link copied — send it to anyone";
+  } catch (e) {
+    prompt("Copy this link:", url);
+  }
 }
 
 async function deleteItem(id) {

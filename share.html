@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Shared folder</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="config.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10);
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    min-height: 100vh; padding: 34px 24px 90px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); margin-bottom: 34px; }
+  .orb {
+    width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
+  }
+  .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%; background:radial-gradient(circle,#fff,transparent 70%); }
+  .brand span { font-family: 'Instrument Serif', serif; font-size: 23px; }
+  .brand b { color: var(--coral); font-weight: 400; }
+  .eyebrow { font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: clamp(34px, 5vw, 50px); letter-spacing: -1.5px; margin: 8px 0 4px; color: var(--coral); }
+  .sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+  .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .item-card {
+    background: linear-gradient(160deg, #ffffff, #f2f5fb); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px; cursor: pointer;
+    box-shadow: 0 14px 28px -18px rgba(60,40,30,.3); transition: transform .14s;
+  }
+  .item-card:hover { transform: translateY(-3px); }
+  .itype { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); background: rgba(30,58,110,.1); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+  .item-card h4 { font-size: 15px; margin-bottom: 5px; }
+  .idate { font-size: 12px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 15px; padding: 30px 0; }
+
+  .modal-scrim { position: fixed; inset: 0; background: rgba(25,22,18,.35); z-index: 800; display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 50px 20px; }
+  .modal-scrim.open { display: flex; }
+  .modal-card { background: #fbf9f6; border-radius: 20px; width: min(760px, 100%); border: 1px solid var(--line); box-shadow: 0 40px 90px -30px rgba(20,20,30,.5); padding: 30px 34px; }
+  .modal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+  .modal-top h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 28px; color: var(--coral); letter-spacing: -.5px; }
+  .panel-close { border: 0; background: rgba(36,29,24,.06); width: 32px; height: 32px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 16px; }
+  .qa-pair { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .qa-pair .qside { font-weight: 800; margin-bottom: 8px; }
+  .qa-pair .aside { color: var(--muted); line-height: 1.5; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .qa-diff { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); margin-left: 8px; }
+
+  .md-out { line-height: 1.65; font-size: 15px; }
+  .md-out h1, .md-out h2 { font-family: 'Instrument Serif', serif; font-weight: 400; color: var(--coral); margin: 24px 0 10px; }
+  .md-out h1 { font-size: 28px; font-style: italic; }
+  .md-out h2 { font-size: 22px; }
+  .md-out p { margin: 0 0 12px; }
+  .md-out ul, .md-out ol { margin: 0 0 14px 22px; }
+  .md-out strong { color: var(--coral); }
+  .md-out table { border-collapse: collapse; margin: 0 0 16px; width: 100%; }
+  .md-out th, .md-out td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; font-size: 14px; }
+  .md-out th { background: rgba(30,58,110,.07); color: var(--coral); }
+
+  .cta-bar {
+    margin-top: 50px; text-align: center; padding: 34px; border-radius: 20px;
+    background: linear-gradient(135deg, #2e5490, #163264); color: #fff;
+  }
+  .cta-bar h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 30px; letter-spacing: -1px; margin-bottom: 8px; }
+  .cta-bar p { color: rgba(255,255,255,.8); font-size: 14.5px; margin-bottom: 20px; }
+  .cta-bar a {
+    display: inline-block; color: #163264; background: #fff; padding: 13px 30px; border-radius: 999px;
+    font-weight: 800; font-size: 15px; text-decoration: none; box-shadow: 0 14px 30px -12px rgba(0,0,0,.4);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="index.html"><div class="orb"></div><span>Notiq<b> AI</b></span></a>
+  <div id="content">
+    <p class="empty">Loading shared folder...</p>
+  </div>
+  <div class="cta-bar">
+    <h2>Study like this, free.</h2>
+    <p>This folder was made with Notiq AI — flashcards, quizzes, study guides and notes, generated from your own material.</p>
+    <a href="signin.html?mode=signup">Start Free</a>
+  </div>
+</div>
+
+<div class="modal-scrim" id="item-modal" onclick="if(event.target===this) this.classList.remove('open')">
+  <div class="modal-card">
+    <div class="modal-top">
+      <div><span class="itype" id="im-type"></span><h3 id="im-title"></h3></div>
+      <button class="panel-close" onclick="document.getElementById('item-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div id="im-body"></div>
+  </div>
+</div>
+
+<script>
+  const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes" };
+  let items = [];
+
+  (async function init() {
+    const shareId = new URLSearchParams(location.search).get("f");
+    const content = document.getElementById("content");
+    if (!shareId) { content.innerHTML = '<p class="empty">This share link is missing its code.</p>'; return; }
+
+    const { data: folder, error } = await sb.from("folders")
+      .select("id, name").eq("share_id", shareId).eq("is_shared", true).maybeSingle();
+    if (error || !folder) {
+      content.innerHTML = '<p class="empty">This folder isn\'t shared (or the link is wrong). Ask your friend to turn sharing on and send the link again.</p>';
+      return;
+    }
+
+    const { data } = await sb.from("saved_items")
+      .select("id, type, title, content, created_at")
+      .eq("folder_id", folder.id).order("created_at", { ascending: false });
+    items = data || [];
+
+    content.innerHTML = `
+      <span class="eyebrow">Shared folder</span>
+      <h1>${esc(folder.name)}</h1>
+      <p class="sub">${items.length} item${items.length === 1 ? "" : "s"} — shared read-only with Notiq AI</p>
+      <div class="item-grid">` +
+      (items.length ? items.map((i, idx) => `
+        <div class="item-card" onclick="openItem(${idx})">
+          <span class="itype">${TYPE_LABEL[i.type] || i.type}</span>
+          <h4>${esc(i.title)}</h4>
+          <div class="idate">${new Date(i.created_at).toLocaleDateString()}</div>
+        </div>`).join("") : '<p class="empty">Nothing saved in this folder yet.</p>') +
+      `</div>`;
+  })();
+
+  function openItem(idx) {
+    const data = items[idx];
+    const c = data.content || {};
+    document.getElementById("im-type").textContent = TYPE_LABEL[data.type] || data.type;
+    document.getElementById("im-title").textContent = data.title;
+    let html = "";
+    if (data.type === "flashcards") {
+      html = (c.cards || []).map((card, i) => `<div class="qa-pair">
+          <div class="qside">${i + 1}. ${esc(card.front)}${card.difficulty ? `<span class="qa-diff">${esc(card.difficulty)}</span>` : ""}</div>
+          <div class="aside">${esc(card.back)}</div>
+        </div>`).join("");
+    } else if (data.type === "quiz") {
+      html = (c.questions || []).map((q, i) => `<div class="qa-pair">
+          <div class="qside">${i + 1}. ${esc(q.q)}</div>
+          <div class="aside">${(q.options || []).map((o, oi) => (oi === q.answer ? "&#10003; <b style='color:var(--coral)'>" + esc(o) + "</b>" : esc(o))).join("<br>")}
+          ${q.explanation ? "<br><br><i>" + esc(q.explanation) + "</i>" : ""}</div>
+        </div>`).join("");
+    } else {
+      html = `<div class="md-out">${marked.parse(c.markdown || "")}</div>`;
+    }
+    document.getElementById("im-body").innerHTML = html;
+    document.getElementById("item-modal").classList.add("open");
+  }
+</script>
+</body>
+</html>

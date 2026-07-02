@@ -135,6 +135,23 @@ create policy "own activity" on activity
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
 
+## Step 8 — Folder sharing
+
+Run this in SQL Editor to enable read-only share links for folders:
+
+```sql
+alter table folders add column share_id uuid unique default gen_random_uuid();
+alter table folders add column is_shared boolean not null default false;
+
+create policy "anyone can view shared folders" on folders
+  for select using (is_shared = true);
+
+create policy "anyone can view items in shared folders" on saved_items
+  for select using (
+    exists (select 1 from folders f where f.id = saved_items.folder_id and f.is_shared = true)
+  );
+```
+
 ## ⚠️ One honest warning
 
 The Groq key lives in `config.js`, which the browser can see. For a personal/school project that's fine, but if you share the site publicly, someone could find the key and use your quota. When you're ready to go public, the fix is a Supabase **Edge Function** that holds the key server-side — ask me and I'll build it.
