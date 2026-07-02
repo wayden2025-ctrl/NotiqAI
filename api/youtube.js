@@ -1,25 +1,54 @@
 // Vercel serverless function — fetches a YouTube video's transcript (captions).
 // GET /api/youtube?url=<youtube link>  ->  { title, text }
-//
-// Strategy 1: InnerTube player API with the ANDROID client (works far more
-//             reliably from datacenter IPs than scraping the watch page).
-// Strategy 2: fall back to scraping the watch page HTML.
+// Tries several of YouTube's internal player clients, since different ones
+// include captions depending on YouTube's mood, then falls back to scraping.
 
 const WEB_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const ANDROID_UA = "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip";
-const INNERTUBE_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
+const KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
+
+const CLIENTS = [
+  { name: "tv", ua: WEB_UA, thirdParty: true,
+    client: { clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER", clientVersion: "2.0", hl: "en" } },
+  { name: "web", ua: WEB_UA,
+    client: { clientName: "WEB", clientVersion: "2.20240726.00.00", hl: "en" } },
+  { name: "android", ua: ANDROID_UA,
+    client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30, hl: "en" } },
+];
+
+function decodeEntities(s) {
+  return s
+    .replace(/&#(\d+);/g, (m, n) => String.fromCharCode(+n))
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'");
+}
 
 async function captionText(baseUrl) {
   const sep = baseUrl.includes("?") ? "&" : "?";
-  const res = await fetch(baseUrl + sep + "fmt=json3", { headers: { "User-Agent": WEB_UA } });
-  if (!res.ok) return "";
-  const cap = await res.json().catch(() => null);
-  if (!cap) return "";
-  return (cap.events || [])
-    .map(e => (e.segs || []).map(s => s.utf8 || "").join(""))
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // try json3 first
+  try {
+    const res = await fetch(baseUrl + sep + "fmt=json3", { headers: { "User-Agent": WEB_UA } });
+    if (res.ok) {
+      const cap = await res.json().catch(() => null);
+      if (cap) {
+        const text = (cap.events || [])
+          .map(e => (e.segs || []).map(s => s.utf8 || "").join(""))
+          .join(" ").replace(/\s+/g, " ").trim();
+        if (text) return text;
+      }
+    }
+  } catch (e) {}
+  // fall back to the XML format
+  try {
+    const res = await fetch(baseUrl, { headers: { "User-Agent": WEB_UA } });
+    if (res.ok) {
+      const xml = await res.text();
+      const parts = [...xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map(m => decodeEntities(m[1]));
+      const text = parts.join(" ").replace(/\s+/g, " ").trim();
+      if (text) return text;
+    }
+  } catch (e) {}
+  return "";
 }
 
 function pickTrack(tracks) {
@@ -29,29 +58,25 @@ function pickTrack(tracks) {
          tracks[0];
 }
 
-async function viaInnertube(videoId) {
-  const res = await fetch(
-    "https://www.youtube.com/youtubei/v1/player?key=" + INNERTUBE_KEY + "&prettyPrint=false",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "User-Agent": ANDROID_UA },
-      body: JSON.stringify({
-        videoId,
-        context: { client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30, hl: "en" } },
-      }),
-    }
-  );
-  if (!res.ok) throw new Error("player API " + res.status);
+async function viaInnertube(videoId, cfg) {
+  const body = { videoId, context: { client: cfg.client } };
+  if (cfg.thirdParty) body.context.thirdParty = { embedUrl: "https://www.youtube.com" };
+  const res = await fetch("https://www.youtube.com/youtubei/v1/player?key=" + KEY + "&prettyPrint=false", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "User-Agent": cfg.ua },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(cfg.name + " " + res.status);
   const data = await res.json();
   const status = data.playabilityStatus && data.playabilityStatus.status;
-  if (status && status !== "OK") throw new Error("video status " + status);
+  if (status && status !== "OK") throw new Error(cfg.name + " " + status);
   const tracks = data.captions &&
     data.captions.playerCaptionsTracklistRenderer &&
     data.captions.playerCaptionsTracklistRenderer.captionTracks;
   const track = pickTrack(tracks);
-  if (!track) throw new Error("NO_CAPTIONS");
+  if (!track) throw new Error(cfg.name + " NO_CAPTIONS");
   const text = await captionText(track.baseUrl);
-  if (!text) throw new Error("empty transcript");
+  if (!text) throw new Error(cfg.name + " EMPTY_TRANSCRIPT");
   const title = (data.videoDetails && data.videoDetails.title) || "YouTube video";
   return { title, text };
 }
@@ -61,14 +86,11 @@ async function viaWatchPage(videoId) {
     headers: { "User-Agent": WEB_UA, "Accept-Language": "en-US,en;q=0.9" },
   })).text();
   let m = page.match(/"captionTracks":(\[.*?\]),"audioTracks"/) || page.match(/"captionTracks":(\[.*?\])/);
-  if (!m) {
-    if (/consent\.youtube|action=["']https:\/\/consent/.test(page)) throw new Error("consent wall");
-    throw new Error("NO_CAPTIONS");
-  }
+  if (!m) throw new Error("scrape NO_CAPTIONS");
   const track = pickTrack(JSON.parse(m[1]));
-  if (!track) throw new Error("NO_CAPTIONS");
+  if (!track) throw new Error("scrape NO_CAPTIONS");
   const text = await captionText(track.baseUrl);
-  if (!text) throw new Error("empty transcript");
+  if (!text) throw new Error("scrape EMPTY_TRANSCRIPT");
   let title = "YouTube video";
   const tm = page.match(/"videoDetails":\{[^{]*?"title":"((?:[^"\\]|\\.)*)"/);
   if (tm) { try { title = JSON.parse('"' + tm[1] + '"'); } catch (e) {} }
@@ -86,20 +108,19 @@ module.exports = async (req, res) => {
     const videoId = idMatch[1];
 
     const errors = [];
-    for (const attempt of [viaInnertube, viaWatchPage]) {
-      try {
-        const out = await attempt(videoId);
-        res.status(200).json(out);
-        return;
-      } catch (e) {
-        errors.push(e.message);
-      }
+    for (const cfg of CLIENTS) {
+      try { res.status(200).json(await viaInnertube(videoId, cfg)); return; }
+      catch (e) { errors.push(e.message); }
     }
+    try { res.status(200).json(await viaWatchPage(videoId)); return; }
+    catch (e) { errors.push(e.message); }
 
-    if (errors.some(e => e === "NO_CAPTIONS")) {
-      res.status(404).json({ error: "This video has no captions/subtitles, so there's no transcript to read. Try a video that shows the CC button." });
+    const detail = errors.join(" | ");
+    if (req.query && req.query.debug) { res.status(502).json({ error: detail }); return; }
+    if (errors.every(e => /NO_CAPTIONS/.test(e))) {
+      res.status(404).json({ error: "YouTube isn't giving us captions for this video right now (" + detail + "). Try again in a minute or try another video." });
     } else {
-      res.status(502).json({ error: "YouTube refused the request (" + errors.join(" / ") + "). This happens sometimes from cloud servers — wait a minute and try again." });
+      res.status(502).json({ error: "YouTube refused the request (" + detail + "). Wait a minute and try again." });
     }
   } catch (e) {
     res.status(500).json({ error: "YouTube fetch failed: " + e.message });
