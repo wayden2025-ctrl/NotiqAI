@@ -312,6 +312,27 @@
   .rv-again:hover { background: rgba(163,53,32,.06); }
   .rv-good { border: 0; color: #fff; background: linear-gradient(180deg, #2f7d4f, #1d5c37); padding: 12px 28px; border-radius: 999px; font-family: inherit; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 12px 26px -10px rgba(29,92,55,.6); }
   .rv-good:hover { filter: brightness(1.08); }
+
+  /* ============ MATCHING GAME ============ */
+  .mt-hud { display: flex; gap: 28px; align-items: baseline; margin-bottom: 18px; }
+  .mt-hud b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 44px; color: var(--amber); line-height: 1; }
+  .mt-hud span { font-size: 13.5px; color: var(--muted); font-weight: 700; }
+  .mt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .mt-grid { grid-template-columns: repeat(2, 1fr); } }
+  .mt-tile {
+    min-height: 96px; border-radius: 14px; border: 1.5px solid var(--line);
+    background: var(--card1); color: var(--ink); padding: 12px 14px; cursor: pointer;
+    font-family: inherit; font-size: 13.5px; line-height: 1.45;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    box-shadow: 0 10px 22px -14px rgba(0,0,0,.25);
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .mt-tile:hover { transform: translateY(-2px); }
+  .mt-tile.sel { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 9%, var(--card1)); font-weight: 700; }
+  .mt-tile.matched { animation: mtPop .38s ease forwards; pointer-events: none; }
+  @keyframes mtPop { 40% { transform: scale(1.08); } 100% { transform: scale(0); opacity: 0; } }
+  .mt-tile.wrong { animation: mtShake .3s ease; border-color: #a33520; }
+  @keyframes mtShake { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   @media (max-width: 940px) { .power-grid { grid-template-columns: 1fr; } }
   .mini-lines i:nth-child(1) { width: 88%; }
   .mini-lines i:nth-child(2) { width: 100%; background: linear-gradient(90deg, var(--g1), var(--amber)); opacity: .8; }
@@ -793,6 +814,12 @@
           <p id="review-desc">Save a flashcard deck to unlock — Notiq brings cards back right before you'd forget them.</p>
           <span class="bento-go">Review now</span>
         </div>
+        <div class="bento-card" onclick="openMatch()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></div>
+          <h3>Match</h3>
+          <p>Pair every term with its answer against the clock — then beat your own best time.</p>
+          <span class="bento-go">Play</span>
+        </div>
       </div>
 
       <div class="section-label">Focus</div>
@@ -1046,6 +1073,34 @@
           <button class="rv-good" onclick="rateCard(true)">Got it</button>
         </div>
         <p style="font-size:13px; color:var(--muted);">"Again" brings the card back tomorrow. "Got it" pushes it further out each time.</p>
+      </div>
+    </div>
+
+    <!-- MATCHING GAME -->
+    <div class="view hidden" id="view-match">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Beat the clock</span>
+      <h1 class="page-title">The matching <em>game.</em></h1>
+      <p class="page-sub">Every term has its answer hiding in the grid. Pair them all as fast as you can.</p>
+      <div class="surface" id="mt-setup">
+        <p class="empty-hint hidden" id="mt-empty" style="font-size:15px;"><b>Save a flashcard deck first.</b> Generate flashcards, hit Save to folder, then come back to play.</p>
+        <div id="mt-controls">
+          <label class="field-label">Which deck?</label>
+          <select id="mt-deck"></select>
+          <label class="field-label">How many pairs</label>
+          <select id="mt-pairs"><option>6</option><option selected>8</option><option>10</option></select>
+          <div style="margin-top:22px;"><button class="btn-primary" onclick="mtStart()">Start the clock</button></div>
+        </div>
+      </div>
+      <div class="hidden" id="mt-play">
+        <div class="mt-hud"><b id="mt-time">0.0s</b><span id="mt-best"></span></div>
+        <div class="mt-grid" id="mt-grid"></div>
+      </div>
+      <div class="hidden surface" id="mt-done" style="text-align:center;">
+        <div class="tb-score" id="mt-final"></div>
+        <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="mt-record"></p>
+        <button class="btn-primary" onclick="mtStart()">Play again</button>
+        <button class="btn-ghost" onclick="mtReset()" style="margin-left:10px;">Different deck</button>
       </div>
     </div>
 
@@ -2166,6 +2221,96 @@ async function rateCard(good) {
   renderReview();
 }
 
+// ================= MATCHING GAME =================
+let mtDeckObj = null, mtSel = null, mtTimer = null, mtT0 = 0, mtRemaining = 0;
+
+function renderMatchDecks() {
+  const has = rvDecks.length > 0;
+  $("mt-empty").classList.toggle("hidden", has);
+  $("mt-controls").classList.toggle("hidden", !has);
+  if (has) {
+    const cur = $("mt-deck").value;
+    $("mt-deck").innerHTML = rvDecks.map(d =>
+      `<option value="${d.id}">${esc(d.title)} (${(d.content.cards || []).length} cards)</option>`).join("");
+    if (cur && rvDecks.some(d => d.id === cur)) $("mt-deck").value = cur;
+  }
+}
+function openMatch() {
+  showView("match");
+  renderMatchDecks();
+  mtReset();
+}
+function matchFromItem(id) {
+  closeItemModal();
+  openMatch();
+  $("mt-deck").value = id;
+}
+function mtReset() {
+  clearInterval(mtTimer); mtTimer = null; mtT0 = 0; mtSel = null;
+  $("mt-setup").classList.remove("hidden");
+  $("mt-play").classList.add("hidden");
+  $("mt-done").classList.add("hidden");
+}
+function mtStart() {
+  const deck = rvDecks.find(d => d.id === $("mt-deck").value);
+  if (!deck) return;
+  mtDeckObj = deck;
+  const cards = deck.content.cards || [];
+  const n = Math.min(+$("mt-pairs").value, cards.length);
+  const sample = [...cards].sort(() => Math.random() - .5).slice(0, n);
+  const tiles = [];
+  sample.forEach((c, i) => {
+    tiles.push({ k: i, side: "f", text: c.front });
+    tiles.push({ k: i, side: "b", text: c.back });
+  });
+  tiles.sort(() => Math.random() - .5);
+  mtRemaining = n; mtSel = null;
+  $("mt-grid").innerHTML = tiles.map(t => {
+    const txt = t.text.length > 110 ? t.text.slice(0, 107) + "..." : t.text;
+    return `<button class="mt-tile" data-k="${t.k}" data-side="${t.side}" onclick="mtPick(this)">${esc(txt)}</button>`;
+  }).join("");
+  $("mt-setup").classList.add("hidden");
+  $("mt-done").classList.add("hidden");
+  $("mt-play").classList.remove("hidden");
+  $("mt-best").textContent = deck.content.match_best ? "Best: " + deck.content.match_best.toFixed(1) + "s" : "No record yet — set one.";
+  clearInterval(mtTimer); mtTimer = null; mtT0 = 0;
+  $("mt-time").textContent = "0.0s";
+}
+function mtPick(el) {
+  if (!mtT0) {
+    mtT0 = Date.now();
+    mtTimer = setInterval(() => { $("mt-time").textContent = ((Date.now() - mtT0) / 1000).toFixed(1) + "s"; }, 100);
+  }
+  if (el.classList.contains("matched")) return;
+  if (mtSel === el) { el.classList.remove("sel"); mtSel = null; return; }
+  if (!mtSel) { mtSel = el; el.classList.add("sel"); return; }
+  const a = mtSel; mtSel = null; a.classList.remove("sel");
+  if (a.dataset.k === el.dataset.k && a.dataset.side !== el.dataset.side) {
+    a.classList.add("matched"); el.classList.add("matched");
+    if (--mtRemaining === 0) mtFinish();
+  } else {
+    a.classList.add("wrong"); el.classList.add("wrong");
+    setTimeout(() => { a.classList.remove("wrong"); el.classList.remove("wrong"); }, 320);
+  }
+}
+function mtFinish() {
+  clearInterval(mtTimer); mtTimer = null;
+  const secs = Math.round((Date.now() - mtT0) / 100) / 10;
+  $("mt-play").classList.add("hidden");
+  $("mt-done").classList.remove("hidden");
+  $("mt-final").textContent = secs.toFixed(1) + "s";
+  const best = mtDeckObj.content.match_best;
+  if (!best || secs < best) {
+    mtDeckObj.content.match_best = secs;
+    sb.from("saved_items").update({ content: mtDeckObj.content }).eq("id", mtDeckObj.id).then(() => {});
+    $("mt-record").textContent = best ? `New record! Old best was ${best.toFixed(1)}s.` : "Record set — that's the time to beat.";
+    celebrate($("mt-final"));
+  } else {
+    $("mt-record").textContent = `Best is still ${best.toFixed(1)}s — run it back.`;
+  }
+  logActivity("match");
+}
+
 // ================= FOLDER VIEW & ITEM VIEWER =================
 const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet" };
 
@@ -2260,7 +2405,8 @@ async function openItem(id) {
   $("im-tools").innerHTML = `
     <button class="btn-ghost" onclick="ttsToggle(this, itemPlainText(curItem))">Listen</button>
     <button class="btn-ghost" onclick="printItem()">Print / PDF</button>
-    ${data.type === "flashcards" ? `<button class="btn-ghost" onclick="downloadCSV(curItem.title, curItem.content.cards || [])">Export CSV</button>` : ""}`;
+    ${data.type === "flashcards" ? `<button class="btn-ghost" onclick="downloadCSV(curItem.title, curItem.content.cards || [])">Export CSV</button>
+    <button class="btn-ghost" onclick="matchFromItem('${data.id}')">Play match</button>` : ""}`;
   $("item-modal").classList.add("open");
 }
 function closeItemModal() {
