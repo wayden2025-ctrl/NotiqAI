@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coral: #1e3a6e;
+    --amber: #4a7cc9;
+    --ink: #241d18;
+    --muted: #7c7168;
+    --line: rgba(36,29,24,.10);
+    --glass: rgba(255,255,255,.58);
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      radial-gradient(90% 70% at 10% 92%, #e8eef8 0%, rgba(232,238,248,0) 60%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    -webkit-font-smoothing: antialiased;
+    padding: 24px;
+  }
+  ::selection { background: #c8d8f0; color: #2a201a; }
+
+  .card {
+    width: 100%; max-width: 420px;
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 30px 60px -24px rgba(22,50,100,.28);
+    padding: 38px 36px 32px;
+  }
+  .logo-row { display: flex; align-items: center; gap: 11px; justify-content: center; margin-bottom: 6px; }
+  .orb {
+    width: 34px; height: 34px; border-radius: 10px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55), 0 6px 16px -4px rgba(30,58,110,.6);
+  }
+  .orb::after { content:""; position:absolute; top:5px; left:8px; width:10px; height:7px; border-radius:50%;
+    background: radial-gradient(circle,#fff,transparent 70%); }
+  .logo-row span { font-family: 'Instrument Serif', serif; font-size: 26px; }
+  .logo-row b { color: var(--coral); font-weight: 400; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    text-align: center; font-size: 34px; color: var(--coral);
+    margin: 14px 0 4px; letter-spacing: -1px;
+  }
+  .sub { text-align: center; color: var(--muted); font-size: 14.5px; margin-bottom: 26px; }
+
+  .tabs {
+    display: flex; background: rgba(36,29,24,.06); border-radius: 999px; padding: 4px; margin-bottom: 24px;
+  }
+  .tabs button {
+    flex: 1; border: 0; background: transparent; font-family: inherit; font-weight: 700;
+    font-size: 14px; color: var(--muted); padding: 9px 0; border-radius: 999px; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .tabs button.active {
+    background: #fff; color: var(--coral);
+    box-shadow: 0 4px 12px -4px rgba(22,50,100,.3);
+  }
+
+  label { display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin: 0 0 6px 2px; }
+  input {
+    width: 100%; padding: 12px 15px; margin-bottom: 16px;
+    border: 1.5px solid var(--line); border-radius: 12px;
+    font-family: inherit; font-size: 15px; color: var(--ink);
+    background: #fff; outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(74,124,201,.15); }
+
+  .btn {
+    width: 100%; border: 0; cursor: pointer; margin-top: 4px;
+    color: #fff; background: linear-gradient(180deg, #2a4d8a, #163264);
+    padding: 14px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 16px;
+    box-shadow: 0 16px 34px -12px rgba(22,50,100,.7), inset 0 1px 0 rgba(255,255,255,.4);
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn:disabled { opacity: .6; cursor: wait; transform: none; }
+
+  .msg { margin-top: 16px; font-size: 14px; text-align: center; line-height: 1.5; display: none; padding: 10px 14px; border-radius: 12px; }
+  .msg.error { display: block; background: rgba(200,60,40,.08); color: #a33520; }
+  .msg.ok { display: block; background: rgba(30,58,110,.08); color: var(--coral); }
+
+  .back { display: block; text-align: center; margin-top: 20px; font-size: 13.5px; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--coral); }
+  #f-name-wrap { display: none; }
+  body.signup #f-name-wrap { display: block; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-row"><div class="orb"></div><span>Notiq<b> AI</b></span></div>
+    <h1 id="headline">Welcome back</h1>
+    <p class="sub" id="subline">Sign in to keep mastering your notes.</p>
+
+    <div class="tabs">
+      <button id="tab-signin" class="active" onclick="setMode('signin')">Sign in</button>
+      <button id="tab-signup" onclick="setMode('signup')">Create account</button>
+    </div>
+
+    <form id="auth-form">
+      <div id="f-name-wrap">
+        <label for="f-name">Name</label>
+        <input id="f-name" type="text" placeholder="Your name" autocomplete="name">
+      </div>
+      <label for="f-email">Email</label>
+      <input id="f-email" type="email" placeholder="you@gmail.com" autocomplete="email" required>
+      <label for="f-password">Password</label>
+      <input id="f-password" type="password" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+      <button class="btn" id="submit-btn" type="submit">Sign in</button>
+    </form>
+
+    <div class="msg" id="msg"></div>
+    <a class="back" href="index.html">&larr; Back to home</a>
+  </div>
+
+<script>
+  const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+  let mode = 'signin';
+
+  // Already signed in? Straight to the dashboard.
+  sb.auth.getSession().then(({ data }) => { if (data.session) location.href = 'app.html'; });
+
+  // "Start Free" on the landing page lands here in signup mode
+  if (new URLSearchParams(location.search).get('mode') === 'signup') setMode('signup');
+
+  function setMode(m) {
+    mode = m;
+    document.body.classList.toggle('signup', m === 'signup');
+    document.getElementById('tab-signin').classList.toggle('active', m === 'signin');
+    document.getElementById('tab-signup').classList.toggle('active', m === 'signup');
+    document.getElementById('headline').textContent = m === 'signup' ? 'Start free' : 'Welcome back';
+    document.getElementById('subline').textContent = m === 'signup'
+      ? 'Create your account — no card needed.'
+      : 'Sign in to keep mastering your notes.';
+    document.getElementById('submit-btn').textContent = m === 'signup' ? 'Create free account' : 'Sign in';
+    showMsg('', '');
+  }
+
+  function showMsg(text, cls) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = 'msg' + (cls ? ' ' + cls : '');
+  }
+
+  document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const email = document.getElementById('f-email').value.trim();
+    const password = document.getElementById('f-password').value;
+    const name = document.getElementById('f-name').value.trim();
+    btn.disabled = true;
+    showMsg('', '');
+    try {
+      if (mode === 'signup') {
+        if (!name) { showMsg('Please enter your name.', 'error'); btn.disabled = false; return; }
+        const { data, error } = await sb.auth.signUp({
+          email, password,
+          options: { data: { full_name: name } }
+        });
+        if (error) throw error;
+        if (data.session) {
+          location.href = 'app.html';
+        } else {
+          showMsg('Almost there! Check your email to confirm your account, then sign in.', 'ok');
+        }
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) {
+          // No account yet? Nudge them to create one.
+          if (/invalid/i.test(error.message)) {
+            showMsg("We couldn't find that account. Switch to 'Create account' to start free.", 'error');
+          } else throw error;
+        } else {
+          location.href = 'app.html';
+        }
+      }
+    } catch (err) {
+      showMsg(err.message || 'Something went wrong. Try again.', 'error');
+    }
+    btn.disabled = false;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="config.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coral: #1e3a6e;
+    --amber: #4a7cc9;
+    --ink: #241d18;
+    --muted: #7c7168;
+    --line: rgba(36,29,24,.10);
+    --glass: rgba(255,255,255,.58);
+    --rail-w: 68px;
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      radial-gradient(90% 70% at 10% 92%, #e8eef8 0%, rgba(232,238,248,0) 60%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: #c8d8f0; color: #2a201a; }
+  .hidden { display: none !important; }
+
+  /* ============ TINY SIDEBAR (always visible) ============ */
+  .rail {
+    position: fixed; left: 0; top: 0; bottom: 0; width: var(--rail-w);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px 0 20px; gap: 8px;
+    background: rgba(255,255,255,.62); backdrop-filter: blur(12px);
+    border-right: 1px solid var(--line);
+    z-index: 500;
+  }
+  .rail .orb {
+    width: 32px; height: 32px; border-radius: 10px; position: relative; overflow: hidden; cursor: pointer;
+    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55), 0 6px 16px -4px rgba(30,58,110,.6);
+    margin-bottom: 16px; flex: none;
+  }
+  .rail .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%;
+    background: radial-gradient(circle,#fff,transparent 70%); }
+  .rail-btn {
+    width: 44px; height: 44px; border: 0; border-radius: 13px; cursor: pointer;
+    background: transparent; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .16s ease; position: relative;
+  }
+  .rail-btn:hover { background: rgba(30,58,110,.08); color: var(--coral); }
+  .rail-btn.active { background: rgba(30,58,110,.12); color: var(--coral); }
+  .rail-btn svg { width: 21px; height: 21px; }
+  .rail-btn .tip {
+    position: absolute; left: 54px; top: 50%; transform: translateY(-50%);
+    background: var(--ink); color: #fff; font-size: 12px; font-weight: 600;
+    padding: 5px 10px; border-radius: 8px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .15s;
+  }
+  .rail-btn:hover .tip { opacity: 1; }
+  .rail .spacer { flex: 1; }
+  .rail .avatar {
+    width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
+    background: linear-gradient(180deg, #2a4d8a, #163264); color: #fff;
+    font-family: inherit; font-weight: 800; font-size: 15px;
+    box-shadow: 0 8px 18px -6px rgba(22,50,100,.6), inset 0 1px 0 rgba(255,255,255,.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ============ MAIN AREA ============ */
+  main { margin-left: var(--rail-w); padding: 46px 54px 80px; max-width: 1180px; }
+  .eyebrow { font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1.page-title {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(34px, 4.4vw, 52px); color: var(--ink); letter-spacing: -1.5px;
+    margin: 8px 0 6px;
+  }
+  h1.page-title em { font-style: italic; color: var(--coral); }
+  .page-sub { color: var(--muted); font-size: 15.5px; margin-bottom: 36px; max-width: 60ch; line-height: 1.55; }
+  .section-label {
+    font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted); margin: 34px 0 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .feature-card {
+    background: linear-gradient(160deg, #ffffff, #f2f5fb);
+    border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px 20px 20px; cursor: pointer; position: relative; overflow: hidden;
+    box-shadow: 0 18px 36px -20px rgba(60,40,30,.30), inset 0 1px 0 rgba(255,255,255,.8);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .feature-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #2a4d8a, #4a7cc9); opacity: 0; transition: opacity .16s;
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: 0 26px 46px -20px rgba(22,50,100,.4); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-card .chip {
+    width: 40px; height: 40px; border-radius: 12px; background: rgba(30,58,110,.12); color: var(--coral);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+  }
+  .feature-card .chip svg { width: 20px; height: 20px; }
+  .feature-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 5px; }
+  .feature-card p { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+
+  /* Folders row */
+  .folders-row { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 14px; }
+  .folder-card {
+    flex: none; width: 160px; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(160deg, #ffffff, #f2f5fb);
+    border: 1px solid var(--line); padding: 16px;
+    box-shadow: 0 14px 28px -16px rgba(60,40,30,.28);
+    transition: transform .15s ease;
+  }
+  .folder-card:hover { transform: translateY(-3px); }
+  .folder-card svg { width: 26px; height: 26px; color: var(--amber); margin-bottom: 10px; }
+  .folder-card .fname { font-weight: 700; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder-card .fcount { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .folder-new {
+    flex: none; width: 160px; border-radius: 14px; cursor: pointer;
+    border: 1.5px dashed rgba(30,58,110,.35); color: var(--coral); background: transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    font-family: inherit; font-weight: 700; font-size: 13.5px; min-height: 108px;
+    transition: background .15s;
+  }
+  .folder-new:hover { background: rgba(30,58,110,.06); }
+  .empty-hint { color: var(--muted); font-size: 14px; padding: 10px 2px; line-height: 1.5; }
+
+  /* ============ GENERATOR VIEWS ============ */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent;
+    color: var(--muted); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    padding: 6px 0; margin-bottom: 10px;
+  }
+  .back-link:hover { color: var(--coral); }
+  .surface {
+    background: rgba(255,255,255,.72); backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 18px;
+    padding: 26px; box-shadow: 0 20px 40px -24px rgba(60,40,30,.3);
+    margin-bottom: 26px;
+  }
+  .field-label { font-size: 13px; font-weight: 800; margin: 18px 0 8px; display: block; }
+  .field-label:first-child { margin-top: 0; }
+  .field-label small { font-weight: 500; color: var(--muted); }
+  select, .txt-input {
+    font-family: inherit; font-size: 14.5px; color: var(--ink);
+    padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 11px; background: #fff;
+    outline: none; min-width: 220px;
+  }
+  select:focus, .txt-input:focus { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(74,124,201,.14); }
+  .res-picker { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+  .res-option {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: #fff; border: 1.5px solid var(--line); border-radius: 11px; cursor: pointer;
+    font-size: 14px; transition: border-color .12s;
+  }
+  .res-option:hover { border-color: rgba(74,124,201,.5); }
+  .res-option input { accent-color: var(--coral); width: 16px; height: 16px; }
+  .res-option .rdate { margin-left: auto; font-size: 12px; color: var(--muted); flex: none; }
+  .btn-primary {
+    border: 0; cursor: pointer; color: #fff;
+    background: linear-gradient(180deg, #2a4d8a, #163264);
+    padding: 13px 28px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 15px;
+    box-shadow: 0 14px 30px -12px rgba(22,50,100,.7), inset 0 1px 0 rgba(255,255,255,.4);
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .55; cursor: wait; transform: none; }
+  .btn-ghost {
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+    padding: 10px 20px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 14px;
+  }
+  .btn-ghost:hover { border-color: var(--amber); color: var(--coral); }
+
+  .save-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: rgba(30,58,110,.07); border: 1px solid rgba(30,58,110,.18);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 22px;
+  }
+  .save-bar .txt-input { flex: 1; min-width: 160px; }
+  .save-note { font-size: 13px; color: var(--coral); font-weight: 600; }
+
+  .status-line { margin: 14px 0 0; font-size: 14px; color: var(--muted); display: none; }
+  .status-line.show { display: block; }
+  .status-line.error { color: #a33520; }
+  .spin {
+    display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(30,58,110,.25); border-top-color: var(--coral);
+    animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Flashcard flip UI */
+  .fc-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .fc-card {
+    width: min(560px, 100%); height: 300px; cursor: pointer; perspective: 1200px;
+  }
+  .fc-inner {
+    position: relative; width: 100%; height: 100%;
+    transform-style: preserve-3d; transition: transform .5s cubic-bezier(.2,.7,.3,1);
+  }
+  .fc-card.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 34px; font-size: 19px; line-height: 1.5;
+    background: linear-gradient(160deg, #ffffff, #f2f5fb);
+    border: 1px solid var(--line);
+    box-shadow: 0 26px 50px -22px rgba(22,50,100,.4);
+  }
+  .fc-face.back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, #2e5490, #163264); color: #fff;
+  }
+  .fc-nav { display: flex; align-items: center; gap: 16px; }
+  .fc-counter { font-size: 14px; color: var(--muted); font-weight: 600; min-width: 70px; text-align: center; }
+
+  /* Quiz UI */
+  .quiz-q {
+    background: linear-gradient(160deg, #ffffff, #f2f5fb);
+    border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 16px;
+    box-shadow: 0 16px 32px -20px rgba(60,40,30,.3);
+  }
+  .quiz-q h4 { font-size: 16px; margin-bottom: 14px; line-height: 1.5; }
+  .quiz-q h4 .qnum { color: var(--coral); font-family: 'Instrument Serif', serif; font-style: italic; margin-right: 8px; font-size: 18px; }
+  .quiz-opt {
+    display: block; width: 100%; text-align: left; font-family: inherit; font-size: 14.5px;
+    padding: 11px 15px; margin-bottom: 8px; border-radius: 11px; cursor: pointer;
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink); transition: all .12s;
+  }
+  .quiz-opt:hover { border-color: var(--amber); }
+  .quiz-opt.selected { border-color: var(--coral); background: rgba(30,58,110,.08); font-weight: 700; }
+  .quiz-opt.correct { border-color: #2e7d4f; background: rgba(46,125,79,.10); font-weight: 700; }
+  .quiz-opt.wrong { border-color: #a33520; background: rgba(163,53,32,.08); }
+  .quiz-expl { font-size: 13.5px; color: var(--muted); line-height: 1.5; margin-top: 8px; padding: 10px 14px; background: rgba(30,58,110,.05); border-radius: 10px; display: none; }
+  .quiz-expl.show { display: block; }
+  .quiz-score {
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: var(--coral);
+    text-align: center; margin: 18px 0;
+  }
+
+  /* Calendar */
+  .cal { width: 320px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 0 14px 30px -18px rgba(60,40,30,.3); }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-head .cal-title { font-weight: 800; font-size: 14.5px; }
+  .cal-head button { border: 0; background: rgba(30,58,110,.08); color: var(--coral); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 700; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dow { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; padding: 4px 0; }
+  .cal-day {
+    border: 0; background: transparent; font-family: inherit; font-size: 13px; color: var(--ink);
+    aspect-ratio: 1; border-radius: 9px; cursor: pointer;
+  }
+  .cal-day:hover:not(:disabled) { background: rgba(30,58,110,.1); }
+  .cal-day:disabled { color: rgba(36,29,24,.25); cursor: default; }
+  .cal-day.today { box-shadow: inset 0 0 0 1.5px var(--amber); }
+  .cal-day.selected { background: var(--coral); color: #fff; font-weight: 800; }
+  .exam-pick { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
+  .exam-chosen { font-size: 14.5px; line-height: 1.6; color: var(--muted); max-width: 300px; }
+  .exam-chosen b { color: var(--coral); font-size: 16px; }
+
+  /* Markdown output */
+  .md-out {
+    background: linear-gradient(160deg, #ffffff, #f6f8fc);
+    border: 1px solid var(--line); border-radius: 18px; padding: 34px 38px;
+    box-shadow: 0 22px 44px -24px rgba(60,40,30,.35);
+    line-height: 1.65; font-size: 15px;
+  }
+  .md-out h1, .md-out h2 { font-family: 'Instrument Serif', serif; font-weight: 400; color: var(--coral); letter-spacing: -.5px; margin: 26px 0 10px; }
+  .md-out h1 { font-size: 30px; font-style: italic; }
+  .md-out h2 { font-size: 24px; }
+  .md-out h3 { font-size: 17px; margin: 20px 0 8px; }
+  .md-out h1:first-child, .md-out h2:first-child { margin-top: 0; }
+  .md-out p { margin: 0 0 12px; }
+  .md-out ul, .md-out ol { margin: 0 0 14px 22px; }
+  .md-out li { margin-bottom: 6px; }
+  .md-out strong { color: var(--coral); }
+  .md-out blockquote { border-left: 3px solid var(--amber); padding: 4px 16px; color: var(--muted); margin: 0 0 14px; }
+  .md-out code { background: rgba(30,58,110,.08); padding: 2px 6px; border-radius: 6px; font-size: 13px; }
+  .md-out table { border-collapse: collapse; margin: 0 0 16px; width: 100%; }
+  .md-out th, .md-out td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; font-size: 14px; }
+  .md-out th { background: rgba(30,58,110,.07); color: var(--coral); }
+  .md-out hr { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
+
+  /* ============ SLIDE-IN PANELS ============ */
+  .scrim {
+    position: fixed; inset: 0; left: var(--rail-w); background: rgba(25,22,18,.14);
+    opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 600;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, calc(100vw - var(--rail-w) - 40px));
+    background: rgba(252,251,249,.98); backdrop-filter: blur(14px);
+    border-left: 1px solid var(--line);
+    box-shadow: -30px 0 60px -30px rgba(36,29,24,.35);
+    transform: translateX(105%); transition: transform .28s cubic-bezier(.3,.8,.3,1);
+    z-index: 700; display: flex; flex-direction: column;
+  }
+  .panel.open { transform: translateX(0); }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 26px 16px; border-bottom: 1px solid var(--line);
+  }
+  .panel-head h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 26px; color: var(--coral); letter-spacing: -.5px; }
+  .panel-close { border: 0; background: rgba(36,29,24,.06); width: 32px; height: 32px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 16px; }
+  .panel-close:hover { background: rgba(36,29,24,.12); color: var(--ink); }
+  .panel-body { padding: 22px 26px; overflow-y: auto; flex: 1; }
+
+  .dropzone {
+    border: 1.5px dashed rgba(30,58,110,.4); border-radius: 16px; padding: 28px 20px;
+    text-align: center; color: var(--muted); font-size: 14px; cursor: pointer;
+    transition: background .15s; line-height: 1.5;
+  }
+  .dropzone:hover, .dropzone.drag { background: rgba(30,58,110,.06); }
+  .dropzone b { color: var(--coral); }
+  .dropzone .dz-icon { color: var(--amber); margin-bottom: 8px; }
+  textarea.paste-area {
+    width: 100%; min-height: 110px; resize: vertical; font-family: inherit; font-size: 14px;
+    padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; outline: none; background: #fff;
+  }
+  textarea.paste-area:focus { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(74,124,201,.14); }
+  .res-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 10px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  }
+  .res-item .ric { width: 34px; height: 34px; flex: none; border-radius: 10px; background: rgba(30,58,110,.1); color: var(--coral); display: flex; align-items: center; justify-content: center; }
+  .res-item .ric svg { width: 17px; height: 17px; }
+  .res-item .rmeta { min-width: 0; }
+  .res-item .rname { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .res-item .rsub { font-size: 12px; color: var(--muted); }
+  .res-item .rdel { margin-left: auto; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 15px; padding: 6px; border-radius: 8px; flex: none; }
+  .res-item .rdel:hover { color: #a33520; background: rgba(163,53,32,.08); }
+
+  .acct-row { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .acct-avatar {
+    width: 52px; height: 52px; border-radius: 50%; color: #fff; flex: none;
+    background: linear-gradient(180deg, #2a4d8a, #163264);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px;
+    box-shadow: 0 10px 22px -8px rgba(22,50,100,.6);
+  }
+  .acct-name { font-weight: 800; font-size: 17px; }
+  .acct-email { font-size: 13.5px; color: var(--muted); }
+
+  /* Saved items / folder view */
+  .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .item-card {
+    background: linear-gradient(160deg, #ffffff, #f2f5fb); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px; cursor: pointer; position: relative;
+    box-shadow: 0 14px 28px -18px rgba(60,40,30,.3); transition: transform .14s;
+  }
+  .item-card:hover { transform: translateY(-3px); }
+  .item-card .itype {
+    display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--coral); background: rgba(30,58,110,.1); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .item-card h4 { font-size: 15px; margin-bottom: 5px; }
+  .item-card .idate { font-size: 12px; color: var(--muted); }
+  .item-card .idel { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 5px; border-radius: 7px; font-size: 14px; }
+  .item-card .idel:hover { color: #a33520; background: rgba(163,53,32,.08); }
+
+  /* Item viewer modal */
+  .modal-scrim {
+    position: fixed; inset: 0; background: rgba(25,22,18,.35); z-index: 800;
+    display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 50px 20px;
+  }
+  .modal-scrim.open { display: flex; }
+  .modal-card {
+    background: #fbf9f6; border-radius: 20px; width: min(760px, 100%);
+    border: 1px solid var(--line); box-shadow: 0 40px 90px -30px rgba(20,20,30,.5);
+    padding: 30px 34px;
+  }
+  .modal-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+  .modal-top h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 28px; color: var(--coral); letter-spacing: -.5px; }
+  .qa-pair { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .qa-pair .qside { font-weight: 800; margin-bottom: 8px; }
+  .qa-pair .aside { color: var(--muted); line-height: 1.5; padding-top: 8px; border-top: 1px dashed var(--line); }
+
+  main::-webkit-scrollbar, .panel-body::-webkit-scrollbar, .res-picker::-webkit-scrollbar { width: 8px; }
+  @media (max-width: 720px) { main { padding: 34px 22px 70px; } }
+</style>
+</head>
+<body>
+
+  <!-- ============ TINY SIDEBAR ============ -->
+  <aside class="rail">
+    <div class="orb" onclick="showView('dashboard')" title="Notiq AI"></div>
+    <button class="rail-btn active" id="rb-home" onclick="showView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 8.8V21h13V8.8"/><path d="M10 21v-6h4v6"/></svg>
+      <span class="tip">Home</span>
+    </button>
+    <button class="rail-btn" id="rb-resources" onclick="openPanel('resources')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></svg>
+      <span class="tip">Resources — import notes &amp; slides</span>
+    </button>
+    <button class="rail-btn" id="rb-folder" onclick="openPanel('folder')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/><path d="M12 11.5v5"/><path d="M9.5 14h5"/></svg>
+      <span class="tip">New folder</span>
+    </button>
+    <div class="spacer"></div>
+    <button class="avatar" id="rb-account" onclick="openPanel('account')">?</button>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="view" id="view-dashboard">
+      <span class="eyebrow">Dashboard</span>
+      <h1 class="page-title" id="greeting">Welcome back.</h1>
+      <p class="page-sub">Pick a tool below, or open <b>Resources</b> in the sidebar to import your notes and lecture slides first — everything you generate starts from them.</p>
+
+      <div class="section-label">Studying</div>
+      <div class="card-grid">
+        <div class="feature-card" onclick="showView('study')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.4 5 8.2 4.5 5.5 4.5c-.8 0-1.5.1-2.5.3v13.7c1-.2 1.7-.3 2.5-.3 2.7 0 4.9.6 6.5 2 1.6-1.4 3.8-2 6.5-2 .8 0 1.5.1 2.5.3V4.8c-1-.2-1.7-.3-2.5-.3-2.7 0-4.9.5-6.5 2z"/><path d="M12 6.5v14.2"/></svg></div>
+          <h3>Study guide</h3>
+          <p>Pick your exam day — get a day-by-day plan to be ready for it.</p>
+        </div>
+        <div class="feature-card" onclick="showView('quiz')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6.5 1.5 1.5L8.5 5"/><path d="M12 7h9"/><path d="m4 13.5 1.5 1.5 3-3"/><path d="M12 14h9"/><path d="M12 21h9"/><circle cx="5.5" cy="20" r="1.7"/></svg></div>
+          <h3>Quiz</h3>
+          <p>Test your knowledge with questions built from your own material.</p>
+        </div>
+        <div class="feature-card" onclick="showView('flashcards')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="14" height="12" rx="2.5"/><path d="M7.5 4H18a3 3 0 0 1 3 3v9.5"/><path d="M7 12.5h6"/><path d="M7 15.5h3.5"/></svg></div>
+          <h3>Flashcards</h3>
+          <p>Bite-sized studying. Flip through cards generated from your notes.</p>
+        </div>
+      </div>
+
+      <div class="section-label">Notes</div>
+      <div class="card-grid">
+        <div class="feature-card" onclick="showView('notes')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h11"/><path d="M8 9h11"/><path d="M8 14h7"/><path d="M8 19h5"/><path d="M4 4h.01"/><path d="M4 9h.01"/><path d="M4 14h.01"/><path d="M4 19h.01"/></svg></div>
+          <h3>Notes</h3>
+          <p>Turn any resource into beautifully formatted, detailed notes.</p>
+        </div>
+      </div>
+
+      <div class="section-label">Folders</div>
+      <div class="folders-row" id="folders-row"></div>
+    </div>
+
+    <!-- FOLDER CONTENTS -->
+    <div class="view hidden" id="view-folder">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Folder</span>
+      <h1 class="page-title" id="folder-title">Folder</h1>
+      <p class="page-sub" id="folder-sub"></p>
+      <div class="item-grid" id="folder-items"></div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="view hidden" id="view-flashcards">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Bite-sized studying</span>
+      <h1 class="page-title">Generate <em>flashcards.</em></h1>
+      <p class="page-sub">Choose what to study from your imported resources, and where to save the deck.</p>
+      <div class="surface">
+        <label class="field-label">What should the flashcards be about? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="fc-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="fc-folder"></select>
+        <label class="field-label">How many cards</label>
+        <select id="fc-count"><option>10</option><option selected>15</option><option>20</option><option>30</option></select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="fc-generate">Generate flashcards</button></div>
+        <div class="status-line" id="fc-status"></div>
+      </div>
+      <div class="hidden" id="fc-output">
+        <div class="save-bar">
+          <input class="txt-input" id="fc-title" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
+          <button class="btn-primary" id="fc-save">Save to folder</button>
+          <span class="save-note" id="fc-save-note"></span>
+        </div>
+        <div class="fc-stage">
+          <div class="fc-card" id="fc-card" onclick="this.classList.toggle('flipped')">
+            <div class="fc-inner">
+              <div class="fc-face front" id="fc-front"></div>
+              <div class="fc-face back" id="fc-back"></div>
+            </div>
+          </div>
+          <div class="fc-nav">
+            <button class="btn-ghost" onclick="fcMove(-1)">&larr; Prev</button>
+            <span class="fc-counter" id="fc-counter">1 / 15</span>
+            <button class="btn-ghost" onclick="fcMove(1)">Next &rarr;</button>
+          </div>
+          <p style="font-size:13px;color:var(--muted);">Click the card to flip it.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="view hidden" id="view-quiz">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Test your knowledge</span>
+      <h1 class="page-title">Generate a <em>quiz.</em></h1>
+      <p class="page-sub">Multiple-choice questions built straight from your material.</p>
+      <div class="surface">
+        <label class="field-label">What should the quiz cover? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="qz-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="qz-folder"></select>
+        <label class="field-label">Number of questions</label>
+        <select id="qz-count"><option>5</option><option selected>10</option><option>15</option></select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="qz-generate">Generate quiz</button></div>
+        <div class="status-line" id="qz-status"></div>
+      </div>
+      <div class="hidden" id="qz-output">
+        <div class="save-bar">
+          <input class="txt-input" id="qz-title" placeholder="Quiz name (e.g. History Midterm Practice)">
+          <button class="btn-primary" id="qz-save">Save to folder</button>
+          <span class="save-note" id="qz-save-note"></span>
+        </div>
+        <div id="qz-questions"></div>
+        <div style="text-align:center; margin-top:8px;">
+          <button class="btn-primary" id="qz-check" onclick="quizCheck()">Check answers</button>
+          <div class="quiz-score hidden" id="qz-score"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDY GUIDE -->
+    <div class="view hidden" id="view-study">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Prepare for a test</span>
+      <h1 class="page-title">Build your <em>study guide.</em></h1>
+      <p class="page-sub">Pick the day of your exam and what you need to study — Notiq plans every day between now and then.</p>
+      <div class="surface">
+        <label class="field-label">When is your exam?</label>
+        <div class="exam-pick">
+          <div class="cal" id="sg-cal"></div>
+          <div class="exam-chosen" id="sg-chosen">No date selected yet.<br>Pick your exam day on the calendar.</div>
+        </div>
+        <label class="field-label">What do you need to study? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="sg-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="sg-folder"></select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="sg-generate">Generate study guide</button></div>
+        <div class="status-line" id="sg-status"></div>
+      </div>
+      <div class="hidden" id="sg-output">
+        <div class="save-bar">
+          <input class="txt-input" id="sg-title" placeholder="Guide name (e.g. Chem Final — June plan)">
+          <button class="btn-primary" id="sg-save">Save to folder</button>
+          <span class="save-note" id="sg-save-note"></span>
+        </div>
+        <div class="md-out" id="sg-md"></div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="view hidden" id="view-notes">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Detailed notes for any resource</span>
+      <h1 class="page-title">Upgrade your <em>notes.</em></h1>
+      <p class="page-sub">Select a resource and get clean, detailed, beautifully structured notes — better than what you started with.</p>
+      <div class="surface">
+        <label class="field-label">What should the notes cover? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="nt-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="nt-folder"></select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="nt-generate">Generate notes</button></div>
+        <div class="status-line" id="nt-status"></div>
+      </div>
+      <div class="hidden" id="nt-output">
+        <div class="save-bar">
+          <input class="txt-input" id="nt-title" placeholder="Notes name (e.g. Photosynthesis — clean notes)">
+          <button class="btn-primary" id="nt-save">Save to folder</button>
+          <span class="save-note" id="nt-save-note"></span>
+        </div>
+        <div class="md-out" id="nt-md"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============ SLIDE-IN PANELS ============ -->
+  <div class="scrim" id="scrim" onclick="closePanels()"></div>
+
+  <aside class="panel" id="panel-resources">
+    <div class="panel-head"><h2>Resources</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
+    <div class="panel-body">
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></svg></div>
+        <b>Click to upload</b> or drag &amp; drop<br>your notes or lecture slides — <b>PDF, TXT, MD</b>
+        <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display:none;">
+      </div>
+      <label class="field-label" style="margin-top:20px;">Or paste text directly</label>
+      <textarea class="paste-area" id="paste-area" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
+      <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+        <input class="txt-input" id="paste-name" placeholder="Name it (e.g. Bio Lecture 7)" style="flex:1; min-width:0;">
+        <button class="btn-ghost" id="paste-add">Add</button>
+      </div>
+      <div class="status-line" id="res-status"></div>
+      <label class="field-label" style="margin-top:26px;">Your resources</label>
+      <div id="res-list"></div>
+    </div>
+  </aside>
+
+  <aside class="panel" id="panel-folder">
+    <div class="panel-head"><h2>New folder</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
+    <div class="panel-body">
+      <p style="font-size:14px; color:var(--muted); line-height:1.55; margin-bottom:18px;">Folders keep your saved flashcards, quizzes, study guides and notes organized — by class, by unit, however you like.</p>
+      <label class="field-label">Folder name</label>
+      <input class="txt-input" id="new-folder-name" placeholder="e.g. AP Biology" style="width:100%;">
+      <div style="margin-top:18px;"><button class="btn-primary" id="create-folder-btn">Create folder</button></div>
+      <div class="status-line" id="folder-status"></div>
+      <label class="field-label" style="margin-top:26px;">Your folders</label>
+      <div id="panel-folder-list"></div>
+    </div>
+  </aside>
+
+  <aside class="panel" id="panel-account">
+    <div class="panel-head"><h2>Account</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
+    <div class="panel-body">
+      <div class="acct-row">
+        <div class="acct-avatar" id="acct-avatar">?</div>
+        <div>
+          <div class="acct-name" id="acct-name">—</div>
+          <div class="acct-email" id="acct-email">—</div>
+        </div>
+      </div>
+      <button class="btn-ghost" id="signout-btn">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- ============ SAVED ITEM VIEWER ============ -->
+  <div class="modal-scrim" id="item-modal" onclick="if(event.target===this) closeItemModal()">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div><span class="itype" id="im-type" style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--coral);background:rgba(30,58,110,.1);padding:3px 9px;border-radius:999px;margin-bottom:8px;"></span>
+        <h3 id="im-title"></h3></div>
+        <button class="panel-close" onclick="closeItemModal()">&#10005;</button>
+      </div>
+      <div id="im-body"></div>
+    </div>
+  </div>
+
+<script>
+// ================= SETUP =================
+const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+let user = null;
+let folders = [];
+let resources = [];
+let itemCounts = {};        // folder_id -> count
+let currentFolderId = null;
+
+// generated-but-not-yet-saved things
+let fcDeck = null, fcIndex = 0;
+let qzData = null;
+let sgResult = null;
+let ntResult = null;
+let sgExamDate = null;
+let calCursor = new Date();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+// ================= AUTH GUARD =================
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) { location.href = "signin.html"; return; }
+  user = data.session.user;
+
+  const name = user.user_metadata?.full_name || user.email.split("@")[0];
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  $("greeting").innerHTML = `Good ${part}, <em>${esc(name.split(" ")[0])}.</em>`;
+  const initial = name.trim().charAt(0).toUpperCase();
+  $("rb-account").textContent = initial;
+  $("acct-avatar").textContent = initial;
+  $("acct-name").textContent = name;
+  $("acct-email").textContent = user.email;
+
+  await Promise.all([loadFolders(), loadResources(), loadCounts()]);
+  renderAll();
+  buildCalendar();
+})();
+
+$("signout-btn").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  location.href = "index.html";
+});
+
+// ================= VIEWS & PANELS =================
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+  $("view-" + name).classList.remove("hidden");
+  $("rb-home").classList.toggle("active", name === "dashboard");
+  closePanels();
+  window.scrollTo({ top: 0 });
+}
+function openPanel(name) {
+  closePanels(true);
+  $("panel-" + name).classList.add("open");
+  $("scrim").classList.add("open");
+  $("rb-resources").classList.toggle("active", name === "resources");
+  $("rb-folder").classList.toggle("active", name === "folder");
+}
+function closePanels(keepScrim) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("open"));
+  if (!keepScrim) $("scrim").classList.remove("open");
+  $("rb-resources").classList.remove("active");
+  $("rb-folder").classList.remove("active");
+}
+
+function setStatus(id, msg, isError, spinning) {
+  const el = $(id);
+  if (!msg) { el.className = "status-line"; el.innerHTML = ""; return; }
+  el.className = "status-line show" + (isError ? " error" : "");
+  el.innerHTML = (spinning ? '<span class="spin"></span>' : "") + esc(msg);
+}
+
+// ================= DATA: FOLDERS =================
+async function loadFolders() {
+  const { data, error } = await sb.from("folders").select("*").order("created_at");
+  if (!error) folders = data || [];
+}
+async function loadCounts() {
+  const { data } = await sb.from("saved_items").select("id, folder_id");
+  itemCounts = {};
+  (data || []).forEach(i => { itemCounts[i.folder_id] = (itemCounts[i.folder_id] || 0) + 1; });
+}
+$("create-folder-btn").addEventListener("click", async () => {
+  const name = $("new-folder-name").value.trim();
+  if (!name) { setStatus("folder-status", "Give your folder a name first.", true); return; }
+  setStatus("folder-status", "Creating...", false, true);
+  const { error } = await sb.from("folders").insert({ name, user_id: user.id });
+  if (error) { setStatus("folder-status", error.message, true); return; }
+  $("new-folder-name").value = "";
+  setStatus("folder-status", `Folder "${name}" created.`);
+  await loadFolders();
+  renderAll();
+});
+
+// ================= DATA: RESOURCES =================
+async function loadResources() {
+  const { data, error } = await sb.from("resources").select("id, name, storage_path, created_at").order("created_at", { ascending: false });
+  if (!error) resources = data || [];
+}
+
+async function extractText(file) {
+  if (file.name.toLowerCase().endsWith(".pdf")) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = "";
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      text += tc.items.map(i => i.str).join(" ") + "\n\n";
+    }
+    return text.trim();
+  }
+  return (await file.text()).trim();
+}
+
+async function addResourceFile(file) {
+  setStatus("res-status", `Reading ${file.name}...`, false, true);
+  let text = "";
+  try { text = await extractText(file); }
+  catch (e) { setStatus("res-status", `Couldn't read ${file.name}: ${e.message}`, true); return; }
+  if (!text) { setStatus("res-status", `${file.name} seems to have no readable text.`, true); return; }
+
+  setStatus("res-status", `Uploading ${file.name}...`, false, true);
+  let storage_path = null;
+  const path = `${user.id}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
+  const { error: upErr } = await sb.storage.from(NOTIQ_CONFIG.STORAGE_BUCKET).upload(path, file);
+  if (!upErr) storage_path = path;
+
+  const { error } = await sb.from("resources").insert({ user_id: user.id, name: file.name, storage_path, content: text.slice(0, 200000) });
+  if (error) { setStatus("res-status", error.message, true); return; }
+  setStatus("res-status", `${file.name} added${upErr ? " (file kept as text only — storage upload failed: " + upErr.message + ")" : ""}.`);
+  await loadResources();
+  renderAll();
+}
+
+$("dropzone").addEventListener("click", () => $("file-input").click());
+$("file-input").addEventListener("change", async (e) => {
+  for (const f of e.target.files) await addResourceFile(f);
+  e.target.value = "";
+});
+["dragover", "dragleave", "drop"].forEach(evt =>
+  $("dropzone").addEventListener(evt, (e) => {
+    e.preventDefault();
+    $("dropzone").classList.toggle("drag", evt === "dragover");
+    if (evt === "drop") { for (const f of e.dataTransfer.files) addResourceFile(f); }
+  })
+);
+
+$("paste-add").addEventListener("click", async () => {
+  const text = $("paste-area").value.trim();
+  const name = $("paste-name").value.trim() || "Pasted notes " + new Date().toLocaleDateString();
+  if (!text) { setStatus("res-status", "Paste some text first.", true); return; }
+  setStatus("res-status", "Adding...", false, true);
+  const { error } = await sb.from("resources").insert({ user_id: user.id, name, content: text.slice(0, 200000) });
+  if (error) { setStatus("res-status", error.message, true); return; }
+  $("paste-area").value = ""; $("paste-name").value = "";
+  setStatus("res-status", `"${name}" added.`);
+  await loadResources();
+  renderAll();
+});
+
+async function deleteResource(id, path) {
+  if (!confirm("Delete this resource?")) return;
+  await sb.from("resources").delete().eq("id", id);
+  if (path) await sb.storage.from(NOTIQ_CONFIG.STORAGE_BUCKET).remove([path]);
+  await loadResources();
+  renderAll();
+}
+
+// ================= RENDERING =================
+function renderAll() {
+  renderFoldersRow();
+  renderPanelFolders();
+  renderResList();
+  ["fc", "qz", "sg", "nt"].forEach(p => { renderResPicker(p); renderFolderSelect(p); });
+}
+
+function renderFoldersRow() {
+  const row = $("folders-row");
+  let html = "";
+  folders.forEach(f => {
+    const n = itemCounts[f.id] || 0;
+    html += `<div class="folder-card" onclick="openFolder('${f.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/></svg>
+      <div class="fname">${esc(f.name)}</div>
+      <div class="fcount">${n} saved item${n === 1 ? "" : "s"}</div>
+    </div>`;
+  });
+  html += `<button class="folder-new" onclick="openPanel('folder')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+    New folder</button>`;
+  row.innerHTML = html;
+}
+
+function renderPanelFolders() {
+  const el = $("panel-folder-list");
+  el.innerHTML = folders.length
+    ? folders.map(f => `<div class="res-item"><div class="ric"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/></svg></div>
+        <div class="rmeta"><div class="rname">${esc(f.name)}</div><div class="rsub">${itemCounts[f.id] || 0} items</div></div></div>`).join("")
+    : `<p class="empty-hint">No folders yet.</p>`;
+}
+
+function renderResList() {
+  const el = $("res-list");
+  el.innerHTML = resources.length
+    ? resources.map(r => `<div class="res-item">
+        <div class="ric"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14.5 3v4.5H19"/></svg></div>
+        <div class="rmeta"><div class="rname">${esc(r.name)}</div><div class="rsub">${new Date(r.created_at).toLocaleDateString()}</div></div>
+        <button class="rdel" title="Delete" onclick="deleteResource('${r.id}', ${r.storage_path ? `'${r.storage_path}'` : "null"})">&#10005;</button>
+      </div>`).join("")
+    : `<p class="empty-hint">Nothing imported yet — upload notes or slides above.</p>`;
+}
+
+function renderResPicker(prefix) {
+  const el = $(prefix + "-resources");
+  el.innerHTML = resources.length
+    ? resources.map(r => `<label class="res-option"><input type="checkbox" value="${r.id}">
+        ${esc(r.name)}<span class="rdate">${new Date(r.created_at).toLocaleDateString()}</span></label>`).join("")
+    : `<p class="empty-hint">No resources yet. Open <b>Resources</b> in the sidebar (the upload icon) to import notes or lecture slides first.</p>`;
+}
+
+function renderFolderSelect(prefix) {
+  const el = $(prefix + "-folder");
+  el.innerHTML = folders.length
+    ? folders.map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join("")
+    : `<option value="">No folders yet — create one from the sidebar</option>`;
+}
+
+function pickedResources(prefix) {
+  const ids = [...document.querySelectorAll(`#${prefix}-resources input:checked`)].map(i => i.value);
+  return ids;
+}
+
+async function getMaterial(ids) {
+  const { data, error } = await sb.from("resources").select("name, content").in("id", ids);
+  if (error) throw error;
+  let material = (data || []).map(r => `--- SOURCE: ${r.name} ---\n${r.content}`).join("\n\n");
+  if (material.length > 22000) material = material.slice(0, 22000) + "\n[...material truncated...]";
+  return material;
+}
+
+// ================= GROQ =================
+async function groq(messages, jsonMode) {
+  const body = {
+    model: NOTIQ_CONFIG.GROQ_MODEL,
+    messages,
+    temperature: 0.4,
+    max_tokens: 6000,
+  };
+  if (jsonMode) body.response_format = { type: "json_object" };
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + NOTIQ_CONFIG.GROQ_API_KEY },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || "Groq API error (" + res.status + ")");
+  }
+  const json = await res.json();
+  return json.choices[0].message.content;
+}
+
+// ================= SAVE =================
+async function saveItem(type, title, content, folderId, noteId) {
+  if (!folderId) { $(noteId).textContent = "Create a folder first (sidebar folder icon)."; return; }
+  if (!title) { $(noteId).textContent = "Give it a name first."; return; }
+  $(noteId).textContent = "Saving...";
+  const { error } = await sb.from("saved_items").insert({ user_id: user.id, folder_id: folderId, type, title, content });
+  if (error) { $(noteId).textContent = error.message; return; }
+  $(noteId).textContent = "Saved ✓";
+  await loadCounts();
+  renderFoldersRow(); renderPanelFolders();
+}
+
+// ================= FLASHCARDS =================
+$("fc-generate").addEventListener("click", async () => {
+  const ids = pickedResources("fc");
+  if (!ids.length) { setStatus("fc-status", "Select at least one resource.", true); return; }
+  const n = $("fc-count").value;
+  $("fc-generate").disabled = true;
+  setStatus("fc-status", "Generating flashcards from your material...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, an expert study assistant. Create flashcards strictly from the student's material. Respond ONLY with valid JSON: {\"cards\":[{\"front\":\"question or term\",\"back\":\"clear, concise answer\"}]}" },
+      { role: "user", content: `Create exactly ${n} high-quality flashcards covering the most important concepts in this material. Fronts should be questions or key terms; backs should be clear answers a student can memorize.\n\n${material}` }
+    ], true);
+    fcDeck = JSON.parse(raw).cards;
+    fcIndex = 0;
+    renderFlashcard();
+    $("fc-output").classList.remove("hidden");
+    $("fc-save-note").textContent = "";
+    setStatus("fc-status", "");
+    $("fc-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("fc-status", e.message, true); }
+  $("fc-generate").disabled = false;
+});
+function renderFlashcard() {
+  $("fc-card").classList.remove("flipped");
+  $("fc-front").textContent = fcDeck[fcIndex].front;
+  $("fc-back").textContent = fcDeck[fcIndex].back;
+  $("fc-counter").textContent = (fcIndex + 1) + " / " + fcDeck.length;
+}
+function fcMove(d) {
+  if (!fcDeck) return;
+  fcIndex = (fcIndex + d + fcDeck.length) % fcDeck.length;
+  renderFlashcard();
+}
+$("fc-save").addEventListener("click", () =>
+  saveItem("flashcards", $("fc-title").value.trim(), { cards: fcDeck }, $("fc-folder").value, "fc-save-note"));
+
+// ================= QUIZ =================
+$("qz-generate").addEventListener("click", async () => {
+  const ids = pickedResources("qz");
+  if (!ids.length) { setStatus("qz-status", "Select at least one resource.", true); return; }
+  const n = $("qz-count").value;
+  $("qz-generate").disabled = true;
+  setStatus("qz-status", "Writing your quiz...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, an expert quiz writer. Create multiple-choice questions strictly from the student's material. Respond ONLY with valid JSON: {\"questions\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}]} where answer is the index of the correct option."},
+      { role: "user", content: `Create exactly ${n} multiple-choice questions (4 options each, one correct) testing understanding of this material. Mix difficulty. Include a short explanation for each answer.\n\n${material}` }
+    ], true);
+    qzData = JSON.parse(raw).questions;
+    renderQuiz();
+    $("qz-output").classList.remove("hidden");
+    $("qz-save-note").textContent = "";
+    setStatus("qz-status", "");
+    $("qz-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("qz-status", e.message, true); }
+  $("qz-generate").disabled = false;
+});
+function renderQuiz() {
+  $("qz-score").classList.add("hidden");
+  $("qz-check").classList.remove("hidden");
+  $("qz-questions").innerHTML = qzData.map((q, qi) => `
+    <div class="quiz-q" data-qi="${qi}">
+      <h4><span class="qnum">${qi + 1}.</span>${esc(q.q)}</h4>
+      ${q.options.map((o, oi) => `<button class="quiz-opt" data-oi="${oi}" onclick="quizPick(${qi},${oi},this)">${esc(o)}</button>`).join("")}
+      <div class="quiz-expl" id="expl-${qi}">${esc(q.explanation || "")}</div>
+    </div>`).join("");
+}
+const quizPicks = {};
+function quizPick(qi, oi, btn) {
+  quizPicks[qi] = oi;
+  btn.closest(".quiz-q").querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+function quizCheck() {
+  let score = 0;
+  qzData.forEach((q, qi) => {
+    const qEl = document.querySelector(`.quiz-q[data-qi="${qi}"]`);
+    qEl.querySelectorAll(".quiz-opt").forEach(b => {
+      const oi = +b.dataset.oi;
+      b.disabled = true;
+      if (oi === q.answer) b.classList.add("correct");
+      else if (quizPicks[qi] === oi) b.classList.add("wrong");
+    });
+    $("expl-" + qi).classList.add("show");
+    if (quizPicks[qi] === q.answer) score++;
+  });
+  const pct = Math.round(100 * score / qzData.length);
+  $("qz-score").textContent = `You scored ${score} / ${qzData.length} (${pct}%)`;
+  $("qz-score").classList.remove("hidden");
+  $("qz-check").classList.add("hidden");
+}
+$("qz-save").addEventListener("click", () =>
+  saveItem("quiz", $("qz-title").value.trim(), { questions: qzData }, $("qz-folder").value, "qz-save-note"));
+
+// ================= STUDY GUIDE =================
+function buildCalendar() {
+  const cal = $("sg-cal");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const first = new Date(y, m, 1);
+  const days = new Date(y, m + 1, 0).getDate();
+  const monthName = first.toLocaleString("en-US", { month: "long", year: "numeric" });
+  let html = `<div class="cal-head">
+      <button onclick="calNav(-1)">&lsaquo;</button>
+      <span class="cal-title">${monthName}</span>
+      <button onclick="calNav(1)">&rsaquo;</button>
+    </div><div class="cal-grid">`;
+  ["S","M","T","W","T","F","S"].forEach(d => html += `<div class="cal-dow">${d}</div>`);
+  for (let i = 0; i < first.getDay(); i++) html += "<div></div>";
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(y, m, d);
+    const iso = date.toISOString().slice(0, 10);
+    const past = date < today;
+    const cls = ["cal-day",
+      date.getTime() === today.getTime() ? "today" : "",
+      sgExamDate === iso ? "selected" : ""].join(" ");
+    html += `<button class="${cls}" ${past ? "disabled" : ""} onclick="pickExam('${iso}')">${d}</button>`;
+  }
+  cal.innerHTML = html + "</div>";
+}
+function calNav(d) { calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + d, 1); buildCalendar(); }
+function pickExam(iso) {
+  sgExamDate = iso;
+  buildCalendar();
+  const date = new Date(iso + "T00:00:00");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysLeft = Math.round((date - today) / 86400000);
+  $("sg-chosen").innerHTML = `Exam day:<br><b>${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</b><br>${daysLeft === 0 ? "That's today — good luck!" : daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " to prepare."}`;
+}
+$("sg-generate").addEventListener("click", async () => {
+  const ids = pickedResources("sg");
+  if (!sgExamDate) { setStatus("sg-status", "Pick your exam day on the calendar first.", true); return; }
+  if (!ids.length) { setStatus("sg-status", "Select at least one resource to study from.", true); return; }
+  $("sg-generate").disabled = true;
+  setStatus("sg-status", "Planning your days...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const exam = new Date(sgExamDate + "T00:00:00");
+    const daysLeft = Math.max(1, Math.round((exam - today) / 86400000));
+    const md = await groq([
+      { role: "system", content: "You are Notiq AI, an expert study coach. You write practical day-by-day study plans in clean Markdown. Base the plan strictly on the student's material." },
+      { role: "user", content: `Today is ${today.toDateString()}. My exam is on ${exam.toDateString()} — that's ${daysLeft} day(s) from now.\n\nCreate a day-by-day study guide from today until the exam. Format each day as a '## Day N — <Weekday, Month Day>' heading followed by 3-5 specific bullet points: what to study, what to review from previous days, and quick self-check tasks. Start with harder/foundational topics early, build in spaced review, and make the final day a light review + confidence day. Base every topic on this material:\n\n${material}` }
+    ], false);
+    sgResult = { markdown: md, exam_date: sgExamDate };
+    $("sg-md").innerHTML = marked.parse(md);
+    $("sg-output").classList.remove("hidden");
+    $("sg-save-note").textContent = "";
+    setStatus("sg-status", "");
+    $("sg-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("sg-status", e.message, true); }
+  $("sg-generate").disabled = false;
+});
+$("sg-save").addEventListener("click", () =>
+  saveItem("study_guide", $("sg-title").value.trim(), sgResult, $("sg-folder").value, "sg-save-note"));
+
+// ================= NOTES =================
+$("nt-generate").addEventListener("click", async () => {
+  const ids = pickedResources("nt");
+  if (!ids.length) { setStatus("nt-status", "Select at least one resource.", true); return; }
+  $("nt-generate").disabled = true;
+  setStatus("nt-status", "Rewriting your notes, nicely...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const md = await groq([
+      { role: "system", content: "You are Notiq AI, an expert note-taker. You transform raw student material into exceptionally clear, detailed, well-structured Markdown notes that are better than what the student started with." },
+      { role: "user", content: `Rewrite this material as premium study notes in Markdown. Requirements: a short title (# heading); logical ## sections with ### subsections; **bold** every key term the first time it appears; bullet points over walls of text; concrete examples where helpful; a comparison table if the material has things worth comparing; end with a '## Quick summary' section of the 5-8 most important takeaways. Be detailed — do not skip content from the material.\n\n${material}` }
+    ], false);
+    ntResult = { markdown: md };
+    $("nt-md").innerHTML = marked.parse(md);
+    $("nt-output").classList.remove("hidden");
+    $("nt-save-note").textContent = "";
+    setStatus("nt-status", "");
+    $("nt-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("nt-status", e.message, true); }
+  $("nt-generate").disabled = false;
+});
+$("nt-save").addEventListener("click", () =>
+  saveItem("notes", $("nt-title").value.trim(), ntResult, $("nt-folder").value, "nt-save-note"));
+
+// ================= FOLDER VIEW & ITEM VIEWER =================
+const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes" };
+
+async function openFolder(id) {
+  currentFolderId = id;
+  const f = folders.find(x => x.id === id);
+  $("folder-title").innerHTML = `<em>${esc(f?.name || "Folder")}</em>`;
+  showView("folder");
+  $("folder-items").innerHTML = `<p class="empty-hint">Loading...</p>`;
+  const { data, error } = await sb.from("saved_items").select("id, type, title, created_at").eq("folder_id", id).order("created_at", { ascending: false });
+  if (error) { $("folder-items").innerHTML = `<p class="empty-hint">${esc(error.message)}</p>`; return; }
+  $("folder-sub").textContent = `${data.length} saved item${data.length === 1 ? "" : "s"}`;
+  $("folder-items").innerHTML = data.length
+    ? data.map(i => `<div class="item-card" onclick="openItem('${i.id}')">
+        <button class="idel" title="Delete" onclick="event.stopPropagation(); deleteItem('${i.id}')">&#10005;</button>
+        <span class="itype">${TYPE_LABEL[i.type] || i.type}</span>
+        <h4>${esc(i.title)}</h4>
+        <div class="idate">${new Date(i.created_at).toLocaleDateString()}</div>
+      </div>`).join("")
+    : `<p class="empty-hint">Nothing saved here yet. Generate flashcards, a quiz, a study guide or notes — then hit <b>Save to folder</b>.</p>`;
+}
+
+async function deleteItem(id) {
+  if (!confirm("Delete this saved item?")) return;
+  await sb.from("saved_items").delete().eq("id", id);
+  await loadCounts();
+  renderFoldersRow(); renderPanelFolders();
+  openFolder(currentFolderId);
+}
+
+async function openItem(id) {
+  const { data, error } = await sb.from("saved_items").select("*").eq("id", id).single();
+  if (error) return;
+  $("im-type").textContent = TYPE_LABEL[data.type] || data.type;
+  $("im-title").textContent = data.title;
+  const c = data.content || {};
+  let html = "";
+  if (data.type === "flashcards") {
+    html = (c.cards || []).map((card, i) => `<div class="qa-pair">
+        <div class="qside">${i + 1}. ${esc(card.front)}</div>
+        <div class="aside">${esc(card.back)}</div>
+      </div>`).join("");
+  } else if (data.type === "quiz") {
+    html = (c.questions || []).map((q, i) => `<div class="qa-pair">
+        <div class="qside">${i + 1}. ${esc(q.q)}</div>
+        <div class="aside">${q.options.map((o, oi) => (oi === q.answer ? "&#10003; <b style='color:var(--coral)'>" + esc(o) + "</b>" : esc(o))).join("<br>")}
+        ${q.explanation ? "<br><br><i>" + esc(q.explanation) + "</i>" : ""}</div>
+      </div>`).join("");
+  } else {
+    html = `<div class="md-out" style="box-shadow:none; border:0; padding:6px 2px;">${marked.parse(c.markdown || "")}</div>`;
+  }
+  $("im-body").innerHTML = html;
+  $("item-modal").classList.add("open");
+}
+function closeItemModal() { $("item-modal").classList.remove("open"); }
+</script>
+</body>
+</html>
