@@ -56,8 +56,9 @@
   .rail .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%;
     background: radial-gradient(circle,#fff,transparent 70%); }
   .rail .orb::before {
-    content: "N"; position: absolute; right: 5px; bottom: 1px; z-index: 1;
-    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 17px; line-height: 1.1;
+    content: "N"; position: absolute; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 19px;
     color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
   }
   .rail-btn {
