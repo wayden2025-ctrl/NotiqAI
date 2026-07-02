@@ -150,8 +150,8 @@
   .hero-orb .t1 { width: 7px; height: 7px; top: 8%; right: 4%; animation: twinkle 3s ease-in-out infinite; }
   .hero-orb .t2 { width: 5px; height: 5px; bottom: 10%; left: 0; background: var(--coral); animation: twinkle 3.6s ease-in-out .5s infinite; }
 
-  .bento { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-areas: "study study fc" "study study qz" "nt nt nt"; gap: 16px; }
-  .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; }
+  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "tip tip fc qz" "tip tip study nt"; gap: 16px; }
+  .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; }
   .bento-card {
     border-radius: 20px; padding: 26px; cursor: pointer; position: relative; overflow: hidden;
     border: 1px solid var(--line); background: linear-gradient(160deg, #ffffff, #f2f5fb);
@@ -165,15 +165,26 @@
   .bento-go::after { content: "→"; transition: transform .18s ease; }
   .bento-card:hover .bento-go::after { transform: translateX(5px); }
 
-  .b-study { background: linear-gradient(135deg, #2e5490, #163264); border: 0; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; }
-  .b-study h3 { color: #fff; font-size: 38px; }
-  .b-study p { color: rgba(255,255,255,.78); }
-  .b-study .bento-go { color: #b8cceb; }
-  .b-study .sheen { position: absolute; top: -30%; left: -45%; width: 52%; height: 160%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); transform: skewX(-18deg); animation: sheen 7s ease-in-out infinite; }
-  .mini-cal { position: absolute; top: 24px; right: 26px; display: grid; grid-template-columns: repeat(7, 13px); gap: 6px; }
-  .mini-cal i { width: 13px; height: 13px; border-radius: 4px; background: rgba(255,255,255,.18); }
-  .mini-cal i.hit { background: #ef5330; box-shadow: 0 0 10px 2px rgba(239,83,48,.55); }
-  .mini-cal i.done { background: rgba(184,204,235,.65); }
+  .b-tip { background: linear-gradient(135deg, #2e5490, #163264); border: 0; min-height: 300px; display: flex; flex-direction: column; justify-content: center; padding: 32px 36px; cursor: default; }
+  .b-tip:hover { transform: none; box-shadow: 0 20px 40px -22px rgba(60,40,30,.32); }
+  .b-tip .sheen { position: absolute; top: -30%; left: -45%; width: 52%; height: 160%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); transform: skewX(-18deg); animation: sheen 7s ease-in-out infinite; }
+  .tip-ghost {
+    position: absolute; top: -30px; right: 8px; pointer-events: none; user-select: none;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 200px; line-height: 1;
+    color: rgba(255,255,255,.07);
+  }
+  .tip-eyebrow { font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: #b8cceb; font-weight: 700; position: relative; z-index: 1; }
+  .tip-title {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; color: #fff;
+    font-size: clamp(30px, 3.2vw, 44px); letter-spacing: -1.2px; line-height: .95;
+    margin: 2px 0 14px; position: relative; z-index: 1;
+  }
+  .tip-body { color: rgba(255,255,255,.85); font-size: 15.5px; line-height: 1.62; max-width: 50ch; position: relative; z-index: 1; }
+  .tip-foot { margin-top: 20px; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(184,204,235,.6); font-weight: 700; position: relative; z-index: 1; }
+  .mini-cal { position: absolute; top: 20px; right: 20px; display: grid; grid-template-columns: repeat(7, 11px); gap: 5px; }
+  .mini-cal i { width: 11px; height: 11px; border-radius: 3.5px; background: rgba(30,58,110,.10); }
+  .mini-cal i.hit { background: #ef5330; box-shadow: 0 0 8px 2px rgba(239,83,48,.45); }
+  .mini-cal i.done { background: rgba(74,124,201,.55); }
 
   .mini-deck { position: absolute; top: 20px; right: 22px; width: 74px; height: 52px; }
   .mini-deck i { position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(160deg, #fff, #eef2f9); border: 1px solid var(--line); box-shadow: 0 8px 16px -8px rgba(22,50,100,.4); transition: transform .22s ease; }
@@ -188,9 +199,8 @@
   .mini-opts i.pick { background: var(--coral); position: relative; }
   .mini-opts i.pick::after { content: "✓"; position: absolute; right: -18px; top: -3px; color: var(--coral); font-size: 12px; font-weight: 800; }
 
-  .b-nt { display: flex; align-items: center; justify-content: space-between; gap: 26px; }
-  .mini-lines { display: flex; flex-direction: column; gap: 8px; flex: none; width: 200px; }
-  .mini-lines i { height: 8px; border-radius: 4px; background: rgba(36,29,24,.12); }
+  .mini-lines { position: absolute; top: 22px; right: 22px; display: flex; flex-direction: column; gap: 6px; width: 72px; }
+  .mini-lines i { height: 7px; border-radius: 4px; background: rgba(36,29,24,.12); }
   .mini-lines i:nth-child(1) { width: 88%; }
   .mini-lines i:nth-child(2) { width: 100%; background: linear-gradient(90deg, #2a4d8a, #4a7cc9); opacity: .8; }
   .mini-lines i:nth-child(3) { width: 72%; }
@@ -199,8 +209,7 @@
   @media (max-width: 940px) {
     .dash-hero { flex-direction: column-reverse; align-items: flex-start; }
     .hero-orb { align-self: center; }
-    .bento { grid-template-columns: 1fr; grid-template-areas: "study" "fc" "qz" "nt"; }
-    .b-nt { flex-direction: column; align-items: flex-start; }
+    .bento { grid-template-columns: 1fr; grid-template-areas: "tip" "fc" "qz" "study" "nt"; }
   }
 
   /* ============ ACTIVITY CHART ============ */
@@ -576,16 +585,13 @@
       </div>
 
       <div class="bento">
-        <div class="bento-card b-study" onclick="showView('study')">
+        <div class="bento-card b-tip">
           <div class="sheen"></div>
-          <div class="mini-cal">
-            <i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i><i></i>
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            <i></i><i></i><i></i><i></i><i class="hit"></i><i></i><i></i>
-          </div>
-          <h3>Study guide</h3>
-          <p>Tell Notiq when your exam is. It plans every day between now and then — what to learn, what to review, when to breathe.</p>
-          <span class="bento-go">Plan my exam</span>
+          <span class="tip-ghost" id="tip-ghost">01</span>
+          <span class="tip-eyebrow">Tip of the day</span>
+          <h3 class="tip-title" id="tip-title">Test yourself first.</h3>
+          <p class="tip-body" id="tip-body"></p>
+          <span class="tip-foot" id="tip-foot"></span>
         </div>
         <div class="bento-card b-fc" onclick="showView('flashcards')">
           <div class="mini-deck"><i></i><i></i><i></i></div>
@@ -599,13 +605,20 @@
           <p>Prove you know it — before the exam asks you to.</p>
           <span class="bento-go">Test me</span>
         </div>
-        <div class="bento-card b-nt" onclick="showView('notes')">
-          <div>
-            <h3>Notes</h3>
-            <p>Turn any resource into beautifully formatted, detailed notes — better than the ones you took in class.</p>
-            <span class="bento-go">Upgrade my notes</span>
+        <div class="bento-card b-study" onclick="showView('study')">
+          <div class="mini-cal">
+            <i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i class="hit"></i><i></i><i></i>
           </div>
+          <h3>Study guide</h3>
+          <p>Pick your exam day — Notiq plans every day until then.</p>
+          <span class="bento-go">Plan my exam</span>
+        </div>
+        <div class="bento-card b-nt" onclick="showView('notes')">
           <div class="mini-lines"><i></i><i></i><i></i><i></i></div>
+          <h3>Notes</h3>
+          <p>Any resource, rewritten into beautiful detailed notes.</p>
+          <span class="bento-go">Upgrade my notes</span>
         </div>
       </div>
 
@@ -876,6 +889,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   renderAll();
   buildCalendar();
   pickQuote();
+  renderTip();
   loadExamCountdown();
   renderChart();
   renderStreak();
@@ -960,6 +974,32 @@ const QUOTES = [
 ];
 function pickQuote() {
   $("dash-quote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+}
+
+const TIPS = [
+  { t: "Test yourself first.", b: "Don't reread your notes — close them and try to recall. The struggle to remember is exactly what makes it stick." },
+  { t: "Space it out.", b: "Three 20-minute sessions across three days beat one 3-hour cram. Your brain files things away while you sleep." },
+  { t: "Teach it out loud.", b: "Explain the topic like you're teaching a friend. Every gap you hear yourself skip is your real to-do list." },
+  { t: "Hardest thing first.", b: "Start each session with the topic you've been avoiding. Focus is strongest in the first ten minutes — spend it where it hurts." },
+  { t: "Sleep is studying.", b: "The night before an exam, sleeping beats cramming. Memory consolidates while you're out cold." },
+  { t: "Mix it up.", b: "Don't grind 30 questions of one type. Shuffle topics — it feels harder because it's actually working." },
+  { t: "Read it twice.", b: "Half of all 'careless mistakes' are perfect answers to a question that was never asked. Read the question again." },
+  { t: "Never leave a blank.", b: "An educated guess earns more than an empty line ever will. Answer everything." },
+  { t: "Skip and return.", b: "Stuck for 90 seconds? Star it and move on. Collect the easy points first — pride can wait." },
+  { t: "Past papers beat notes.", b: "One practice exam under time pressure teaches more than an afternoon of highlighting ever could." },
+  { t: "Fuel like an athlete.", b: "Your brain runs on food, water and oxygen. Eat before, sip during, breathe always — a test is a sport." },
+  { t: "Arrive early. Breathe.", b: "Five slow breaths before you open the paper calms your nerves and buys back points you'd lose to panic." },
+  { t: "Watch the clock, not people.", b: "Someone finishing early means nothing. Fast doesn't grade better — thorough does." },
+  { t: "Evidence beats instinct.", b: "'Always keep your first answer' is superstition. If you find real proof you were wrong, change it." },
+  { t: "Study your mistakes.", b: "Wrong answers are a map of exactly where your marks are hiding. Review those, not the ones you aced." },
+];
+function renderTip() {
+  const dayNum = Math.floor(Date.now() / 86400000);
+  const idx = (dayNum * 7) % TIPS.length;   // shuffled order, changes daily
+  $("tip-ghost").textContent = String(idx + 1).padStart(2, "0");
+  $("tip-title").textContent = TIPS[idx].t;
+  $("tip-body").textContent = TIPS[idx].b;
+  $("tip-foot").textContent = `Tip ${idx + 1} of ${TIPS.length} — a new one lands tomorrow`;
 }
 function updateDashStats() {
   $("stat-resources").textContent = resources.length;
