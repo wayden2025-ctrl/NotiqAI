@@ -229,6 +229,22 @@
   }
   .fc-nav { display: flex; align-items: center; gap: 16px; }
   .fc-counter { font-size: 14px; color: var(--muted); font-weight: 600; min-width: 70px; text-align: center; }
+  .fc-card { position: relative; }
+  .fc-diff {
+    position: absolute; top: 14px; right: 16px; z-index: 2; pointer-events: none;
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 11px; border-radius: 999px;
+  }
+  .fc-diff.easy { background: rgba(74,124,201,.16); color: #2a4d8a; }
+  .fc-diff.medium { background: rgba(30,58,110,.22); color: #1e3a6e; }
+  .fc-diff.hard { background: linear-gradient(180deg, #2a4d8a, #163264); color: #fff; }
+  .qa-pair { position: relative; }
+  .qa-edit {
+    position: absolute; top: 10px; right: 10px; border: 0; background: transparent;
+    color: var(--muted); cursor: pointer; font-size: 14px; padding: 5px 7px; border-radius: 7px;
+  }
+  .qa-edit:hover { color: var(--coral); background: rgba(30,58,110,.08); }
+  .qa-diff { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); margin-left: 8px; }
 
   /* Quiz UI */
   .quiz-q {
@@ -488,6 +504,7 @@
         </div>
         <div class="fc-stage">
           <div class="fc-card" id="fc-card" onclick="this.classList.toggle('flipped')">
+            <span class="fc-diff" id="fc-diff"></span>
             <div class="fc-inner">
               <div class="fc-face front" id="fc-front"></div>
               <div class="fc-face back" id="fc-back"></div>
@@ -497,8 +514,21 @@
             <button class="btn-ghost" onclick="fcMove(-1)">&larr; Prev</button>
             <span class="fc-counter" id="fc-counter">1 / 15</span>
             <button class="btn-ghost" onclick="fcMove(1)">Next &rarr;</button>
+            <button class="btn-ghost" onclick="fcEditToggle()">&#9998; Edit card</button>
           </div>
-          <p style="font-size:13px;color:var(--muted);">Click the card to flip it.</p>
+          <p style="font-size:13px;color:var(--muted);">Click the card to flip it. Cards get harder as you go.</p>
+          <div class="surface hidden" id="fc-edit-panel" style="width:min(560px,100%); margin-bottom:0;">
+            <label class="field-label">Front</label>
+            <textarea class="paste-area" id="fc-edit-front" style="min-height:70px;"></textarea>
+            <label class="field-label">Back</label>
+            <textarea class="paste-area" id="fc-edit-back" style="min-height:70px;"></textarea>
+            <label class="field-label">Difficulty</label>
+            <select id="fc-edit-diff"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+            <div style="margin-top:16px; display:flex; gap:10px;">
+              <button class="btn-primary" onclick="fcEditSave()">Save changes</button>
+              <button class="btn-ghost" onclick="fcEditToggle(true)">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -949,10 +979,13 @@ $("fc-generate").addEventListener("click", async () => {
   try {
     const material = await getMaterial(ids);
     const raw = await groq([
-      { role: "system", content: "You are Notiq AI, an expert study assistant. Create flashcards strictly from the student's material. Respond ONLY with valid JSON: {\"cards\":[{\"front\":\"question or term\",\"back\":\"clear, concise answer\"}]}" },
-      { role: "user", content: `Create exactly ${n} high-quality flashcards covering the most important concepts in this material. Fronts should be questions or key terms; backs should be clear answers a student can memorize.\n\n${material}` }
+      { role: "system", content: "You are Notiq AI, an expert study assistant. Create flashcards strictly from the student's material. Respond ONLY with valid JSON: {\"cards\":[{\"front\":\"question or term\",\"back\":\"clear, concise answer\",\"difficulty\":\"easy|medium|hard\"}]}" },
+      { role: "user", content: `Create exactly ${n} high-quality flashcards covering the most important concepts in this material, ordered from easiest to hardest so the deck ramps up in difficulty. Start with basic definitions and recognition (easy), move to understanding and connections (medium), and finish with application, analysis and tricky distinctions (hard). Roughly a third of each. Fronts should be questions or key terms; backs should be clear answers a student can memorize. Label each card's difficulty.\n\n${material}` }
     ], true);
-    fcDeck = JSON.parse(raw).cards;
+    const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 };
+    fcDeck = JSON.parse(raw).cards
+      .map(c => ({ ...c, difficulty: DIFF_ORDER[c.difficulty] !== undefined ? c.difficulty : "medium" }))
+      .sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
     fcIndex = 0;
     renderFlashcard();
     $("fc-output").classList.remove("hidden");
@@ -967,10 +1000,30 @@ function renderFlashcard() {
   $("fc-front").textContent = fcDeck[fcIndex].front;
   $("fc-back").textContent = fcDeck[fcIndex].back;
   $("fc-counter").textContent = (fcIndex + 1) + " / " + fcDeck.length;
+  const d = fcDeck[fcIndex].difficulty;
+  const badge = $("fc-diff");
+  if (d) { badge.textContent = d; badge.className = "fc-diff " + d; badge.style.display = ""; }
+  else badge.style.display = "none";
 }
 function fcMove(d) {
   if (!fcDeck) return;
+  $("fc-edit-panel").classList.add("hidden");
   fcIndex = (fcIndex + d + fcDeck.length) % fcDeck.length;
+  renderFlashcard();
+}
+function fcEditToggle(cancel) {
+  const panel = $("fc-edit-panel");
+  if (cancel || !panel.classList.contains("hidden")) { panel.classList.add("hidden"); return; }
+  $("fc-edit-front").value = fcDeck[fcIndex].front;
+  $("fc-edit-back").value = fcDeck[fcIndex].back;
+  $("fc-edit-diff").value = fcDeck[fcIndex].difficulty || "medium";
+  panel.classList.remove("hidden");
+}
+function fcEditSave() {
+  fcDeck[fcIndex].front = $("fc-edit-front").value.trim() || fcDeck[fcIndex].front;
+  fcDeck[fcIndex].back = $("fc-edit-back").value.trim() || fcDeck[fcIndex].back;
+  fcDeck[fcIndex].difficulty = $("fc-edit-diff").value;
+  $("fc-edit-panel").classList.add("hidden");
   renderFlashcard();
 }
 $("fc-save").addEventListener("click", () =>
@@ -1151,18 +1204,18 @@ async function deleteItem(id) {
   openFolder(currentFolderId);
 }
 
+let curItem = null;
+
 async function openItem(id) {
   const { data, error } = await sb.from("saved_items").select("*").eq("id", id).single();
   if (error) return;
+  curItem = data;
   $("im-type").textContent = TYPE_LABEL[data.type] || data.type;
   $("im-title").textContent = data.title;
   const c = data.content || {};
   let html = "";
   if (data.type === "flashcards") {
-    html = (c.cards || []).map((card, i) => `<div class="qa-pair">
-        <div class="qside">${i + 1}. ${esc(card.front)}</div>
-        <div class="aside">${esc(card.back)}</div>
-      </div>`).join("");
+    html = renderSavedCards();
   } else if (data.type === "quiz") {
     html = (c.questions || []).map((q, i) => `<div class="qa-pair">
         <div class="qside">${i + 1}. ${esc(q.q)}</div>
@@ -1176,6 +1229,43 @@ async function openItem(id) {
   $("item-modal").classList.add("open");
 }
 function closeItemModal() { $("item-modal").classList.remove("open"); }
+
+// ---- editing saved flashcard decks ----
+function renderSavedCards() {
+  const cards = curItem.content.cards || [];
+  return cards.map((card, i) => `<div class="qa-pair" id="qa-${i}">
+      <button class="qa-edit" title="Edit this card" onclick="editSavedCard(${i})">&#9998;</button>
+      <div class="qside">${i + 1}. ${esc(card.front)}${card.difficulty ? `<span class="qa-diff">${esc(card.difficulty)}</span>` : ""}</div>
+      <div class="aside">${esc(card.back)}</div>
+    </div>`).join("");
+}
+function editSavedCard(i) {
+  const card = curItem.content.cards[i];
+  $("qa-" + i).innerHTML = `
+    <label class="field-label" style="margin-top:0;">Front</label>
+    <textarea class="paste-area" id="qe-front-${i}" style="min-height:60px;">${esc(card.front)}</textarea>
+    <label class="field-label">Back</label>
+    <textarea class="paste-area" id="qe-back-${i}" style="min-height:60px;">${esc(card.back)}</textarea>
+    <label class="field-label">Difficulty</label>
+    <select id="qe-diff-${i}">
+      <option value="easy"${card.difficulty === "easy" ? " selected" : ""}>Easy</option>
+      <option value="medium"${!card.difficulty || card.difficulty === "medium" ? " selected" : ""}>Medium</option>
+      <option value="hard"${card.difficulty === "hard" ? " selected" : ""}>Hard</option>
+    </select>
+    <div style="margin-top:14px; display:flex; gap:10px;">
+      <button class="btn-primary" onclick="saveSavedCard(${i})">Save</button>
+      <button class="btn-ghost" onclick="$('im-body').innerHTML = renderSavedCards()">Cancel</button>
+    </div>`;
+}
+async function saveSavedCard(i) {
+  const card = curItem.content.cards[i];
+  card.front = $(`qe-front-${i}`).value.trim() || card.front;
+  card.back = $(`qe-back-${i}`).value.trim() || card.back;
+  card.difficulty = $(`qe-diff-${i}`).value;
+  const { error } = await sb.from("saved_items").update({ content: curItem.content }).eq("id", curItem.id);
+  if (error) { alert("Couldn't save: " + error.message); return; }
+  $("im-body").innerHTML = renderSavedCards();
+}
 </script>
 </body>
 </html>
