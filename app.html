@@ -766,6 +766,12 @@
         <b>Click to upload</b> or drag &amp; drop<br>your notes or lecture slides — <b>PDF, TXT, MD</b>
         <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display:none;">
       </div>
+      <label class="field-label" style="margin-top:20px;">Or import a YouTube video</label>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input class="txt-input" id="yt-url" placeholder="Paste a YouTube link" style="flex:1; min-width:0;">
+        <button class="btn-ghost" id="yt-add">Add</button>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin-top:6px;">Works for videos with captions/subtitles — Notiq reads the transcript.</p>
       <label class="field-label" style="margin-top:20px;">Or paste text directly</label>
       <textarea class="paste-area" id="paste-area" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
       <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
@@ -1072,6 +1078,27 @@ $("file-input").addEventListener("change", async (e) => {
     if (evt === "drop") { for (const f of e.dataTransfer.files) addResourceFile(f); }
   })
 );
+
+$("yt-add").addEventListener("click", async () => {
+  const url = $("yt-url").value.trim();
+  if (!url) { setStatus("res-status", "Paste a YouTube link first.", true); return; }
+  setStatus("res-status", "Grabbing the video transcript...", false, true);
+  try {
+    const r = await fetch("/api/youtube?url=" + encodeURIComponent(url));
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "Couldn't read that video.");
+    const { error } = await sb.from("resources").insert({
+      user_id: user.id,
+      name: "▶ " + (j.title || "YouTube video"),
+      content: j.text.slice(0, 200000),
+    });
+    if (error) throw error;
+    $("yt-url").value = "";
+    setStatus("res-status", `Transcript added: "${j.title || "YouTube video"}".`);
+    await loadResources();
+    renderAll();
+  } catch (e) { setStatus("res-status", e.message, true); }
+});
 
 $("paste-add").addEventListener("click", async () => {
   const text = $("paste-area").value.trim();
