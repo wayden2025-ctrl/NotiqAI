@@ -26,6 +26,8 @@
     --card1: #ffffff; --card2: #f2f5fb; --field: #ffffff;
     --surface: rgba(255,255,255,.72); --panel: rgba(252,251,249,.98); --rail: rgba(255,255,255,.62);
     --bgA: #f0f4fa; --bgB: #e8eef8; --bgC1: #f9f6f2; --bgC2: #f4efe9;
+    --orb1: #b8cceb; --orb2: #3a6aaf; --orb4: #0d1f42; --orbBtn: #122650;
+    --tipbg: #241d18; --tipfg: #ffffff;
     --rail-w: 68px;
   }
   html { background: var(--bgC1, #f8f5f1); }
@@ -54,7 +56,7 @@
   }
   .rail .orb {
     width: 32px; height: 32px; border-radius: 10px; position: relative; overflow: hidden; cursor: pointer;
-    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
     box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55), 0 6px 16px -4px color-mix(in srgb, var(--coral) 60%, transparent);
     margin-bottom: 16px; flex: none;
   }
@@ -77,9 +79,10 @@
   .rail-btn svg { width: 21px; height: 21px; }
   .rail-btn .tip {
     position: absolute; left: 54px; top: 50%; transform: translateY(-50%);
-    background: var(--ink); color: #fff; font-size: 12px; font-weight: 600;
+    background: var(--tipbg); color: var(--tipfg); font-size: 12px; font-weight: 600;
     padding: 5px 10px; border-radius: 8px; white-space: nowrap;
-    opacity: 0; pointer-events: none; transition: opacity .15s;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 900;
   }
   .rail-btn:hover .tip { opacity: 1; }
   .rail .spacer { flex: 1; }
@@ -153,7 +156,7 @@
   .hero-orb .glow { position: absolute; inset: -18%; border-radius: 50%; background: radial-gradient(circle, var(--coral), transparent 62%); filter: blur(30px); opacity: .5; animation: pulseGlow 7s ease-in-out infinite; }
   .hero-orb .planet {
     position: absolute; left: 50%; top: 50%; width: 128px; height: 128px; border-radius: 50%; transform: translate(-50%,-50%);
-    background: radial-gradient(circle at 33% 27%, #fff 0%, #c8d8f0 14%, #3a6aaf 44%, #1e3a6e 68%, #0d1f42 100%);
+    background: radial-gradient(circle at 33% 27%, #fff 0%, var(--orb1) 14%, var(--orb2) 44%, var(--coral) 68%, var(--orb4) 100%);
     box-shadow: inset -16px -18px 32px rgba(10,24,50,.55), inset 10px 12px 22px rgba(255,255,255,.5), 0 30px 56px -20px color-mix(in srgb, var(--g2) 60%, transparent);
   }
   .hero-orb .ring { position: absolute; left: 50%; top: 50%; width: 182px; height: 182px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--coral) 32%, transparent); transform: translate(-50%,-50%) rotateX(72deg); animation: ringA 14s linear infinite; }

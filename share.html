@@ -16,6 +16,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264;
+    --orb1: #b8cceb; --orbBtn: #122650;
     --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
     --line: rgba(36,29,24,.10);
   }
@@ -31,7 +32,7 @@
   .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); margin-bottom: 34px; }
   .orb {
     width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
-    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
     box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
   }
   .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%; background:radial-gradient(circle,#fff,transparent 70%); }
