@@ -524,8 +524,10 @@
   .dropzone .dz-icon { color: var(--amber); margin-bottom: 8px; }
   textarea.paste-area {
     width: 100%; min-height: 110px; resize: vertical; font-family: inherit; font-size: 14px;
-    padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; outline: none; background: var(--field);
+    padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; outline: none;
+    background: var(--field); color: var(--ink);
   }
+  textarea.paste-area::placeholder, .txt-input::placeholder { color: var(--muted); opacity: .8; }
   textarea.paste-area:focus { border-color: var(--amber); box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber) 14%, transparent); }
   .res-item {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 10px;
