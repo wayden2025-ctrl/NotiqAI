@@ -118,6 +118,23 @@ The pages must be served over http (not double-clicked) for auth to behave. Easi
 - `app.html` — dashboard, sidebar, folders, resources, and all 4 generators
 - `config.js` — the only file you edit
 
+## Step 7 — Activity table (chart + streak on the dashboard)
+
+Run this in SQL Editor to power the study-activity bar chart and the daily streak:
+
+```sql
+create table activity (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  day date not null default current_date,
+  action text not null,   -- 'visit' | 'generate' | 'save'
+  created_at timestamptz default now()
+);
+alter table activity enable row level security;
+create policy "own activity" on activity
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
 ## ⚠️ One honest warning
 
 The Groq key lives in `config.js`, which the browser can see. For a personal/school project that's fine, but if you share the site publicly, someone could find the key and use your quota. When you're ready to go public, the fix is a Supabase **Edge Function** that holds the key server-side — ask me and I'll build it.
