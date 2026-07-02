@@ -97,6 +97,37 @@ async function viaWatchPage(videoId) {
   return { title, text };
 }
 
+// Optional: Supadata transcript API (set SUPADATA_KEY in Vercel env vars).
+// Sidesteps YouTube's bot-blocking of cloud servers entirely.
+async function viaSupadata(videoId) {
+  const key = process.env.SUPADATA_KEY;
+  if (!key) throw new Error("supadata not configured");
+  const res = await fetch(
+    "https://api.supadata.ai/v1/youtube/transcript?text=true&url=" +
+      encodeURIComponent("https://www.youtube.com/watch?v=" + videoId),
+    { headers: { "x-api-key": key } }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error("supadata " + res.status + (err.message ? " " + err.message : ""));
+  }
+  const data = await res.json();
+  let text = "";
+  if (typeof data.content === "string") text = data.content;
+  else if (Array.isArray(data.content)) text = data.content.map(c => c.text || "").join(" ");
+  text = text.replace(/\s+/g, " ").trim();
+  if (!text) throw new Error("supadata EMPTY_TRANSCRIPT");
+
+  let title = "YouTube video";
+  try {
+    const meta = await (await fetch("https://api.supadata.ai/v1/youtube/video?id=" + videoId, {
+      headers: { "x-api-key": key },
+    })).json();
+    if (meta && meta.title) title = meta.title;
+  } catch (e) {}
+  return { title, text };
+}
+
 module.exports = async (req, res) => {
   try {
     const url = (req.query && req.query.url) || "";
@@ -108,6 +139,10 @@ module.exports = async (req, res) => {
     const videoId = idMatch[1];
 
     const errors = [];
+    if (process.env.SUPADATA_KEY) {
+      try { res.status(200).json(await viaSupadata(videoId)); return; }
+      catch (e) { errors.push(e.message); }
+    }
     for (const cfg of CLIENTS) {
       try { res.status(200).json(await viaInnertube(videoId, cfg)); return; }
       catch (e) { errors.push(e.message); }
