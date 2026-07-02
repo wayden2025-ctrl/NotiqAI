@@ -11,9 +11,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="config.js"></script>
+<script src="theme.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
+    --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264;
     --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
     --line: rgba(36,29,24,.10);
   }
@@ -46,12 +48,12 @@
   .sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
   .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
   .item-card {
-    background: linear-gradient(160deg, #ffffff, #f2f5fb); border: 1px solid var(--line);
+    background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line);
     border-radius: 14px; padding: 18px; cursor: pointer;
     box-shadow: 0 14px 28px -18px rgba(60,40,30,.3); transition: transform .14s;
   }
   .item-card:hover { transform: translateY(-3px); }
-  .itype { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); background: rgba(30,58,110,.1); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+  .itype { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); background: color-mix(in srgb, var(--coral) 10%, transparent); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
   .item-card h4 { font-size: 15px; margin-bottom: 5px; }
   .idate { font-size: 12px; color: var(--muted); }
   .empty { color: var(--muted); font-size: 15px; padding: 30px 0; }
@@ -76,11 +78,11 @@
   .md-out strong { color: var(--coral); }
   .md-out table { border-collapse: collapse; margin: 0 0 16px; width: 100%; }
   .md-out th, .md-out td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; font-size: 14px; }
-  .md-out th { background: rgba(30,58,110,.07); color: var(--coral); }
+  .md-out th { background: color-mix(in srgb, var(--coral) 7%, transparent); color: var(--coral); }
 
   .cta-bar {
     margin-top: 50px; text-align: center; padding: 34px; border-radius: 20px;
-    background: linear-gradient(135deg, #2e5490, #163264); color: #fff;
+    background: linear-gradient(135deg, var(--g1b), var(--g2)); color: #fff;
   }
   .cta-bar h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 30px; letter-spacing: -1px; margin-bottom: 8px; }
   .cta-bar p { color: rgba(255,255,255,.8); font-size: 14.5px; margin-bottom: 20px; }
