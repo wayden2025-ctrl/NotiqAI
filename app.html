@@ -250,6 +250,24 @@
 
   /* ============ FOCUS TIMER + MASTERY ============ */
   .focus-time { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 58px; color: var(--coral); line-height: 1; letter-spacing: -1px; }
+  .focus-float {
+    position: fixed; top: 16px; right: 20px; z-index: 850; cursor: pointer;
+    display: flex; align-items: center; gap: 11px;
+    background: var(--panel); backdrop-filter: blur(12px);
+    border: 1px solid var(--line); border-radius: 999px; padding: 9px 20px 9px 15px;
+    box-shadow: 0 16px 36px -14px rgba(0,0,0,.4);
+    animation: floatIn .25s ease;
+    transition: transform .14s ease;
+  }
+  .focus-float:hover { transform: translateY(-2px); }
+  @keyframes floatIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  .focus-float .fdot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--coral); flex: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--coral) 18%, transparent);
+    animation: pulseGlow 2.2s ease-in-out infinite;
+  }
+  .focus-float b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 23px; color: var(--coral); line-height: 1; }
+  .focus-float .flabel { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
   .focus-msg { font-size: 13.5px; color: var(--muted); margin-top: 10px; max-width: 52ch; line-height: 1.5; }
   .focus-msg.fail { color: #a33520; font-weight: 700; }
   .focus-msg.win { color: #2e7d4f; font-weight: 700; }
@@ -953,6 +971,13 @@
     </div>
 
   </main>
+
+  <!-- Floating focus timer (shows when the timer runs out of view) -->
+  <div class="focus-float hidden" id="focus-float" onclick="showView('dashboard')" title="Back to your focus session">
+    <i class="fdot"></i>
+    <b id="focus-float-time">25:00</b>
+    <span class="flabel">Focus</span>
+  </div>
 
   <!-- ============ SLIDE-IN PANELS ============ -->
   <div class="scrim" id="scrim" onclick="closePanels()"></div>
@@ -1740,8 +1765,12 @@ function focusToggle() {
       return;
     }
     const s = Math.ceil(left / 1000);
-    $("focus-time").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    const label = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    $("focus-time").textContent = label;
+    $("focus-float-time").textContent = label;
+    updateFocusFloat();
   }, 500);
+  updateFocusFloat();
 }
 function focusReset(msg) {
   clearInterval(focusTick); focusTick = null; focusEndAt = null; focusHiddenAt = null;
@@ -1749,6 +1778,17 @@ function focusReset(msg) {
   $("focus-btn").textContent = "Start focus";
   $("focus-time").textContent = $("focus-len").value + ":00";
   if (msg) focusMsg(msg, "");
+  updateFocusFloat();
+}
+
+// floating timer bubble: visible only while running AND the big timer is off-screen
+let focusCardVisible = true;
+new IntersectionObserver((entries) => {
+  focusCardVisible = entries[0].isIntersecting;
+  updateFocusFloat();
+}).observe($("focus-time"));
+function updateFocusFloat() {
+  $("focus-float").classList.toggle("hidden", !(focusEndAt && !focusCardVisible));
 }
 function focusFail() {
   focusReset("");
