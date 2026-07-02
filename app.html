@@ -164,6 +164,28 @@
   .hero-orb .tw { position: absolute; border-radius: 50%; background: var(--amber); }
   .hero-orb .t1 { width: 7px; height: 7px; top: 8%; right: 4%; animation: twinkle 3s ease-in-out infinite; }
   .hero-orb .t2 { width: 5px; height: 5px; bottom: 10%; left: 0; background: var(--coral); animation: twinkle 3.6s ease-in-out .5s infinite; }
+  .hero-orb .t3 { width: 4px; height: 4px; top: 22%; left: -14px; animation: twinkle 2.7s ease-in-out .9s infinite; }
+  .hero-orb .t4 { width: 6px; height: 6px; bottom: -6px; right: 18%; background: var(--coral); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--coral) 45%, transparent); animation: twinkle 4.2s ease-in-out .3s infinite; }
+  .hero-orb .t5 { width: 3px; height: 3px; top: -10px; left: 32%; background: var(--orb2); opacity: .85; animation: twinkle 3.1s ease-in-out 1.4s infinite; }
+  .hero-orb .t6 { width: 5px; height: 5px; top: 55%; right: -16px; opacity: .75; animation: twinkle 3.8s ease-in-out 2s infinite; }
+  .hero-orb .spark {
+    position: absolute; background: var(--amber);
+    clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--amber) 80%, transparent));
+  }
+  .hero-orb .sp1 { width: 12px; height: 12px; top: 4%; left: 8%; animation: twinkle 3.6s ease-in-out .6s infinite; }
+  .hero-orb .sp2 { width: 9px; height: 9px; bottom: 3%; right: 5%; background: var(--coral); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--coral) 80%, transparent)); animation: twinkle 4.4s ease-in-out 1.8s infinite; }
+  .hero-orb .orbit {
+    position: absolute; left: 50%; top: 50%; border-radius: 50%; pointer-events: none;
+    animation: orbitSpin linear infinite;
+  }
+  @keyframes orbitSpin { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .hero-orb .o1 { width: 212px; height: 212px; animation-duration: 16s; }
+  .hero-orb .o2 { width: 252px; height: 252px; animation-duration: 28s; animation-direction: reverse; }
+  .hero-orb .star { position: absolute; border-radius: 50%; background: var(--amber); }
+  .hero-orb .star.s-a { width: 7px; height: 7px; box-shadow: 0 0 10px 2px color-mix(in srgb, var(--amber) 70%, transparent); }
+  .hero-orb .star.s-b { width: 5px; height: 5px; background: var(--coral); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--coral) 55%, transparent); }
+  .hero-orb .star.s-c { width: 4px; height: 4px; background: var(--orb1); opacity: .9; }
 
   .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "tip tip fc qz" "tip tip study nt"; gap: 16px; }
   .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; }
@@ -635,8 +657,20 @@
         <div class="hero-orb">
           <div class="glow"></div>
           <div class="ring"><i></i></div>
+          <div class="orbit o1">
+            <span class="star s-a" style="top:-4px; left:50%;"></span>
+            <span class="star s-c" style="bottom:8%; right:1%;"></span>
+          </div>
+          <div class="orbit o2">
+            <span class="star s-b" style="top:14%; left:-1px;"></span>
+            <span class="star s-c" style="top:-2px; right:30%;"></span>
+            <span class="star s-a" style="bottom:-3px; left:38%; width:5px; height:5px;"></span>
+          </div>
           <div class="planet"></div>
           <span class="tw t1"></span><span class="tw t2"></span>
+          <span class="tw t3"></span><span class="tw t4"></span>
+          <span class="tw t5"></span><span class="tw t6"></span>
+          <span class="spark sp1"></span><span class="spark sp2"></span>
         </div>
       </div>
 
