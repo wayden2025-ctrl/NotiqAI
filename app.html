@@ -1144,6 +1144,7 @@
 <script>
 // ================= SETUP =================
 const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 }
@@ -1975,8 +1976,7 @@ function printHtml(title, inner) {
     .q { font-weight: bold; } .a { color: #444; margin-top: 6px; }
     .opts { margin: 6px 0 0 18px; }
     .key { page-break-before: always; }
-  </style></head><body><h1>${esc(title)}</h1>${inner}<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script>
-</body></html>`);
+  </style></head><body><h1>${esc(title)}</h1>${inner}</body></html>`);
   w.document.close();
   setTimeout(() => { w.focus(); w.print(); }, 350);
 }
