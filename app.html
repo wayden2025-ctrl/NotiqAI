@@ -234,6 +234,15 @@
     .bento { grid-template-columns: 1fr; grid-template-areas: "tip" "fc" "qz" "study" "nt"; }
   }
 
+  /* ============ FOCUS TIMER + MASTERY ============ */
+  .focus-time { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 58px; color: var(--coral); line-height: 1; letter-spacing: -1px; }
+  .focus-msg { font-size: 13.5px; color: var(--muted); margin-top: 10px; max-width: 52ch; line-height: 1.5; }
+  .focus-msg.fail { color: #a33520; font-weight: 700; }
+  .focus-msg.win { color: #2e7d4f; font-weight: 700; }
+  .fmastery { height: 5px; border-radius: 3px; background: rgba(36,29,24,.08); margin-top: 10px; overflow: hidden; }
+  .fmastery i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #4a7cc9, #1e3a6e); }
+  .fmlabel { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+
   /* Folders row */
   .folders-row { display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px 14px; }
   .folder-card {
@@ -646,6 +655,18 @@
         </div>
       </div>
 
+      <div class="section-label">Focus</div>
+      <div class="surface" style="display:flex; align-items:center; gap:30px; flex-wrap:wrap; margin-bottom:0;">
+        <div>
+          <div class="focus-time" id="focus-time">25:00</div>
+          <p class="focus-msg" id="focus-msg">Pick a length and lock in. Leave this tab for more than 30 seconds and the session fails.</p>
+        </div>
+        <div style="margin-left:auto; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <select id="focus-len"><option value="15">15 min</option><option value="25" selected>25 min</option><option value="45">45 min</option></select>
+          <button class="btn-primary" id="focus-btn" onclick="focusToggle()">Start focus</button>
+        </div>
+      </div>
+
       <div class="section-label">Your folders</div>
       <div class="folders-row" id="folders-row"></div>
     </div>
@@ -684,6 +705,9 @@
         <div class="save-bar">
           <input class="txt-input" id="fc-title" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
           <button class="btn-primary" id="fc-save">Save to folder</button>
+          <button class="btn-ghost" onclick="ttsToggle(this, fcDeckText())">Listen</button>
+          <button class="btn-ghost" onclick="printCards($('fc-title').value.trim() || 'Flashcards', fcDeck || [])">Print / PDF</button>
+          <button class="btn-ghost" onclick="downloadCSV($('fc-title').value.trim() || 'flashcards', fcDeck || [])">Export CSV</button>
           <span class="save-note" id="fc-save-note"></span>
         </div>
         <div class="fc-stage">
@@ -737,6 +761,7 @@
         <div class="save-bar">
           <input class="txt-input" id="qz-title" placeholder="Quiz name (e.g. History Midterm Practice)">
           <button class="btn-primary" id="qz-save">Save to folder</button>
+          <button class="btn-ghost" onclick="printQuiz($('qz-title').value.trim() || 'Quiz', qzData || [])">Print / PDF</button>
           <span class="save-note" id="qz-save-note"></span>
         </div>
         <div id="qz-questions"></div>
@@ -776,6 +801,8 @@
         <div class="save-bar">
           <input class="txt-input" id="sg-title" placeholder="Guide name (e.g. Chem Final — June plan)">
           <button class="btn-primary" id="sg-save">Save to folder</button>
+          <button class="btn-ghost" onclick="ttsToggle(this, stripMd(sgResult ? sgResult.markdown : ''))">Listen</button>
+          <button class="btn-ghost" onclick="printMarkdown($('sg-title').value.trim() || 'Study guide', sgResult ? sgResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="sg-save-note"></span>
         </div>
         <div class="md-out" id="sg-md"></div>
@@ -800,6 +827,8 @@
         <div class="save-bar">
           <input class="txt-input" id="nt-title" placeholder="Notes name (e.g. Photosynthesis — clean notes)">
           <button class="btn-primary" id="nt-save">Save to folder</button>
+          <button class="btn-ghost" onclick="ttsToggle(this, stripMd(ntResult ? ntResult.markdown : ''))">Listen</button>
+          <button class="btn-ghost" onclick="printMarkdown($('nt-title').value.trim() || 'Notes', ntResult ? ntResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="nt-save-note"></span>
         </div>
         <div class="md-out" id="nt-md"></div>
@@ -848,6 +877,8 @@
         <div class="save-bar">
           <input class="txt-input" id="cr-title" placeholder="Sheet name (e.g. Bio Final — cram sheet)">
           <button class="btn-primary" id="cr-save">Save to folder</button>
+          <button class="btn-ghost" onclick="ttsToggle(this, stripMd(crResult ? crResult.markdown : ''))">Listen</button>
+          <button class="btn-ghost" onclick="printMarkdown($('cr-title').value.trim() || 'Cram sheet', crResult ? crResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="cr-save-note"></span>
         </div>
         <div class="md-out" id="cr-md"></div>
@@ -944,6 +975,7 @@
         <h3 id="im-title"></h3></div>
         <button class="panel-close" onclick="closeItemModal()">&#10005;</button>
       </div>
+      <div id="im-tools" style="display:flex; gap:10px; flex-wrap:wrap; margin:-6px 0 18px;"></div>
       <div id="im-body"></div>
     </div>
   </div>
@@ -1102,6 +1134,8 @@ $("signout-btn").addEventListener("click", async () => {
 
 // ================= VIEWS & PANELS =================
 function showView(name) {
+  window.speechSynthesis.cancel();
+  if (ttsBtnActive) { ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen"; ttsBtnActive = null; }
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   $("view-" + name).classList.remove("hidden");
   $("rb-home").classList.toggle("active", name === "dashboard");
@@ -1270,6 +1304,9 @@ function renderFoldersRow() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/></svg>
       <div class="fname">${esc(f.name)}</div>
       <div class="fcount">${n} saved item${n === 1 ? "" : "s"}</div>
+      ${masteryByFolder[f.id] !== undefined
+        ? `<div class="fmastery"><i style="width:${masteryByFolder[f.id]}%"></i></div><div class="fmlabel">${masteryByFolder[f.id]}% mastered</div>`
+        : ""}
     </div>`;
   });
   html += `<button class="folder-new" onclick="openPanel('folder')">
@@ -1606,6 +1643,131 @@ $("nt-generate").addEventListener("click", async () => {
 $("nt-save").addEventListener("click", () =>
   saveItem("notes", $("nt-title").value.trim(), ntResult, $("nt-folder").value, "nt-save-note"));
 
+// ================= FOCUS TIMER =================
+let focusEndAt = null, focusTick = null, focusHiddenAt = null;
+function focusToggle() {
+  if (focusEndAt) { focusReset("Session ended early. No shame — try a shorter one."); return; }
+  const mins = +$("focus-len").value;
+  focusEndAt = Date.now() + mins * 60000;
+  $("focus-len").disabled = true;
+  $("focus-btn").textContent = "Give up";
+  focusMsg("Locked in. Leave this tab for more than 30 seconds and the session fails.", "");
+  focusTick = setInterval(() => {
+    const left = focusEndAt - Date.now();
+    if (left <= 0) {
+      if (document.hidden && focusHiddenAt && Date.now() - focusHiddenAt > 30000) { focusFail(); return; }
+      focusReset("");
+      focusMsg(`Session complete — ${mins} minutes of real focus. That counts.`, "win");
+      logActivity("focus");
+      return;
+    }
+    const s = Math.ceil(left / 1000);
+    $("focus-time").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }, 500);
+}
+function focusReset(msg) {
+  clearInterval(focusTick); focusTick = null; focusEndAt = null; focusHiddenAt = null;
+  $("focus-len").disabled = false;
+  $("focus-btn").textContent = "Start focus";
+  $("focus-time").textContent = $("focus-len").value + ":00";
+  if (msg) focusMsg(msg, "");
+}
+function focusFail() {
+  focusReset("");
+  focusMsg("You left the tab for more than 30 seconds. Session failed — the timer saw everything. Run it back.", "fail");
+}
+function focusMsg(text, cls) { const el = $("focus-msg"); el.textContent = text; el.className = "focus-msg" + (cls ? " " + cls : ""); }
+document.addEventListener("visibilitychange", () => {
+  if (!focusEndAt) return;
+  if (document.hidden) { focusHiddenAt = Date.now(); }
+  else if (focusHiddenAt) {
+    if (Date.now() - focusHiddenAt > 30000) focusFail();
+    focusHiddenAt = null;
+  }
+});
+$("focus-len").addEventListener("change", () => { if (!focusEndAt) $("focus-time").textContent = $("focus-len").value + ":00"; });
+
+// ================= READ IT TO ME (TTS) =================
+let ttsBtnActive = null;
+function stripMd(md) {
+  return String(md || "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    .replace(/[#*_>`|]/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+function ttsToggle(btn, text) {
+  const wasThis = ttsBtnActive === btn;
+  if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+    window.speechSynthesis.cancel();
+    if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
+    ttsBtnActive = null;
+    if (wasThis) return;
+  }
+  if (!text) return;
+  const u = new SpeechSynthesisUtterance(String(text).slice(0, 20000));
+  u.rate = 1;
+  u.onend = () => { if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen"; ttsBtnActive = null; };
+  btn.dataset.label = btn.dataset.label || btn.textContent;
+  btn.textContent = "Stop";
+  ttsBtnActive = btn;
+  window.speechSynthesis.speak(u);
+}
+function fcDeckText() {
+  return (fcDeck || []).map((c, i) => `Card ${i + 1}. ${c.front}. Answer: ${c.back}.`).join(" ");
+}
+function itemPlainText(d) {
+  const c = (d && d.content) || {};
+  if (d.type === "flashcards") return (c.cards || []).map((k, i) => `Card ${i + 1}. ${k.front}. Answer: ${k.back}.`).join(" ");
+  if (d.type === "quiz") return (c.questions || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join(" ");
+  return stripMd(c.markdown || "");
+}
+
+// ================= PRINT & EXPORT =================
+function printHtml(title, inner) {
+  const w = window.open("", "_blank");
+  if (!w) { alert("Your browser blocked the print window — allow popups for this site."); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; max-width: 720px; margin: 40px auto; padding: 0 24px; line-height: 1.6; }
+    h1 { color: #1e3a6e; font-style: italic; margin-bottom: 20px; }
+    h2 { color: #1e3a6e; margin: 22px 0 8px; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; font-size: 14px; }
+    .qa { border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+    .q { font-weight: bold; } .a { color: #444; margin-top: 6px; }
+    .opts { margin: 6px 0 0 18px; }
+    .key { page-break-before: always; }
+  </style></head><body><h1>${esc(title)}</h1>${inner}</body></html>`);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 350);
+}
+function printMarkdown(title, md) { printHtml(title, marked.parse(md || "")); }
+function printCards(title, cards) {
+  printHtml(title, cards.map((c, i) =>
+    `<div class="qa"><div class="q">${i + 1}. ${esc(c.front)}</div><div class="a">${esc(c.back)}</div></div>`).join(""));
+}
+function printQuiz(title, questions) {
+  const qs = questions.map((q, i) =>
+    `<div class="qa"><div class="q">${i + 1}. ${esc(q.q)}</div><ol class="opts" type="A">${q.options.map(o => `<li>${esc(o)}</li>`).join("")}</ol></div>`).join("");
+  const key = `<div class="key"><h2>Answer key</h2><ol>${questions.map(q =>
+    `<li>${esc(q.options[q.answer])}${q.explanation ? " — " + esc(q.explanation) : ""}</li>`).join("")}</ol></div>`;
+  printHtml(title, qs + key);
+}
+function downloadCSV(title, cards) {
+  const rows = [["Front", "Back", "Difficulty"], ...cards.map(c => [c.front, c.back, c.difficulty || ""])];
+  const csv = rows.map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = (title || "flashcards").replace(/[^\w\- ]+/g, "").trim() + ".csv";
+  a.click();
+}
+function printItem() {
+  const d = curItem, c = (d && d.content) || {};
+  if (d.type === "flashcards") printCards(d.title, c.cards || []);
+  else if (d.type === "quiz") printQuiz(d.title, c.questions || []);
+  else printMarkdown(d.title, c.markdown || "");
+}
+
 // ================= TEACH IT BACK =================
 let tbCurrent = null, tbMaterial = "";
 $("tb-generate").addEventListener("click", tbAsk);
@@ -1687,9 +1849,27 @@ $("cr-save").addEventListener("click", () =>
 
 // ================= SMART REVIEW =================
 let rvDecks = [], rvQueue = [], rvPos = 0;
+let masteryByFolder = {};
+function computeMastery() {
+  masteryByFolder = {};
+  const agg = {};
+  rvDecks.forEach(d => {
+    if (!d.folder_id) return;
+    const a = agg[d.folder_id] = agg[d.folder_id] || { sum: 0, n: 0 };
+    (d.content.cards || []).forEach((c, i) => {
+      const rev = (d.content.review || {})[i];
+      a.sum += Math.min(1, ((rev && rev.int) || 0) / 16);   // 16+ day interval = mastered
+      a.n++;
+    });
+  });
+  for (const k in agg) masteryByFolder[k] = Math.round(100 * agg[k].sum / Math.max(1, agg[k].n));
+}
+
 async function loadReviewDecks() {
-  const { data } = await sb.from("saved_items").select("id, title, content").eq("type", "flashcards");
+  const { data } = await sb.from("saved_items").select("id, title, content, folder_id").eq("type", "flashcards");
   rvDecks = data || [];
+  computeMastery();
+  renderFoldersRow();
   buildReviewQueue();
   const el = $("review-desc");
   if (!rvDecks.length) el.textContent = "Save a flashcard deck to unlock — Notiq brings cards back right before you'd forget them.";
@@ -1837,9 +2017,17 @@ async function openItem(id) {
     html = `<div class="md-out" style="box-shadow:none; border:0; padding:6px 2px;">${marked.parse(c.markdown || "")}</div>`;
   }
   $("im-body").innerHTML = html;
+  $("im-tools").innerHTML = `
+    <button class="btn-ghost" onclick="ttsToggle(this, itemPlainText(curItem))">Listen</button>
+    <button class="btn-ghost" onclick="printItem()">Print / PDF</button>
+    ${data.type === "flashcards" ? `<button class="btn-ghost" onclick="downloadCSV(curItem.title, curItem.content.cards || [])">Export CSV</button>` : ""}`;
   $("item-modal").classList.add("open");
 }
-function closeItemModal() { $("item-modal").classList.remove("open"); }
+function closeItemModal() {
+  $("item-modal").classList.remove("open");
+  window.speechSynthesis.cancel();
+  if (ttsBtnActive) { ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen"; ttsBtnActive = null; }
+}
 
 // ---- editing saved flashcard decks ----
 function renderSavedCards() {
