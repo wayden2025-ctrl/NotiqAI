@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Features</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10); --glass: rgba(255,255,255,.58);
+  }
+  html { background: #f8f5f1; scroll-behavior: smooth; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      radial-gradient(90% 70% at 10% 92%, #e8eef8 0%, rgba(232,238,248,0) 60%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: #c8d8f0; color: #2a201a; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+    display: flex; align-items: center; justify-content: space-between; padding: 18px 40px;
+    background: rgba(248,245,241,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+  }
+  .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; color: var(--ink); }
+  .orb {
+    width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, #b8cceb, #1e3a6e 55%, #122650);
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55), 0 6px 16px -4px rgba(30,58,110,.6);
+  }
+  .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%; background:radial-gradient(circle,#fff,transparent 70%); }
+  .brand span { font-family: 'Instrument Serif', serif; font-size: 23px; }
+  .brand b { color: var(--coral); font-weight: 400; }
+  .nav-right { display: flex; align-items: center; gap: 26px; font-size: 14.5px; }
+  .nav-right a.plain { color: var(--ink); text-decoration: none; font-weight: 600; }
+  .nav-right a.plain:hover { color: var(--coral); }
+  .cta-pill {
+    color: #fff; background: linear-gradient(180deg, #2a4d8a, #163264); padding: 9px 20px; border-radius: 999px;
+    font-weight: 700; font-size: 14px; text-decoration: none;
+    box-shadow: 0 8px 22px -8px rgba(22,50,100,.7), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 140px 28px 90px; }
+  .hero-eyebrow { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(44px, 7vw, 76px); letter-spacing: -2px; line-height: .95; margin: 10px 0 14px; color: var(--ink);
+  }
+  h1 em { font-style: italic; color: var(--coral); }
+  .hero-sub { color: var(--muted); font-size: 17px; max-width: 62ch; line-height: 1.6; margin-bottom: 26px; }
+
+  .section-label {
+    font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700;
+    color: var(--muted); margin: 52px 0 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card {
+    background: linear-gradient(160deg, #ffffff, #f2f5fb); border: 1px solid var(--line);
+    border-radius: 16px; padding: 24px 22px;
+    box-shadow: 0 18px 36px -20px rgba(60,40,30,.3), inset 0 1px 0 rgba(255,255,255,.8);
+  }
+  .chip {
+    width: 40px; height: 40px; border-radius: 12px; background: rgba(30,58,110,.12); color: var(--coral);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 19px;
+  }
+  .card h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 25px; letter-spacing: -.5px; margin-bottom: 8px; }
+  .card p { font-size: 14.5px; color: #5a5148; line-height: 1.62; }
+  .card p + p { margin-top: 8px; }
+  .card b { color: var(--coral); }
+
+  .cta-banner {
+    margin-top: 64px; text-align: center; padding: 46px 30px; border-radius: 22px;
+    background: linear-gradient(135deg, #2e5490, #163264); color: #fff; position: relative; overflow: hidden;
+  }
+  .cta-banner h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: clamp(30px, 4.5vw, 44px); letter-spacing: -1px; margin-bottom: 10px; }
+  .cta-banner p { color: rgba(255,255,255,.82); font-size: 15.5px; margin-bottom: 24px; }
+  .cta-banner a {
+    display: inline-block; color: #163264; background: #fff; padding: 15px 34px; border-radius: 999px;
+    font-weight: 800; font-size: 16px; text-decoration: none; box-shadow: 0 16px 34px -12px rgba(0,0,0,.45);
+  }
+  footer { text-align: center; padding: 30px 20px 40px; font-size: 13px; color: var(--muted); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html"><div class="orb"></div><span>Notiq<b> AI</b></span></a>
+  <div class="nav-right">
+    <a class="plain" href="signin.html">Sign in</a>
+    <a class="cta-pill" href="signin.html?mode=signup">Start Free</a>
+  </div>
+</nav>
+
+<main>
+  <span class="hero-eyebrow">Features</span>
+  <h1>Everything Notiq AI <em>does.</em></h1>
+  <p class="hero-sub">One place where your notes, slides and lectures become a full study system. Here's every feature, in detail — so you know exactly what you're getting before you make an account. All of it is free to start.</p>
+
+  <div class="section-label">Bring in your material</div>
+  <div class="grid">
+    <div class="card"><div class="chip">R</div><h3>Resources</h3>
+      <p>Your material lives in one place. Upload <b>PDFs</b>, <b>text files</b> or <b>Markdown</b>, or just paste text straight in — lecture notes, a chapter, anything. Notiq reads the text out of your files automatically.</p>
+      <p>Everything you generate — flashcards, quizzes, guides, notes — is built from the resources you pick, so it's always about <b>your</b> class, not generic content.</p></div>
+    <div class="card"><div class="chip">Y</div><h3>YouTube import</h3>
+      <p>Paste a link to any YouTube video that has captions and Notiq pulls the full <b>transcript</b> in as a resource. A 40-minute lecture becomes something you can turn into flashcards, a quiz or clean notes in seconds.</p></div>
+  </div>
+
+  <div class="section-label">Generate your study tools</div>
+  <div class="grid">
+    <div class="card"><div class="chip">F</div><h3>Flashcards</h3>
+      <p>Pick your resources and how many cards you want. Decks <b>ramp from easy to hard</b> — definitions first, tricky applications last — with a difficulty badge on every card.</p>
+      <p>Flip cards to study, <b>edit any card</b> you want to reword, and save the deck into a folder.</p></div>
+    <div class="card"><div class="chip">Q</div><h3>Quizzes</h3>
+      <p>Multiple-choice questions written from your material, each with four options and an <b>explanation</b> for the answer. Take the quiz right on the page and get your score instantly.</p>
+      <p>After checking answers, Notiq lists your <b>weak spots</b> — every question you missed — and can generate a fresh practice quiz attacking exactly those concepts.</p></div>
+    <div class="card"><div class="chip">S</div><h3>Study guide</h3>
+      <p>Pick your <b>exam day on a calendar</b> and the resources you need to know. Notiq plans every day between now and then: what to learn, what to review from earlier days, and quick self-checks — with a light review day right before the exam.</p></div>
+    <div class="card"><div class="chip">N</div><h3>Notes</h3>
+      <p>Turn any resource into clean, detailed, beautifully structured notes — headings, bolded key terms, examples and comparison tables, ending with a quick summary of the most important takeaways. Usually better than what you started with.</p></div>
+    <div class="card"><div class="chip">C</div><h3>Cram mode</h3>
+      <p>Short on time? Cram mode condenses your material into one dense page: the <b>10 must-know ideas</b>, key terms, commonly-confused pairs, and the <b>5 most likely exam questions</b> with model answers. A lot of information into your head, fast.</p></div>
+  </div>
+
+  <div class="section-label">Actually master it</div>
+  <div class="grid">
+    <div class="card"><div class="chip">T</div><h3>Teach it back</h3>
+      <p>The reverse of a quiz, based on the <b>Feynman technique</b>. Notiq picks a concept from your material and asks you to explain it in your own words. Then it grades you out of 10 — what you nailed, what you got wrong or skipped, and one concrete tip.</p>
+      <p>Struggling to explain something is the fastest way to find out you don't really know it yet.</p></div>
+    <div class="card"><div class="chip">SR</div><h3>Smart review</h3>
+      <p>Real <b>spaced repetition</b>. Saved decks come back to you on a schedule: answer "Got it" and a card returns in 2, 4, 8, 16 days; answer "Again" and it's back tomorrow. The dashboard tells you how many cards are due each day.</p></div>
+    <div class="card"><div class="chip">%</div><h3>Mastery bars</h3>
+      <p>Every folder shows a <b>mastery percentage</b> that grows as your review intervals stretch out. Watch "AP Bio — 40% mastered" climb toward 100 as exam day approaches.</p></div>
+  </div>
+
+  <div class="section-label">Stay on track</div>
+  <div class="grid">
+    <div class="card"><div class="chip">FT</div><h3>Focus timer</h3>
+      <p>Pick 15, 25 or 45 minutes and lock in. Leave the tab for more than 30 seconds and the session <b>fails</b> — the timer keeps you honest. Finished sessions count toward your streak.</p></div>
+    <div class="card"><div class="chip">D</div><h3>Daily streak</h3>
+      <p>Study any day — open the app, generate something, review cards — and your streak grows. Miss a day and it resets. Simple, and weirdly motivating.</p></div>
+    <div class="card"><div class="chip">TP</div><h3>Tip of the day</h3>
+      <p>A rotating test-taking tip on your dashboard every day — recall practice, spacing, test-day tactics. Small habits that add up to real marks.</p></div>
+  </div>
+
+  <div class="section-label">Your library</div>
+  <div class="grid">
+    <div class="card"><div class="chip">FL</div><h3>Folders</h3>
+      <p>Organize saved flashcards, quizzes, study guides, notes and cram sheets into folders — by class, by unit, however you like. Nothing saves unless you hit <b>Save to folder</b>, so your library stays intentional.</p></div>
+    <div class="card"><div class="chip">SH</div><h3>Share a folder</h3>
+      <p>One click gives you a link anyone can open — <b>no account needed</b> — to view a folder's decks, quizzes and notes read-only. Perfect for study groups. Turn sharing off anytime and the link dies instantly.</p></div>
+  </div>
+
+  <div class="section-label">Take it anywhere</div>
+  <div class="grid">
+    <div class="card"><div class="chip">L</div><h3>Read it to me</h3>
+      <p>A <b>Listen</b> button on flashcards, notes, study guides and cram sheets reads them aloud with your browser's voice. Study on a walk, on the bus, or with your eyes closed.</p></div>
+    <div class="card"><div class="chip">P</div><h3>Print &amp; export</h3>
+      <p>Everything can leave the app. Print any deck, quiz, guide or notes as a clean <b>PDF</b> — quizzes print with a separate answer key so you can test on paper. Flashcard decks also export as <b>CSV</b>, ready to import into Quizlet or Anki.</p></div>
+  </div>
+
+  <div class="cta-banner">
+    <h2>Stop organizing. Start mastering.</h2>
+    <p>Every feature above is included — make an account and upload your first note in under a minute.</p>
+    <a href="signin.html?mode=signup">Start Free</a>
+  </div>
+</main>
+
+<footer>
+  &copy; 2026 Notiq AI &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
