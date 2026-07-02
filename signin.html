@@ -52,6 +52,11 @@
   }
   .orb::after { content:""; position:absolute; top:5px; left:8px; width:10px; height:7px; border-radius:50%;
     background: radial-gradient(circle,#fff,transparent 70%); }
+  .orb::before {
+    content: "N"; position: absolute; right: 5px; bottom: 1px; z-index: 1;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px; line-height: 1.1;
+    color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
+  }
   .logo-row span { font-family: 'Instrument Serif', serif; font-size: 26px; }
   .logo-row b { color: var(--coral); font-weight: 400; }
   h1 {

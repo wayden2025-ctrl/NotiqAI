@@ -33,6 +33,11 @@
     box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
   }
   .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%; background:radial-gradient(circle,#fff,transparent 70%); }
+  .orb::before {
+    content: "N"; position: absolute; right: 4px; bottom: 1px; z-index: 1;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 16px; line-height: 1.1;
+    color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
+  }
   .brand span { font-family: 'Instrument Serif', serif; font-size: 23px; }
   .brand b { color: var(--coral); font-weight: 400; }
   .eyebrow { font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
