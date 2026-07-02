@@ -203,6 +203,26 @@
 
   .mini-lines { position: absolute; top: 22px; right: 22px; display: flex; flex-direction: column; gap: 6px; width: 72px; }
   .mini-lines i { height: 7px; border-radius: 4px; background: rgba(36,29,24,.12); }
+
+  /* ============ POWER TOOLS ============ */
+  .power-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .bento-card .chip { width: 40px; height: 40px; border-radius: 12px; background: rgba(30,58,110,.12); color: var(--coral); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .bento-card .chip svg { width: 20px; height: 20px; }
+
+  .tb-question { background: linear-gradient(135deg, #2e5490, #163264); color: #fff; border-radius: 16px; padding: 22px 24px; font-size: 17px; line-height: 1.55; margin-bottom: 16px; }
+  .tb-question .concept { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #cfe0f5; font-weight: 700; display: block; margin-bottom: 8px; }
+  .tb-score { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 46px; color: var(--coral); line-height: 1; }
+  .tb-list { margin: 8px 0 14px 2px; list-style: none; }
+  .tb-list li { font-size: 14.5px; margin-bottom: 7px; padding-left: 24px; position: relative; line-height: 1.5; }
+  .tb-list.good li::before { content: "\2713"; position: absolute; left: 0; color: #2e7d4f; font-weight: 800; }
+  .tb-list.bad li::before { content: "\2715"; position: absolute; left: 0; color: #a33520; font-weight: 800; }
+
+  .rv-actions { display: flex; gap: 14px; }
+  .rv-again { border: 1.5px solid rgba(163,53,32,.4); color: #a33520; background: #fff; padding: 12px 28px; border-radius: 999px; font-family: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+  .rv-again:hover { background: rgba(163,53,32,.06); }
+  .rv-good { border: 0; color: #fff; background: linear-gradient(180deg, #2f7d4f, #1d5c37); padding: 12px 28px; border-radius: 999px; font-family: inherit; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 12px 26px -10px rgba(29,92,55,.6); }
+  .rv-good:hover { filter: brightness(1.08); }
+  @media (max-width: 940px) { .power-grid { grid-template-columns: 1fr; } }
   .mini-lines i:nth-child(1) { width: 88%; }
   .mini-lines i:nth-child(2) { width: 100%; background: linear-gradient(90deg, #2a4d8a, #4a7cc9); opacity: .8; }
   .mini-lines i:nth-child(3) { width: 72%; }
@@ -604,6 +624,28 @@
         </div>
       </div>
 
+      <div class="section-label">Power tools</div>
+      <div class="power-grid">
+        <div class="bento-card" onclick="showView('teach')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M9 10.5h6"/><path d="M9 13.5h3.5"/></svg></div>
+          <h3>Teach it back</h3>
+          <p>Notiq asks — you explain it in your own words. Then it grades your answer and shows exactly what you missed.</p>
+          <span class="bento-go">Quiz me backwards</span>
+        </div>
+        <div class="bento-card" onclick="showView('cram')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></div>
+          <h3>Cram mode</h3>
+          <p>Exam tomorrow? One dense cheat-sheet page: must-know ideas, key terms, and the questions most likely to show up.</p>
+          <span class="bento-go">Make my sheet</span>
+        </div>
+        <div class="bento-card" onclick="openReview()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v5h-5"/></svg></div>
+          <h3>Smart review</h3>
+          <p id="review-desc">Save a flashcard deck to unlock — Notiq brings cards back right before you'd forget them.</p>
+          <span class="bento-go">Review now</span>
+        </div>
+      </div>
+
       <div class="section-label">Your folders</div>
       <div class="folders-row" id="folders-row"></div>
     </div>
@@ -702,6 +744,12 @@
           <button class="btn-primary" id="qz-check" onclick="quizCheck()">Check answers</button>
           <div class="quiz-score hidden" id="qz-score"></div>
         </div>
+        <div class="surface hidden" id="qz-weak" style="text-align:left; margin-top:22px;">
+          <label class="field-label" style="margin-top:0;">Weak spots — you missed these</label>
+          <ul id="qz-weak-list" style="margin:0 0 16px 20px; font-size:14px; color:var(--muted); line-height:1.6;"></ul>
+          <button class="btn-primary" id="qz-weak-btn" onclick="practiceWeakSpots()">Practice my weak spots</button>
+          <div class="status-line" id="qz-weak-status"></div>
+        </div>
       </div>
     </div>
 
@@ -755,6 +803,78 @@
           <span class="save-note" id="nt-save-note"></span>
         </div>
         <div class="md-out" id="nt-md"></div>
+      </div>
+    </div>
+
+    <!-- TEACH IT BACK -->
+    <div class="view hidden" id="view-teach">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">The Feynman technique</span>
+      <h1 class="page-title">Teach it <em>back.</em></h1>
+      <p class="page-sub">The fastest way to find your gaps: explain it like you're the teacher. Notiq picks a concept, you explain, it grades.</p>
+      <div class="surface">
+        <label class="field-label">What should Notiq test you on? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="tb-resources"></div>
+        <div style="margin-top:22px;"><button class="btn-primary" id="tb-generate">Ask me a question</button></div>
+        <div class="status-line" id="tb-status"></div>
+      </div>
+      <div class="hidden" id="tb-output">
+        <div class="tb-question"><span class="concept" id="tb-concept"></span><span id="tb-q"></span></div>
+        <textarea class="paste-area" id="tb-answer" style="min-height:140px;" placeholder="Explain it in your own words — no peeking at your notes."></textarea>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" id="tb-grade">Grade my explanation</button>
+          <button class="btn-ghost" onclick="tbAsk()">Different concept</button>
+        </div>
+        <div class="status-line" id="tb-grade-status"></div>
+        <div id="tb-feedback" style="margin-top:24px;"></div>
+      </div>
+    </div>
+
+    <!-- CRAM MODE -->
+    <div class="view hidden" id="view-cram">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Exam tomorrow?</span>
+      <h1 class="page-title">Cram <em>mode.</em></h1>
+      <p class="page-sub">One ruthless page: the ideas, terms and likely questions that actually earn marks. Read it, sleep, walk in ready.</p>
+      <div class="surface">
+        <label class="field-label">What's the exam on? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="cr-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="cr-folder"></select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="cr-generate">Make my cram sheet</button></div>
+        <div class="status-line" id="cr-status"></div>
+      </div>
+      <div class="hidden" id="cr-output">
+        <div class="save-bar">
+          <input class="txt-input" id="cr-title" placeholder="Sheet name (e.g. Bio Final — cram sheet)">
+          <button class="btn-primary" id="cr-save">Save to folder</button>
+          <span class="save-note" id="cr-save-note"></span>
+        </div>
+        <div class="md-out" id="cr-md"></div>
+      </div>
+    </div>
+
+    <!-- SMART REVIEW -->
+    <div class="view hidden" id="view-review">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Spaced repetition</span>
+      <h1 class="page-title">Smart <em>review.</em></h1>
+      <p class="page-sub">Your saved decks come back right before you'd forget them. Flip the card, then be honest.</p>
+      <p class="empty-hint hidden" id="rv-empty" style="font-size:15.5px; line-height:1.7;"></p>
+      <div class="fc-stage hidden" id="rv-stage">
+        <div style="font-size:13px; color:var(--muted); font-weight:700;" id="rv-deck"></div>
+        <div class="fc-card" id="rv-card" onclick="this.classList.toggle('flipped')">
+          <div class="fc-inner">
+            <div class="fc-face front" id="rv-front"></div>
+            <div class="fc-face back" id="rv-back"></div>
+          </div>
+        </div>
+        <span class="fc-counter" id="rv-count"></span>
+        <div class="rv-actions">
+          <button class="rv-again" onclick="rateCard(false)">Again</button>
+          <button class="rv-good" onclick="rateCard(true)">Got it</button>
+        </div>
+        <p style="font-size:13px; color:var(--muted);">"Again" brings the card back tomorrow. "Got it" pushes it further out each time.</p>
       </div>
     </div>
 
@@ -875,6 +995,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   renderTip();
   loadExamCountdown();
   renderStreak();
+  loadReviewDecks();
   logActivity("visit");   // today counts toward your streak
 })();
 
@@ -1132,7 +1253,8 @@ function renderAll() {
   renderPanelFolders();
   renderResList();
   updateDashStats();
-  ["fc", "qz", "sg", "nt"].forEach(p => { renderResPicker(p); renderFolderSelect(p); });
+  ["fc", "qz", "sg", "nt", "tb", "cr"].forEach(p => renderResPicker(p));
+  ["fc", "qz", "sg", "nt", "cr"].forEach(p => renderFolderSelect(p));
 }
 
 function folderHue(name) {
@@ -1330,6 +1452,8 @@ $("qz-generate").addEventListener("click", async () => {
   $("qz-generate").disabled = false;
 });
 function renderQuiz() {
+  Object.keys(quizPicks).forEach(k => delete quizPicks[k]);
+  $("qz-weak").classList.add("hidden");
   $("qz-score").classList.add("hidden");
   $("qz-check").classList.remove("hidden");
   $("qz-questions").innerHTML = qzData.map((q, qi) => `
@@ -1362,6 +1486,34 @@ function quizCheck() {
   $("qz-score").textContent = `You scored ${score} / ${qzData.length} (${pct}%)`;
   $("qz-score").classList.remove("hidden");
   $("qz-check").classList.add("hidden");
+  // weak spots
+  qzMissed = qzData.filter((q, qi) => quizPicks[qi] !== q.answer);
+  if (qzMissed.length) {
+    $("qz-weak-list").innerHTML = qzMissed.map(q => `<li>${esc(q.q)}</li>`).join("");
+    $("qz-weak").classList.remove("hidden");
+  }
+}
+
+let qzMissed = [];
+async function practiceWeakSpots() {
+  if (!qzMissed.length) return;
+  $("qz-weak-btn").disabled = true;
+  setStatus("qz-weak-status", "Building targeted practice on your misses...", false, true);
+  try {
+    const summary = qzMissed.map(q =>
+      `Q: ${q.q}\nCorrect answer: ${q.options[q.answer]}\nWhy: ${q.explanation || ""}`).join("\n\n");
+    const n = Math.min(10, Math.max(4, qzMissed.length * 2));
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, an expert quiz writer. Respond ONLY with valid JSON: {\"questions\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}]} where answer is the index of the correct option." },
+      { role: "user", content: `I got these questions WRONG. Write ${n} NEW multiple-choice questions (4 options each, one correct) that test the same concepts from different angles, so I can fix these weak spots. Include short explanations.\n\n${summary}` }
+    ], true);
+    qzData = JSON.parse(raw).questions;
+    renderQuiz();
+    setStatus("qz-weak-status", "");
+    logActivity("generate");
+    $("qz-questions").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("qz-weak-status", e.message, true); }
+  $("qz-weak-btn").disabled = false;
 }
 $("qz-save").addEventListener("click", () =>
   saveItem("quiz", $("qz-title").value.trim(), { questions: qzData }, $("qz-folder").value, "qz-save-note"));
@@ -1454,8 +1606,148 @@ $("nt-generate").addEventListener("click", async () => {
 $("nt-save").addEventListener("click", () =>
   saveItem("notes", $("nt-title").value.trim(), ntResult, $("nt-folder").value, "nt-save-note"));
 
+// ================= TEACH IT BACK =================
+let tbCurrent = null, tbMaterial = "";
+$("tb-generate").addEventListener("click", tbAsk);
+async function tbAsk() {
+  const ids = pickedResources("tb");
+  if (!ids.length) { setStatus("tb-status", "Select at least one resource.", true); return; }
+  $("tb-generate").disabled = true;
+  setStatus("tb-status", "Picking a concept to test you on...", false, true);
+  try {
+    tbMaterial = await getMaterial(ids);
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, a study coach using the Feynman technique. Respond ONLY with valid JSON: {\"concept\":\"short concept name\",\"question\":\"a conversational prompt asking the student to explain that concept in their own words\"}" },
+      { role: "user", content: `Pick ONE important concept from this material — a different one each time — and ask me to explain it in my own words.\n\n${tbMaterial}\n\n(random seed: ${Math.random().toString(36).slice(2, 8)})` }
+    ], true);
+    tbCurrent = JSON.parse(raw);
+    $("tb-concept").textContent = tbCurrent.concept || "Concept";
+    $("tb-q").textContent = tbCurrent.question;
+    $("tb-answer").value = "";
+    $("tb-feedback").innerHTML = "";
+    setStatus("tb-grade-status", "");
+    $("tb-output").classList.remove("hidden");
+    setStatus("tb-status", "");
+    logActivity("generate");
+    $("tb-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("tb-status", e.message, true); }
+  $("tb-generate").disabled = false;
+}
+$("tb-grade").addEventListener("click", async () => {
+  const ans = $("tb-answer").value.trim();
+  if (!ans) { setStatus("tb-grade-status", "Write your explanation first.", true); return; }
+  $("tb-grade").disabled = true;
+  setStatus("tb-grade-status", "Grading your explanation...", false, true);
+  try {
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, a strict but encouraging study coach. Grade the student's explanation against the source material. Respond ONLY with valid JSON: {\"score\":0-10,\"verdict\":\"one punchy sentence\",\"strengths\":[\"what they got right\"],\"gaps\":[\"what was wrong or missing\"],\"tip\":\"one concrete tip to improve\"}" },
+      { role: "user", content: `Concept: ${tbCurrent.concept}\nQuestion asked: ${tbCurrent.question}\n\nMy explanation:\n${ans}\n\nSource material:\n${tbMaterial.slice(0, 12000)}` }
+    ], true);
+    const g = JSON.parse(raw);
+    $("tb-feedback").innerHTML = `
+      <div class="surface" style="margin-bottom:0;">
+        <div class="tb-score">${Number(g.score) || 0}/10</div>
+        <p style="font-family:'Instrument Serif',serif; font-style:italic; font-size:21px; margin:8px 0 16px;">${esc(g.verdict || "")}</p>
+        ${(g.strengths || []).length ? `<label class="field-label" style="margin-top:0;">What you nailed</label><ul class="tb-list good">${g.strengths.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}
+        ${(g.gaps || []).length ? `<label class="field-label">Gaps to fix</label><ul class="tb-list bad">${g.gaps.map(s => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}
+        ${g.tip ? `<p style="font-size:14px; color:var(--muted); background:rgba(30,58,110,.06); border-radius:10px; padding:12px 14px;"><b style="color:var(--coral);">Tip:</b> ${esc(g.tip)}</p>` : ""}
+      </div>`;
+    setStatus("tb-grade-status", "");
+    logActivity("generate");
+    $("tb-feedback").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("tb-grade-status", e.message, true); }
+  $("tb-grade").disabled = false;
+});
+
+// ================= CRAM MODE =================
+let crResult = null;
+$("cr-generate").addEventListener("click", async () => {
+  const ids = pickedResources("cr");
+  if (!ids.length) { setStatus("cr-status", "Select at least one resource.", true); return; }
+  $("cr-generate").disabled = true;
+  setStatus("cr-status", "Condensing everything that earns marks...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const md = await groq([
+      { role: "system", content: "You are Notiq AI. You create dense, high-yield, one-page cram sheets in clean Markdown. Every line must earn marks on an exam." },
+      { role: "user", content: `My exam is very soon. Turn this material into a ONE-PAGE cram sheet in Markdown with exactly these sections: '# Cram sheet — <topic>', '## 10 must-know ideas' (numbered, one tight line each), '## Key terms' (compact table: Term | Meaning), '## Easy to mix up' (bullets pairing commonly-confused things and how to tell them apart), '## 5 most likely exam questions' (each with a 1-2 line model answer). Be ruthless — no filler.\n\n${material}` }
+    ], false);
+    crResult = { markdown: md };
+    $("cr-md").innerHTML = marked.parse(md);
+    $("cr-output").classList.remove("hidden");
+    $("cr-save-note").textContent = "";
+    setStatus("cr-status", "");
+    logActivity("generate");
+    $("cr-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("cr-status", e.message, true); }
+  $("cr-generate").disabled = false;
+});
+$("cr-save").addEventListener("click", () =>
+  saveItem("cram", $("cr-title").value.trim(), crResult, $("cr-folder").value, "cr-save-note"));
+
+// ================= SMART REVIEW =================
+let rvDecks = [], rvQueue = [], rvPos = 0;
+async function loadReviewDecks() {
+  const { data } = await sb.from("saved_items").select("id, title, content").eq("type", "flashcards");
+  rvDecks = data || [];
+  buildReviewQueue();
+  const el = $("review-desc");
+  if (!rvDecks.length) el.textContent = "Save a flashcard deck to unlock — Notiq brings cards back right before you'd forget them.";
+  else if (rvQueue.length) el.textContent = `${rvQueue.length} card${rvQueue.length === 1 ? "" : "s"} due today — keep them fresh.`;
+  else el.textContent = "You're all caught up — nothing due today.";
+}
+function buildReviewQueue() {
+  const today = dayISO(0);
+  rvQueue = [];
+  rvDecks.forEach(d => (d.content.cards || []).forEach((c, i) => {
+    const rev = (d.content.review || {})[i];
+    if (!rev || rev.due <= today) rvQueue.push({ deck: d, i, card: c });
+  }));
+  rvQueue.sort(() => Math.random() - 0.5);
+}
+async function openReview() {
+  await loadReviewDecks();
+  rvPos = 0;
+  showView("review");
+  renderReview();
+  if (rvQueue.length) logActivity("review");
+}
+function renderReview() {
+  const stage = $("rv-stage"), empty = $("rv-empty");
+  if (!rvQueue.length) {
+    stage.classList.add("hidden"); empty.classList.remove("hidden");
+    empty.innerHTML = rvDecks.length
+      ? "<b>You're all caught up.</b> Nothing due today — come back tomorrow."
+      : "<b>Save a deck to unlock Smart review.</b> Generate flashcards, hit <b>Save to folder</b>, and Notiq will bring the cards back on exactly the right days.";
+    return;
+  }
+  if (rvPos >= rvQueue.length) {
+    stage.classList.add("hidden"); empty.classList.remove("hidden");
+    empty.innerHTML = `<b>Session done — ${rvQueue.length} card${rvQueue.length === 1 ? "" : "s"} reviewed.</b> Come back tomorrow to keep the streak alive.`;
+    loadReviewDecks();
+    return;
+  }
+  empty.classList.add("hidden"); stage.classList.remove("hidden");
+  const q = rvQueue[rvPos];
+  $("rv-card").classList.remove("flipped");
+  $("rv-deck").textContent = q.deck.title;
+  $("rv-front").textContent = q.card.front;
+  $("rv-back").textContent = q.card.back;
+  $("rv-count").textContent = (rvPos + 1) + " / " + rvQueue.length;
+}
+async function rateCard(good) {
+  const q = rvQueue[rvPos];
+  const rev = (q.deck.content.review = q.deck.content.review || {});
+  const prev = rev[q.i] || { int: 1 };
+  const interval = good ? Math.min(60, (prev.int || 1) * 2) : 1;
+  rev[q.i] = { int: interval, due: dayISO(good ? interval : 1) };
+  sb.from("saved_items").update({ content: q.deck.content }).eq("id", q.deck.id).then(() => {});
+  rvPos++;
+  renderReview();
+}
+
 // ================= FOLDER VIEW & ITEM VIEWER =================
-const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes" };
+const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet" };
 
 let curFolder = null;
 
