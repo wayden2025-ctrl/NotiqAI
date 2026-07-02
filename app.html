@@ -67,21 +67,6 @@
     background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--coral) 22%, transparent), transparent 60%);
     animation: pulseGlow 14s ease-in-out infinite reverse;
   }
-  .meteor {
-    position: absolute; width: 130px; height: 2px; border-radius: 2px;
-    background: linear-gradient(90deg, var(--coral), transparent);
-    opacity: 0; animation: meteorFly 1.15s ease-out forwards;
-  }
-  .meteor::before {
-    content: ""; position: absolute; left: -3px; top: -2px; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--coral); box-shadow: 0 0 10px 3px color-mix(in srgb, var(--coral) 60%, transparent);
-  }
-  @keyframes meteorFly {
-    0% { opacity: 0; transform: translate(0,0) rotate(17deg); }
-    8% { opacity: .9; }
-    100% { opacity: 0; transform: translate(-58vw, 17.7vw) rotate(17deg); }
-  }
-
   /* ============ CELEBRATION + MOTION POLISH ============ */
   .confetti { position: fixed; width: 8px; height: 12px; z-index: 950; pointer-events: none; animation: confettiFly .9s ease-out forwards; }
   @keyframes confettiFly {
@@ -1356,24 +1341,7 @@ function setStatus(id, msg, isError, spinning) {
   el.innerHTML = (spinning ? '<span class="spin"></span>' : "") + esc(msg);
 }
 
-// ================= ART: METEORS & CONFETTI =================
-function spawnMeteor() {
-  const host = document.querySelector(".ambient");
-  if (!host) return;
-  const m = document.createElement("div");
-  m.className = "meteor";
-  m.style.top = (4 + Math.random() * 34) + "%";
-  m.style.left = (55 + Math.random() * 40) + "%";
-  host.appendChild(m);
-  m.addEventListener("animationend", () => m.remove());
-}
-(function meteorLoop() {
-  setTimeout(() => {
-    if (!document.hidden) spawnMeteor();
-    meteorLoop();
-  }, 16000 + Math.random() * 22000);
-})();
-
+// ================= ART: CONFETTI =================
 function celebrate(el) {
   const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 3, width: 0, height: 0 };
   const cs = getComputedStyle(document.documentElement);
