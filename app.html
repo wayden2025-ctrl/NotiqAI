@@ -1823,10 +1823,30 @@ async function loadResources() {
   if (!error) resources = data || [];
 }
 
+async function ensurePdfJs() {
+  if (window.pdfjsLib) return;
+  // pdf.js didn't load at startup (slow network or an ad blocker) — try once more on demand
+  await new Promise((ok, bad) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload = ok;
+    s.onerror = () => bad(new Error("the PDF reader couldn't load. An ad blocker may be blocking it — allow this site (or cdnjs.cloudflare.com) and try again, or just paste the text in instead."));
+    document.head.appendChild(s);
+  });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
 async function extractText(file) {
   if (file.name.toLowerCase().endsWith(".pdf")) {
+    await ensurePdfJs();
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let pdf;
+    try {
+      pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    } catch (e) {
+      if (/password/i.test(e.message || "")) throw new Error("this PDF is password-protected. Remove the password and try again.");
+      throw new Error("this PDF couldn't be opened — it may be corrupted. Try re-downloading or re-exporting it.");
+    }
     let text = "";
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
@@ -1844,7 +1864,7 @@ async function addResourceFile(file) {
   let text = "";
   try { text = await extractText(file); }
   catch (e) { setStatus("res-status", `Couldn't read ${file.name}: ${e.message}`, true); return; }
-  if (!text) { setStatus("res-status", `${file.name} seems to have no readable text.`, true); return; }
+  if (!text) { setStatus("res-status", `${file.name} has no selectable text. If it's a scanned or photographed PDF, Notiq can't read it yet — paste the text in instead.`, true); return; }
   let trimmed = "";
   if (text.length > 200000) { text = text.slice(0, 200000); trimmed = " (long file — kept the first 200,000 characters)"; }
 
