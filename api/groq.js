@@ -23,7 +23,12 @@ function rateLimited(ip, isPro) {
   if (!h || now - h.dayStart > 86400000) h = { minute: [], day: 0, dayStart: now };
   h.minute = h.minute.filter(t => now - t < 60000);
   if (h.minute.length >= perMin) { hits.set(ip, h); return "You're generating too fast — wait a minute and try again."; }
-  if (h.day >= perDay) { hits.set(ip, h); return "Daily generation limit reached — come back tomorrow."; }
+  if (h.day >= perDay) {
+    hits.set(ip, h);
+    return isPro
+      ? "Daily generation limit reached — come back tomorrow."
+      : "Daily generation limit reached — come back tomorrow, or upgrade to Pro right now for unlimited generations.";
+  }
   h.minute.push(now);
   h.day++;
   hits.set(ip, h);

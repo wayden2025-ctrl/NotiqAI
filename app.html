@@ -1343,7 +1343,7 @@
   <!-- Free plan limit toast -->
   <div class="limit-toast hidden" id="limit-toast">
     <p id="limit-toast-text"></p>
-    <a href="pricing.html">Go Pro</a>
+    <a href="pricing.html">Upgrade now</a>
     <button onclick="$('limit-toast').classList.add('hidden')" title="Dismiss">&#10005;</button>
   </div>
 
@@ -1503,7 +1503,7 @@ async function logActivity(action) {
       genToday++;
       updateGenStat();
       if (userPlan !== "pro" && genToday === FREE_LIMITS.gens) {
-        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow.`);
+        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow, or you can upgrade to Pro right now and never hit this wall again.`);
       }
     }
     renderStreak();
@@ -1645,24 +1645,24 @@ function showLimitToast(text) {
   $("limit-toast-text").innerHTML = text;
   $("limit-toast").classList.remove("hidden");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $("limit-toast").classList.add("hidden"), 9000);
+  toastTimer = setTimeout(() => $("limit-toast").classList.add("hidden"), 12000);
 }
 function limitMsg(el, text) {
   el.className = el.classList.contains("status-line") ? "status-line show error" : el.className;
-  el.innerHTML = text + ` <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
-  showLimitToast(`<b>Free plan limit reached.</b> ${text}`);
+  el.innerHTML = text + ` <a href="pricing.html" style="color:var(--coral); font-weight:800;">Upgrade to Pro for unlimited &rarr;</a>`;
+  showLimitToast(`<b>Free plan limit reached.</b> ${text} Upgrade to Pro right now and it's unlimited — from $6.49/mo.`);
 }
 function gateGenerate(statusId) {
   if (userPlan === "pro") return true;
   if (genToday >= FREE_LIMITS.gens) {
-    limitMsg($(statusId), `Free plan limit reached: ${FREE_LIMITS.gens} AI generations per day. Come back tomorrow, or`);
+    limitMsg($(statusId), `You've used all ${FREE_LIMITS.gens} free AI generations for today.`);
     return false;
   }
   return true;
 }
 function gateResources(statusId) {
   if (userPlan === "pro" || resources.length < FREE_LIMITS.resources) return true;
-  limitMsg($(statusId), `Free plan limit: ${FREE_LIMITS.resources} resources. Delete one you're done with, or`);
+  limitMsg($(statusId), `You've hit the free plan's ${FREE_LIMITS.resources}-resource limit.`);
   return false;
 }
 
@@ -1740,7 +1740,7 @@ $("create-folder-btn").addEventListener("click", async () => {
   const name = $("new-folder-name").value.trim();
   if (!name) { setStatus("folder-status", "Give your folder a name first.", true); return; }
   if (userPlan !== "pro" && folders.length >= FREE_LIMITS.folders) {
-    limitMsg($("folder-status"), `Free plan limit: ${FREE_LIMITS.folders} folders.`);
+    limitMsg($("folder-status"), `You've hit the free plan's ${FREE_LIMITS.folders}-folder limit.`);
     return;
   }
   setStatus("folder-status", "Creating...", false, true);
@@ -1987,8 +1987,7 @@ async function groq(messages, jsonMode) {
 async function saveItem(type, title, content, folderId, noteId) {
   if (!folderId) { $(noteId).textContent = "Create a folder first (sidebar folder icon)."; return; }
   if (userPlan !== "pro" && Object.values(itemCounts).reduce((a, b) => a + b, 0) >= FREE_LIMITS.saved) {
-    $(noteId).innerHTML = `Free plan limit: ${FREE_LIMITS.saved} saved items. <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
-    showLimitToast(`<b>Free plan limit reached.</b> You've saved ${FREE_LIMITS.saved} items — delete one you're done with, or go unlimited.`);
+    limitMsg($(noteId), `You've hit the free plan's ${FREE_LIMITS.saved} saved-item limit.`);
     return;
   }
   if (!title) { $(noteId).textContent = "Give it a name first."; return; }
