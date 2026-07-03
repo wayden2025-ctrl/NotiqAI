@@ -580,6 +580,7 @@
     border-radius: 14px; padding: 14px 16px; margin-bottom: 22px;
   }
   .save-bar .txt-input { flex: 1; min-width: 160px; }
+  .save-bar .save-folder { flex: none; max-width: 210px; }
   .save-note { font-size: 13px; color: var(--coral); font-weight: 600; }
 
   .status-line { margin: 14px 0 0; font-size: 14px; color: var(--muted); display: none; }
@@ -1012,8 +1013,6 @@
       <div class="surface">
         <label class="field-label">What should the flashcards be about? <small>— select from your Resources</small></label>
         <div class="res-picker" id="fc-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="fc-folder"></select>
         <label class="field-label">How many cards</label>
         <select id="fc-count"><option>10</option><option selected>15</option><option>20</option><option>30</option></select>
         <div style="margin-top:22px;"><button class="btn-primary" id="fc-generate">Generate flashcards</button></div>
@@ -1022,7 +1021,8 @@
       <div class="hidden" id="fc-output">
         <div class="save-bar">
           <input class="txt-input" id="fc-title" maxlength="80" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
-          <button class="btn-primary" id="fc-save">Save to folder</button>
+          <select class="save-folder" id="fc-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="fc-save">Save</button>
           <button class="btn-ghost" onclick="ttsToggle(this, fcDeckText())">Listen</button>
           <button class="btn-ghost" onclick="printCards($('fc-title').value.trim() || 'Flashcards', fcDeck || [])">Print / PDF</button>
           <button class="btn-ghost" onclick="downloadCSV($('fc-title').value.trim() || 'flashcards', fcDeck || [])">Export CSV</button>
@@ -1068,8 +1068,6 @@
       <div class="surface">
         <label class="field-label">What should the quiz cover? <small>— select from your Resources</small></label>
         <div class="res-picker" id="qz-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="qz-folder"></select>
         <label class="field-label">Number of questions</label>
         <select id="qz-count"><option>5</option><option selected>10</option><option>15</option></select>
         <div style="margin-top:22px;"><button class="btn-primary" id="qz-generate">Generate quiz</button></div>
@@ -1078,7 +1076,8 @@
       <div class="hidden" id="qz-output">
         <div class="save-bar">
           <input class="txt-input" id="qz-title" maxlength="80" placeholder="Quiz name (e.g. History Midterm Practice)">
-          <button class="btn-primary" id="qz-save">Save to folder</button>
+          <select class="save-folder" id="qz-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="qz-save">Save</button>
           <button class="btn-ghost" onclick="printQuiz($('qz-title').value.trim() || 'Quiz', qzData || [])">Print / PDF</button>
           <span class="save-note" id="qz-save-note"></span>
         </div>
@@ -1110,15 +1109,14 @@
         </div>
         <label class="field-label">What do you need to study? <small>— select from your Resources</small></label>
         <div class="res-picker" id="sg-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="sg-folder"></select>
         <div style="margin-top:22px;"><button class="btn-primary" id="sg-generate">Generate study guide</button></div>
         <div class="status-line" id="sg-status"></div>
       </div>
       <div class="hidden" id="sg-output">
         <div class="save-bar">
           <input class="txt-input" id="sg-title" maxlength="80" placeholder="Guide name (e.g. Chem Final — June plan)">
-          <button class="btn-primary" id="sg-save">Save to folder</button>
+          <select class="save-folder" id="sg-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="sg-save">Save</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(sgResult ? sgResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('sg-title').value.trim() || 'Study guide', sgResult ? sgResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="sg-save-note"></span>
@@ -1136,15 +1134,14 @@
       <div class="surface">
         <label class="field-label">What should the notes cover? <small>— select from your Resources</small></label>
         <div class="res-picker" id="nt-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="nt-folder"></select>
         <div style="margin-top:22px;"><button class="btn-primary" id="nt-generate">Generate notes</button></div>
         <div class="status-line" id="nt-status"></div>
       </div>
       <div class="hidden" id="nt-output">
         <div class="save-bar">
           <input class="txt-input" id="nt-title" maxlength="80" placeholder="Notes name (e.g. Photosynthesis — clean notes)">
-          <button class="btn-primary" id="nt-save">Save to folder</button>
+          <select class="save-folder" id="nt-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="nt-save">Save</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(ntResult ? ntResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('nt-title').value.trim() || 'Notes', ntResult ? ntResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="nt-save-note"></span>
@@ -1162,8 +1159,6 @@
       <div class="surface">
         <label class="field-label">What's the test on? <small>— select from your Resources</small></label>
         <div class="res-picker" id="ts-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="ts-folder"></select>
         <label class="field-label">Test length</label>
         <select id="ts-len">
           <option value="s">Short — 5 MCQ, 4 blanks, 1 essay</option>
@@ -1176,7 +1171,8 @@
       <div class="hidden" id="ts-output">
         <div class="save-bar">
           <input class="txt-input" id="ts-title" maxlength="80" placeholder="Test name (e.g. Bio Unit 3 — Practice Exam)">
-          <button class="btn-primary" id="ts-save">Save to folder</button>
+          <select class="save-folder" id="ts-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="ts-save">Save</button>
           <button class="btn-ghost" onclick="printTest($('ts-title').value.trim() || 'Practice Test', tsData)">Print / PDF</button>
           <span class="save-note" id="ts-save-note"></span>
         </div>
@@ -1227,15 +1223,14 @@
       <div class="surface">
         <label class="field-label">What's the exam on? <small>— select from your Resources</small></label>
         <div class="res-picker" id="cr-resources"></div>
-        <label class="field-label">Save into folder</label>
-        <select id="cr-folder"></select>
         <div style="margin-top:22px;"><button class="btn-primary" id="cr-generate">Make my cram sheet</button></div>
         <div class="status-line" id="cr-status"></div>
       </div>
       <div class="hidden" id="cr-output">
         <div class="save-bar">
           <input class="txt-input" id="cr-title" maxlength="80" placeholder="Sheet name (e.g. Bio Final — cram sheet)">
-          <button class="btn-primary" id="cr-save">Save to folder</button>
+          <select class="save-folder" id="cr-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="cr-save">Save</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(crResult ? crResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('cr-title').value.trim() || 'Cram sheet', crResult ? crResult.markdown : '')">Print / PDF</button>
           <span class="save-note" id="cr-save-note"></span>
