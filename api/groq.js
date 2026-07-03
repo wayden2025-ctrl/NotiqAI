@@ -98,15 +98,42 @@ module.exports = async (req, res) => {
   }
   body.max_tokens = Math.min(Number(body.max_tokens) || 6000, 8000);
 
+  const callGroq = (b) => fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + process.env.GROQ_API_KEY,
+    },
+    body: JSON.stringify(b),
+  });
+
   try {
-    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + process.env.GROQ_API_KEY,
-      },
-      body: JSON.stringify(body),
-    });
+    let r = await callGroq(body);
+
+    // Groq's free tier caps tokens-per-minute PER MODEL. If we hit that wall:
+    // 1) if Groq says the wait is short, wait it out and retry the same model;
+    // 2) still limited? switch to the fallback model (separate token bucket);
+    // 3) still limited? return one clean, human message instead of Groq's raw error.
+    if (r.status === 429) {
+      let wait = 0;
+      try {
+        const errData = await r.json();
+        const m = ((errData.error && errData.error.message) || "").match(/try again in ([\d.]+)s/i);
+        if (m) wait = Math.ceil(parseFloat(m[1]));
+      } catch (e) { /* ignore */ }
+      if (wait > 0 && wait <= 25) {
+        await new Promise(s => setTimeout(s, (wait + 1) * 1000));
+        r = await callGroq(body);
+      }
+      if (r.status === 429) {
+        r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant" });
+      }
+      if (r.status === 429) {
+        res.status(429).json({ error: { message: "The AI is at full capacity right now — give it about 30 seconds and try again." } });
+        return;
+      }
+    }
+
     const data = await r.json();
     res.status(r.status).json(data);
   } catch (e) {
