@@ -928,7 +928,7 @@
       </div>
       <div class="hidden" id="fc-output">
         <div class="save-bar">
-          <input class="txt-input" id="fc-title" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
+          <input class="txt-input" id="fc-title" maxlength="80" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
           <button class="btn-primary" id="fc-save">Save to folder</button>
           <button class="btn-ghost" onclick="ttsToggle(this, fcDeckText())">Listen</button>
           <button class="btn-ghost" onclick="printCards($('fc-title').value.trim() || 'Flashcards', fcDeck || [])">Print / PDF</button>
@@ -984,7 +984,7 @@
       </div>
       <div class="hidden" id="qz-output">
         <div class="save-bar">
-          <input class="txt-input" id="qz-title" placeholder="Quiz name (e.g. History Midterm Practice)">
+          <input class="txt-input" id="qz-title" maxlength="80" placeholder="Quiz name (e.g. History Midterm Practice)">
           <button class="btn-primary" id="qz-save">Save to folder</button>
           <button class="btn-ghost" onclick="printQuiz($('qz-title').value.trim() || 'Quiz', qzData || [])">Print / PDF</button>
           <span class="save-note" id="qz-save-note"></span>
@@ -1024,7 +1024,7 @@
       </div>
       <div class="hidden" id="sg-output">
         <div class="save-bar">
-          <input class="txt-input" id="sg-title" placeholder="Guide name (e.g. Chem Final — June plan)">
+          <input class="txt-input" id="sg-title" maxlength="80" placeholder="Guide name (e.g. Chem Final — June plan)">
           <button class="btn-primary" id="sg-save">Save to folder</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(sgResult ? sgResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('sg-title').value.trim() || 'Study guide', sgResult ? sgResult.markdown : '')">Print / PDF</button>
@@ -1050,7 +1050,7 @@
       </div>
       <div class="hidden" id="nt-output">
         <div class="save-bar">
-          <input class="txt-input" id="nt-title" placeholder="Notes name (e.g. Photosynthesis — clean notes)">
+          <input class="txt-input" id="nt-title" maxlength="80" placeholder="Notes name (e.g. Photosynthesis — clean notes)">
           <button class="btn-primary" id="nt-save">Save to folder</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(ntResult ? ntResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('nt-title').value.trim() || 'Notes', ntResult ? ntResult.markdown : '')">Print / PDF</button>
@@ -1082,7 +1082,7 @@
       </div>
       <div class="hidden" id="ts-output">
         <div class="save-bar">
-          <input class="txt-input" id="ts-title" placeholder="Test name (e.g. Bio Unit 3 — Practice Exam)">
+          <input class="txt-input" id="ts-title" maxlength="80" placeholder="Test name (e.g. Bio Unit 3 — Practice Exam)">
           <button class="btn-primary" id="ts-save">Save to folder</button>
           <button class="btn-ghost" onclick="printTest($('ts-title').value.trim() || 'Practice Test', tsData)">Print / PDF</button>
           <span class="save-note" id="ts-save-note"></span>
@@ -1115,7 +1115,7 @@
       </div>
       <div class="hidden" id="tb-output">
         <div class="tb-question"><span class="concept" id="tb-concept"></span><span id="tb-q"></span></div>
-        <textarea class="paste-area" id="tb-answer" style="min-height:140px;" placeholder="Explain it in your own words — no peeking at your notes."></textarea>
+        <textarea class="paste-area" id="tb-answer" maxlength="5000" style="min-height:140px;" placeholder="Explain it in your own words — no peeking at your notes."></textarea>
         <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
           <button class="btn-primary" id="tb-grade">Grade my explanation</button>
           <button class="btn-ghost" onclick="tbAsk()">Different concept</button>
@@ -1141,7 +1141,7 @@
       </div>
       <div class="hidden" id="cr-output">
         <div class="save-bar">
-          <input class="txt-input" id="cr-title" placeholder="Sheet name (e.g. Bio Final — cram sheet)">
+          <input class="txt-input" id="cr-title" maxlength="80" placeholder="Sheet name (e.g. Bio Final — cram sheet)">
           <button class="btn-primary" id="cr-save">Save to folder</button>
           <button class="btn-ghost" onclick="ttsToggle(this, stripMd(crResult ? crResult.markdown : ''))">Listen</button>
           <button class="btn-ghost" onclick="printMarkdown($('cr-title').value.trim() || 'Cram sheet', crResult ? crResult.markdown : '')">Print / PDF</button>
@@ -1307,7 +1307,7 @@
       </div>
       <label class="field-label" style="margin-top:20px;">Or import a YouTube video</label>
       <div style="display:flex; gap:10px; align-items:center;">
-        <input class="txt-input" id="yt-url" placeholder="Paste a YouTube link" style="flex:1; min-width:0;">
+        <input class="txt-input" id="yt-url" maxlength="200" placeholder="Paste a YouTube link" style="flex:1; min-width:0;">
         <button class="btn-ghost" id="yt-add">Add</button>
       </div>
       <p style="font-size:12px; color:var(--muted); margin-top:6px;">Works for videos with captions/subtitles — Notiq reads the transcript.</p>
@@ -1319,9 +1319,10 @@
         4. Paste it in the <b>"Or paste text directly"</b> box below and hit Add
       </div>
       <label class="field-label" style="margin-top:20px;">Or paste text directly</label>
-      <textarea class="paste-area" id="paste-area" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
+      <textarea class="paste-area" id="paste-area" maxlength="50000" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
+      <p style="font-size:11.5px; color:var(--muted); text-align:right; margin-top:4px;" id="paste-count">0 / 50,000</p>
       <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
-        <input class="txt-input" id="paste-name" placeholder="Name it (e.g. Bio Lecture 7)" style="flex:1; min-width:0;">
+        <input class="txt-input" id="paste-name" maxlength="60" placeholder="Name it (e.g. Bio Lecture 7)" style="flex:1; min-width:0;">
         <button class="btn-ghost" id="paste-add">Add</button>
       </div>
       <div class="status-line" id="res-status"></div>
@@ -1335,7 +1336,7 @@
     <div class="panel-body">
       <p style="font-size:14px; color:var(--muted); line-height:1.55; margin-bottom:18px;">Folders keep your saved flashcards, quizzes, study guides and notes organized — by class, by unit, however you like.</p>
       <label class="field-label">Folder name</label>
-      <input class="txt-input" id="new-folder-name" placeholder="e.g. AP Biology" style="width:100%;">
+      <input class="txt-input" id="new-folder-name" maxlength="40" placeholder="e.g. AP Biology" style="width:100%;">
       <label class="field-label">Folder color</label>
       <div id="folder-colors" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
       <div style="margin-top:18px;"><button class="btn-primary" id="create-folder-btn">Create folder</button></div>
@@ -1647,6 +1648,8 @@ async function addResourceFile(file) {
   try { text = await extractText(file); }
   catch (e) { setStatus("res-status", `Couldn't read ${file.name}: ${e.message}`, true); return; }
   if (!text) { setStatus("res-status", `${file.name} seems to have no readable text.`, true); return; }
+  let trimmed = "";
+  if (text.length > 200000) { text = text.slice(0, 200000); trimmed = " (long file — kept the first 200,000 characters)"; }
 
   setStatus("res-status", `Uploading ${file.name}...`, false, true);
   let storage_path = null;
@@ -1656,7 +1659,7 @@ async function addResourceFile(file) {
 
   const { error } = await sb.from("resources").insert({ user_id: user.id, name: file.name, storage_path, content: text.slice(0, 200000) });
   if (error) { setStatus("res-status", error.message, true); return; }
-  setStatus("res-status", `${file.name} added${upErr ? " (file kept as text only — storage upload failed: " + upErr.message + ")" : ""}.`);
+  setStatus("res-status", `${file.name} added${trimmed}${upErr ? " (file kept as text only — storage upload failed: " + upErr.message + ")" : ""}.`);
   await loadResources();
   renderAll();
 }
@@ -1698,6 +1701,12 @@ $("yt-add").addEventListener("click", async () => {
     $("yt-help").classList.remove("hidden");
     $("paste-name").value = $("paste-name").value || "YouTube: ";
   }
+});
+
+$("paste-area").addEventListener("input", () => {
+  const n = $("paste-area").value.length;
+  $("paste-count").textContent = n.toLocaleString() + " / 50,000" + (n >= 50000 ? " — limit reached" : "");
+  $("paste-count").style.color = n >= 50000 ? "#a33520" : "";
 });
 
 $("paste-add").addEventListener("click", async () => {
@@ -2275,13 +2284,13 @@ function renderTest() {
   $("ts-fib").innerHTML = (tsData.fib || []).map((q, i) => `
     <div class="quiz-q">
       <h4><span class="qnum">${i + 1}.</span>${esc(q.q)}</h4>
-      <input class="txt-input fib-input" id="ts-fib-${i}" placeholder="Your answer" autocomplete="off">
+      <input class="txt-input fib-input" id="ts-fib-${i}" maxlength="120" placeholder="Your answer" autocomplete="off">
       <div class="fib-key hidden" id="ts-fibkey-${i}"></div>
     </div>`).join("");
   $("ts-essay").innerHTML = (tsData.essay || []).map((q, i) => `
     <div class="quiz-q">
       <h4><span class="qnum">${i + 1}.</span>${esc(q.q)}</h4>
-      <textarea class="paste-area" id="ts-essay-${i}" style="min-height:130px;" placeholder="Write your answer — full sentences, like a real exam."></textarea>
+      <textarea class="paste-area" id="ts-essay-${i}" maxlength="6000" style="min-height:130px;" placeholder="Write your answer — full sentences, like a real exam."></textarea>
       <div class="essay-fb hidden" id="ts-essayfb-${i}"></div>
     </div>`).join("");
 }

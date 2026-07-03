@@ -70,9 +70,6 @@
   .step p { font-size: 14.5px; color: #5a5148; line-height: 1.6; }
   .step b { color: var(--coral); }
 
-  .video-slot { display: none; margin-bottom: 24px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 44px -22px rgba(22,50,100,.4); }
-  .video-slot iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; display: block; }
-
   .actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; align-items: center; }
   .btn-primary {
     border: 0; cursor: pointer; color: #fff; text-decoration: none; display: inline-block;
@@ -91,11 +88,6 @@
   <span class="eyebrow">Welcome aboard</span>
   <h1>Here's how it <em>works.</em></h1>
   <p class="sub">Two minutes now saves you twenty later. Everything in Notiq flows through one simple loop — bring material in, turn it into study tools, then master it.</p>
-
-  <!-- Video tutorial slot: when ready, set the iframe src and change display to block -->
-  <div class="video-slot" id="video-slot">
-    <iframe id="video-frame" src="" title="Notiq AI tutorial" allowfullscreen></iframe>
-  </div>
 
   <div class="step"><div class="num">1</div><div>
     <h3>Bring your material into Resources</h3>
@@ -118,8 +110,13 @@
   </div></div>
 
   <div class="step"><div class="num">5</div><div>
+    <h3>Crunch time? There's a plan for that</h3>
+    <p><b>Study guide</b> asks when your exam is and plans every day until then. <b>Cram mode</b> squeezes everything onto one high-yield page when time is short. And any test, deck or notes can be <b>printed</b> or read aloud with <b>Listen</b>.</p>
+  </div></div>
+
+  <div class="step"><div class="num">6</div><div>
     <h3>Make it yours</h3>
-    <p>Click your <b>avatar</b> at the bottom of the sidebar to pick from 32 color palettes — everything recolors, even the home page. Study any day to grow your <b>streak</b>.</p>
+    <p>Click your <b>avatar</b> at the bottom of the sidebar to pick from 32 color palettes — everything recolors, even the home page. Study any day to grow your <b>streak</b>, and use the <b>chat bubble</b> icon in the sidebar to send feedback whenever something bugs you.</p>
   </div></div>
 
   <div class="actions">
