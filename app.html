@@ -1023,7 +1023,6 @@
           <input class="txt-input" id="fc-title" maxlength="80" placeholder="Deck name (e.g. Bio Ch. 4 — Cells)">
           <select class="save-folder" id="fc-folder" title="Folder to save into"></select>
           <button class="btn-primary" id="fc-save">Save</button>
-          <button class="btn-ghost" onclick="ttsToggle(this, fcDeckText())">Listen</button>
           <button class="btn-ghost" onclick="printCards($('fc-title').value.trim() || 'Flashcards', fcDeck || [])">Print / PDF</button>
           <button class="btn-ghost" onclick="downloadCSV($('fc-title').value.trim() || 'flashcards', fcDeck || [])">Export CSV</button>
           <span class="save-note" id="fc-save-note"></span>
@@ -1041,6 +1040,10 @@
             <span class="fc-counter" id="fc-counter">1 / 15</span>
             <button class="btn-ghost" onclick="fcMove(1)">Next &rarr;</button>
             <button class="btn-ghost" onclick="fcEditToggle()">&#9998; Edit card</button>
+          </div>
+          <div class="fc-nav" style="margin-top:2px;">
+            <button class="btn-ghost" id="fc-tts-q" onclick="fcReadQuestion()">&#128266; Read question</button>
+            <button class="btn-ghost hidden" id="fc-tts-a" onclick="fcReadAnswer()">Continue to answer &rarr;</button>
           </div>
           <p style="font-size:13px;color:var(--muted);">Click the card to flip it. Cards get harder as you go.</p>
           <div class="surface hidden" id="fc-edit-panel" style="width:min(560px,100%); margin-bottom:0;">
@@ -2165,7 +2168,21 @@ $("fc-generate").addEventListener("click", async () => {
   } catch (e) { setStatus("fc-status", e.message, true); }
   $("fc-generate").disabled = false;
 });
+function fcReadQuestion() {
+  if (!fcDeck || !fcDeck.length) return;
+  $("fc-card").classList.remove("flipped");           // question side up
+  $("fc-tts-a").classList.add("hidden");
+  ttsToggle($("fc-tts-q"), "Question. " + fcDeck[fcIndex].front,
+    () => $("fc-tts-a").classList.remove("hidden"));  // think first — answer on your signal
+}
+function fcReadAnswer() {
+  if (!fcDeck || !fcDeck.length) return;
+  $("fc-card").classList.add("flipped");              // flip so you see it too
+  ttsToggle($("fc-tts-a"), "Answer. " + fcDeck[fcIndex].back);
+}
 function renderFlashcard() {
+  ttsStop();
+  $("fc-tts-a").classList.add("hidden");
   $("fc-card").classList.remove("flipped");
   $("fc-front").textContent = fcDeck[fcIndex].front;
   $("fc-back").textContent = fcDeck[fcIndex].back;
@@ -2456,7 +2473,7 @@ function stripMd(md) {
     .map(l => (/[.!?:;,]$/.test(l) ? l : l + "."))   // so the voice pauses after titles & list items
     .join("\n");
 }
-let ttsQueue = [], ttsVoice = null;
+let ttsQueue = [], ttsVoice = null, ttsDone = null;
 function ttsPickVoice() {
   const vs = window.speechSynthesis.getVoices();
   ttsVoice = vs.find(v => /Google US English/i.test(v.name))
@@ -2469,7 +2486,7 @@ if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = ttsPickVoice;
 }
 function ttsStop() {
-  ttsQueue = [];
+  ttsQueue = []; ttsDone = null;
   window.speechSynthesis.cancel();
   if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
   ttsBtnActive = null;
@@ -2494,6 +2511,8 @@ function ttsNext() {
   if (!ttsQueue.length) {
     if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
     ttsBtnActive = null;
+    const cb = ttsDone; ttsDone = null;
+    if (cb) cb();
     return;
   }
   const u = new SpeechSynthesisUtterance(ttsQueue.shift());
@@ -2503,7 +2522,7 @@ function ttsNext() {
   u.onerror = () => { if (ttsBtnActive) setTimeout(ttsNext, 60); };
   window.speechSynthesis.speak(u);
 }
-function ttsToggle(btn, text) {
+function ttsToggle(btn, text, onDone) {
   const wasThis = ttsBtnActive === btn;
   if (window.speechSynthesis.speaking || window.speechSynthesis.pending || ttsQueue.length) {
     ttsStop();
@@ -2512,6 +2531,7 @@ function ttsToggle(btn, text) {
   if (!text) return;
   ttsQueue = ttsChunks(text);
   if (!ttsQueue.length) return;
+  ttsDone = onDone || null;
   btn.dataset.label = btn.dataset.label || btn.textContent;
   btn.textContent = "Stop";
   ttsBtnActive = btn;
