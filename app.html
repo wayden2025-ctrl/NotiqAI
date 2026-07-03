@@ -50,6 +50,29 @@
   ::selection { background: #c8d8f0; color: #2a201a; }
   .hidden { display: none !important; }
 
+  /* ============ FREE LIMIT TOAST ============ */
+  .limit-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 950; display: flex; align-items: center; gap: 16px;
+    background: var(--panel); backdrop-filter: blur(12px);
+    border: 1.5px solid #a33520; border-radius: 16px; padding: 14px 18px;
+    box-shadow: 0 20px 44px -14px rgba(0,0,0,.45);
+    max-width: min(560px, calc(100vw - 100px));
+    animation: toastUp .3s ease;
+  }
+  @keyframes toastUp { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  .limit-toast p { font-size: 14px; line-height: 1.5; color: var(--ink); }
+  .limit-toast p b { color: #a33520; }
+  .limit-toast a {
+    flex: none; text-decoration: none; color: #fff; font-weight: 700; font-size: 13.5px;
+    background: linear-gradient(180deg, var(--g1), var(--g2));
+    padding: 10px 20px; border-radius: 999px; white-space: nowrap;
+  }
+  .limit-toast button {
+    flex: none; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+    font-size: 15px; padding: 4px;
+  }
+
   /* ============ LIVING BACKGROUND ============ */
   .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .amb-grid {
@@ -786,6 +809,7 @@
             <div class="stat"><b id="stat-saved">0</b><span>things created</span></div>
             <div class="stat"><b id="stat-folders">0</b><span>folders</span></div>
             <div class="stat exam" id="stat-exam-wrap" style="display:none;"><b id="stat-exam">–</b><span id="exam-label">days until your exam</span></div>
+            <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used today"><b id="stat-gens">0/10</b><span>AI today</span></div>
           </div>
         </div>
         <div class="hero-orb">
@@ -1305,6 +1329,13 @@
 
   </main>
 
+  <!-- Free plan limit toast -->
+  <div class="limit-toast hidden" id="limit-toast">
+    <p id="limit-toast-text"></p>
+    <a href="pricing.html">Go Pro</a>
+    <button onclick="$('limit-toast').classList.add('hidden')" title="Dismiss">&#10005;</button>
+  </div>
+
   <!-- Floating focus timer (shows when the timer runs out of view) -->
   <div class="focus-float hidden" id="focus-float" onclick="showView('dashboard')" title="Back to your focus session">
     <i class="fdot"></i>
@@ -1457,7 +1488,13 @@ async function logActivity(action) {
     const { error } = await sb.from("activity").insert({ user_id: user.id, day, action });
     if (error) { activityBroken = true; return; }
     activityDays[day] = (activityDays[day] || 0) + 1;
-    if (action === "generate") genToday++;
+    if (action === "generate") {
+      genToday++;
+      updateGenStat();
+      if (userPlan !== "pro" && genToday === FREE_LIMITS.gens) {
+        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow.`);
+      }
+    }
     renderStreak();
   } catch (e) { /* non-fatal */ }
 }
@@ -1581,10 +1618,27 @@ function updateProUI() {
   btn.querySelector(".tip").textContent = pro ? "Notiq Pro — everything unlimited" : "Upgrade to Pro";
   $("acct-plan").textContent = pro ? "Pro" : "Free plan";
   $("acct-upgrade").classList.toggle("hidden", pro);
+  updateGenStat();
+}
+function updateGenStat() {
+  const wrap = $("stat-gens-wrap");
+  wrap.classList.toggle("hidden", userPlan === "pro");
+  if (userPlan === "pro") return;
+  const el = $("stat-gens");
+  el.textContent = Math.min(genToday, FREE_LIMITS.gens) + "/" + FREE_LIMITS.gens;
+  el.style.color = genToday >= FREE_LIMITS.gens ? "#a33520" : "";
+}
+let toastTimer = null;
+function showLimitToast(text) {
+  $("limit-toast-text").innerHTML = text;
+  $("limit-toast").classList.remove("hidden");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("limit-toast").classList.add("hidden"), 9000);
 }
 function limitMsg(el, text) {
   el.className = el.classList.contains("status-line") ? "status-line show error" : el.className;
   el.innerHTML = text + ` <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
+  showLimitToast(`<b>Free plan limit reached.</b> ${text}`);
 }
 function gateGenerate(statusId) {
   if (userPlan === "pro") return true;
@@ -1922,6 +1976,7 @@ async function saveItem(type, title, content, folderId, noteId) {
   if (!folderId) { $(noteId).textContent = "Create a folder first (sidebar folder icon)."; return; }
   if (userPlan !== "pro" && Object.values(itemCounts).reduce((a, b) => a + b, 0) >= FREE_LIMITS.saved) {
     $(noteId).innerHTML = `Free plan limit: ${FREE_LIMITS.saved} saved items. <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
+    showLimitToast(`<b>Free plan limit reached.</b> You've saved ${FREE_LIMITS.saved} items — delete one you're done with, or go unlimited.`);
     return;
   }
   if (!title) { $(noteId).textContent = "Give it a name first."; return; }
