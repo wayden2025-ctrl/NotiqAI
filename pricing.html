@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Notiq AI — Pricing</title>
+<script>
+  // BETA SWITCH — plans are hidden while Notiq is in free testing.
+  // Set to true (together with PLANS_ENABLED in app.html) to bring pricing back.
+  const NOTIQ_PLANS_ENABLED = false;
+  if (!NOTIQ_PLANS_ENABLED) location.replace("index.html");
+</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">

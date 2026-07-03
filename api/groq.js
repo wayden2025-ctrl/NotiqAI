@@ -23,11 +23,10 @@ function rateLimited(ip, isPro) {
   if (!h || now - h.dayStart > 86400000) h = { minute: [], day: 0, dayStart: now };
   h.minute = h.minute.filter(t => now - t < 60000);
   if (h.minute.length >= perMin) { hits.set(ip, h); return "You're generating too fast — wait a minute and try again."; }
+  // NOTE: when plans come back, re-add the "upgrade to Pro" pitch to the free-tier message here.
   if (h.day >= perDay) {
     hits.set(ip, h);
-    return isPro
-      ? "Daily generation limit reached — come back tomorrow."
-      : "Daily generation limit reached — come back tomorrow, or upgrade to Pro right now for unlimited generations.";
+    return "You've generated a lot today — daily cap reached. Come back tomorrow.";
   }
   h.minute.push(now);
   h.day++;
@@ -129,7 +128,7 @@ module.exports = async (req, res) => {
         r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant" });
       }
       if (r.status === 429) {
-        res.status(429).json({ error: { message: "The AI is at full capacity right now — give it about 30 seconds and try again." } });
+        res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
         return;
       }
     }
