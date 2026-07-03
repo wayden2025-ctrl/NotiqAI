@@ -1766,8 +1766,7 @@ function gateResources(statusId) {
 
 // ================= VIEWS & PANELS =================
 function showView(name) {
-  window.speechSynthesis.cancel();
-  if (ttsBtnActive) { ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen"; ttsBtnActive = null; }
+  ttsStop();
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   $("view-" + name).classList.remove("hidden");
   $("rb-home").classList.toggle("active", name === "dashboard");
@@ -2448,35 +2447,85 @@ function stripMd(md) {
   return String(md || "")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/\[(.*?)\]\(.*?\)/g, "$1")
-    .replace(/[#*_>`|]/g, " ")
-    .replace(/\s+/g, " ").trim();
+    .replace(/\$\$?/g, " ")                 // LaTeX delimiters
+    .replace(/\\[a-zA-Z]+/g, " ")           // LaTeX commands (\frac etc.)
+    .replace(/[{}]/g, " ")
+    .split(/\n/)
+    .map(l => l.replace(/[#*_>`|]/g, " ").replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .map(l => (/[.!?:;,]$/.test(l) ? l : l + "."))   // so the voice pauses after titles & list items
+    .join("\n");
+}
+let ttsQueue = [], ttsVoice = null;
+function ttsPickVoice() {
+  const vs = window.speechSynthesis.getVoices();
+  ttsVoice = vs.find(v => /Google US English/i.test(v.name))
+    || vs.find(v => /Google/i.test(v.name) && (v.lang || "").startsWith("en"))
+    || vs.find(v => v.lang === "en-US")
+    || null;
+}
+if (window.speechSynthesis) {
+  ttsPickVoice();
+  window.speechSynthesis.onvoiceschanged = ttsPickVoice;
+}
+function ttsStop() {
+  ttsQueue = [];
+  window.speechSynthesis.cancel();
+  if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
+  ttsBtnActive = null;
+}
+function ttsChunks(text) {
+  // one chunk per line/paragraph, long ones split by sentence — this is what
+  // creates the pause after a title and stops Chrome cutting long reads short
+  const out = [];
+  String(text).slice(0, 30000).split(/\n+/).forEach(block => {
+    block = block.trim();
+    if (!block) return;
+    let cur = "";
+    (block.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [block]).forEach(s => {
+      if ((cur + s).length > 250) { if (cur.trim()) out.push(cur.trim()); cur = s; }
+      else cur += s;
+    });
+    if (cur.trim()) out.push(cur.trim());
+  });
+  return out;
+}
+function ttsNext() {
+  if (!ttsQueue.length) {
+    if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
+    ttsBtnActive = null;
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(ttsQueue.shift());
+  u.rate = 1;
+  if (ttsVoice) u.voice = ttsVoice;
+  u.onend = () => { if (ttsBtnActive) setTimeout(ttsNext, 160); };   // a breath between blocks
+  u.onerror = () => { if (ttsBtnActive) setTimeout(ttsNext, 60); };
+  window.speechSynthesis.speak(u);
 }
 function ttsToggle(btn, text) {
   const wasThis = ttsBtnActive === btn;
-  if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-    window.speechSynthesis.cancel();
-    if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen";
-    ttsBtnActive = null;
+  if (window.speechSynthesis.speaking || window.speechSynthesis.pending || ttsQueue.length) {
+    ttsStop();
     if (wasThis) return;
   }
   if (!text) return;
-  const u = new SpeechSynthesisUtterance(String(text).slice(0, 20000));
-  u.rate = 1;
-  u.onend = () => { if (ttsBtnActive) ttsBtnActive.textContent = ttsBtnActive.dataset.label || "Listen"; ttsBtnActive = null; };
+  ttsQueue = ttsChunks(text);
+  if (!ttsQueue.length) return;
   btn.dataset.label = btn.dataset.label || btn.textContent;
   btn.textContent = "Stop";
   ttsBtnActive = btn;
-  window.speechSynthesis.speak(u);
+  ttsNext();
 }
 function fcDeckText() {
-  return (fcDeck || []).map((c, i) => `Card ${i + 1}. ${c.front}. Answer: ${c.back}.`).join(" ");
+  return (fcDeck || []).map((c, i) => `Card ${i + 1}. ${c.front}. Answer: ${c.back}.`).join("\n");
 }
 function itemPlainText(d) {
   const c = (d && d.content) || {};
-  if (d.type === "flashcards") return (c.cards || []).map((k, i) => `Card ${i + 1}. ${k.front}. Answer: ${k.back}.`).join(" ");
-  if (d.type === "quiz") return (c.questions || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join(" ");
-  if (d.type === "test") return (c.mcq || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join(" ") + " " +
-    (c.fib || []).map((q, i) => `Blank ${i + 1}. ${q.q} Answer: ${q.answer}.`).join(" ");
+  if (d.type === "flashcards") return (c.cards || []).map((k, i) => `Card ${i + 1}. ${k.front}. Answer: ${k.back}.`).join("\n");
+  if (d.type === "quiz") return (c.questions || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join("\n");
+  if (d.type === "test") return (c.mcq || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join("\n") + " " +
+    (c.fib || []).map((q, i) => `Blank ${i + 1}. ${q.q} Answer: ${q.answer}.`).join("\n");
   return stripMd(c.markdown || "");
 }
 
