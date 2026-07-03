@@ -540,6 +540,8 @@
     padding: 10px 20px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 14px;
   }
   .btn-ghost:hover { border-color: var(--amber); color: var(--coral); }
+  .btn-ghost.btn-danger { color: #a33520; }
+  .btn-ghost.btn-danger:hover { border-color: #a33520; color: #a33520; background: rgba(200,60,40,.07); }
 
   .save-bar {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -954,6 +956,7 @@
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
         <button class="btn-ghost" id="share-btn" onclick="toggleShare()">Share this folder</button>
         <button class="btn-ghost hidden" id="copy-share-btn" onclick="copyShareLink()">Copy link</button>
+        <button class="btn-ghost btn-danger" onclick="deleteFolder()">Delete folder</button>
         <span class="save-note" id="share-note"></span>
       </div>
       <div class="item-grid" id="folder-items"></div>
@@ -3036,6 +3039,23 @@ async function copyShareLink() {
   } catch (e) {
     prompt("Copy this link:", url);
   }
+}
+
+async function deleteFolder() {
+  if (!curFolder) return;
+  const n = itemCounts[curFolder.id] || 0;
+  const warn = n ? ` and the ${n} saved item${n === 1 ? "" : "s"} inside it` : "";
+  if (!confirm(`Delete "${curFolder.name}"${warn}? This can't be undone.`)) return;
+  const { error } = await sb.from("folders").delete().eq("id", curFolder.id);
+  if (error) { $("share-note").textContent = error.message; return; }
+  folders = folders.filter(f => f.id !== curFolder.id);
+  delete itemCounts[curFolder.id];
+  curFolder = null;
+  currentFolderId = null;
+  await loadCounts();
+  renderFoldersRow();
+  renderPanelFolders();
+  showView("dashboard");
 }
 
 async function deleteItem(id) {
