@@ -140,6 +140,13 @@
   }
   .rail-btn:hover .tip { opacity: 1; }
   .rail .spacer { flex: 1; }
+  .rail-btn.pro-btn {
+    background: linear-gradient(135deg, #f5b91e, #e0691e); color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(224,105,30,.6), inset 0 1px 0 rgba(255,255,255,.4);
+    margin-bottom: 10px;
+  }
+  .rail-btn.pro-btn:hover { background: linear-gradient(135deg, #f5b91e, #e0691e); color: #fff; filter: brightness(1.08); }
+  .rail-btn.pro-btn.is-pro { background: linear-gradient(135deg, var(--g1), var(--g2)); box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--g2) 60%, transparent), inset 0 1px 0 rgba(255,255,255,.35); }
   .rail .avatar {
     width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
     background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff;
@@ -753,6 +760,10 @@
       <span class="tip">Feedback &amp; problems</span>
     </button>
     <div class="spacer"></div>
+    <button class="rail-btn pro-btn" id="rb-pro" onclick="location.href='pricing.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.8 6 6.5.8-4.8 4.4 1.3 6.4L12 16.9l-5.8 3.2 1.3-6.4L2.7 9.3l6.5-.8z"/></svg>
+      <span class="tip">Upgrade to Pro</span>
+    </button>
     <button class="avatar" id="rb-account" onclick="showView('account')">?</button>
   </aside>
 
@@ -1278,7 +1289,11 @@
           <div class="acct-name" id="acct-name">—</div>
           <div class="acct-email" id="acct-email">—</div>
         </div>
-        <button class="btn-ghost" style="margin-left:auto;" onclick="signOut()">Sign out</button>
+        <div style="margin-left:auto; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <span class="itype" style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--coral); background:color-mix(in srgb, var(--coral) 10%, transparent); padding:4px 11px; border-radius:999px;" id="acct-plan">Free plan</span>
+          <a class="btn-primary hidden" id="acct-upgrade" href="pricing.html" style="text-decoration:none; padding:10px 24px; font-size:14px;">Go Pro</a>
+          <button class="btn-ghost" onclick="signOut()">Sign out</button>
+        </div>
       </div>
       <div class="section-label">Color palette</div>
       <p class="page-sub" style="margin-bottom:18px;">Pick how Notiq looks. It changes the whole app — and the home page picks up your accent colors too. Remembered on this device.</p>
@@ -1401,7 +1416,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   $("acct-name").textContent = name;
   $("acct-email").textContent = user.email;
 
-  await Promise.all([loadFolders(), loadResources(), loadCounts(), loadActivity()]);
+  await Promise.all([loadFolders(), loadResources(), loadCounts(), loadActivity(), loadPlan()]);
   renderAll();
   buildCalendar();
   pickQuote();
@@ -1439,6 +1454,7 @@ async function logActivity(action) {
     const { error } = await sb.from("activity").insert({ user_id: user.id, day, action });
     if (error) { activityBroken = true; return; }
     activityDays[day] = (activityDays[day] || 0) + 1;
+    if (action === "generate") genToday++;
     renderStreak();
   } catch (e) { /* non-fatal */ }
 }
@@ -1535,6 +1551,52 @@ function selectTheme(id) {
   renderThemes();
 }
 
+// ================= PLANS (Free vs Pro) =================
+let userPlan = "free", genToday = 0;
+const FREE_LIMITS = { gens: 10, resources: 15, folders: 5, saved: 30 };
+
+async function loadPlan() {
+  try {
+    let { data } = await sb.from("profiles").select("plan").eq("user_id", user.id).maybeSingle();
+    if (!data) {
+      await sb.from("profiles").insert({ user_id: user.id, plan: "free" });
+      data = { plan: "free" };
+    }
+    userPlan = data.plan || "free";
+  } catch (e) { userPlan = "free"; }   // profiles table not created yet -> treat as free
+  try {
+    const { count } = await sb.from("activity").select("id", { count: "exact", head: true })
+      .eq("day", dayISO(0)).eq("action", "generate");
+    genToday = count || 0;
+  } catch (e) {}
+  updateProUI();
+}
+function updateProUI() {
+  const pro = userPlan === "pro";
+  const btn = $("rb-pro");
+  btn.classList.toggle("is-pro", pro);
+  btn.querySelector(".tip").textContent = pro ? "Notiq Pro — everything unlimited" : "Upgrade to Pro";
+  $("acct-plan").textContent = pro ? "Pro" : "Free plan";
+  $("acct-upgrade").classList.toggle("hidden", pro);
+}
+function limitMsg(el, text) {
+  el.className = el.classList.contains("status-line") ? "status-line show error" : el.className;
+  el.innerHTML = text + ` <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
+}
+function gateGenerate(statusId) {
+  if (userPlan === "pro") return true;
+  if (genToday >= FREE_LIMITS.gens) {
+    limitMsg($(statusId), `Free plan limit reached: ${FREE_LIMITS.gens} AI generations per day. Come back tomorrow, or`);
+    return false;
+  }
+  return true;
+}
+function gateResources(statusId) {
+  if (userPlan === "pro" || resources.length < FREE_LIMITS.resources) return true;
+  limitMsg($(statusId), `Free plan limit: ${FREE_LIMITS.resources} resources. Delete one you're done with, or`);
+  return false;
+}
+
 // ================= VIEWS & PANELS =================
 function showView(name) {
   window.speechSynthesis.cancel();
@@ -1608,6 +1670,10 @@ function pickFolderHue(h) { newFolderHue = h; renderFolderColors(); }
 $("create-folder-btn").addEventListener("click", async () => {
   const name = $("new-folder-name").value.trim();
   if (!name) { setStatus("folder-status", "Give your folder a name first.", true); return; }
+  if (userPlan !== "pro" && folders.length >= FREE_LIMITS.folders) {
+    limitMsg($("folder-status"), `Free plan limit: ${FREE_LIMITS.folders} folders.`);
+    return;
+  }
   setStatus("folder-status", "Creating...", false, true);
   let { error } = await sb.from("folders").insert({ name, user_id: user.id, hue: newFolderHue });
   if (error && /hue/.test(error.message)) {
@@ -1643,6 +1709,7 @@ async function extractText(file) {
 }
 
 async function addResourceFile(file) {
+  if (!gateResources("res-status")) return;
   setStatus("res-status", `Reading ${file.name}...`, false, true);
   let text = "";
   try { text = await extractText(file); }
@@ -1680,6 +1747,7 @@ $("file-input").addEventListener("change", async (e) => {
 $("yt-add").addEventListener("click", async () => {
   const url = $("yt-url").value.trim();
   if (!url) { setStatus("res-status", "Paste a YouTube link first.", true); return; }
+  if (!gateResources("res-status")) return;
   setStatus("res-status", "Grabbing the video transcript...", false, true);
   try {
     const r = await fetch("/api/youtube?url=" + encodeURIComponent(url));
@@ -1710,6 +1778,7 @@ $("paste-area").addEventListener("input", () => {
 });
 
 $("paste-add").addEventListener("click", async () => {
+  if (!gateResources("res-status")) return;
   const text = $("paste-area").value.trim();
   const name = $("paste-name").value.trim() || "Pasted notes " + new Date().toLocaleDateString();
   if (!text) { setStatus("res-status", "Paste some text first.", true); return; }
@@ -1848,6 +1917,10 @@ async function groq(messages, jsonMode) {
 // ================= SAVE =================
 async function saveItem(type, title, content, folderId, noteId) {
   if (!folderId) { $(noteId).textContent = "Create a folder first (sidebar folder icon)."; return; }
+  if (userPlan !== "pro" && Object.values(itemCounts).reduce((a, b) => a + b, 0) >= FREE_LIMITS.saved) {
+    $(noteId).innerHTML = `Free plan limit: ${FREE_LIMITS.saved} saved items. <a href="pricing.html" style="color:var(--coral); font-weight:800;">Go Pro for unlimited</a>`;
+    return;
+  }
   if (!title) { $(noteId).textContent = "Give it a name first."; return; }
   $(noteId).textContent = "Saving...";
   const { error } = await sb.from("saved_items").insert({ user_id: user.id, folder_id: folderId, type, title, content });
@@ -1862,6 +1935,7 @@ async function saveItem(type, title, content, folderId, noteId) {
 $("fc-generate").addEventListener("click", async () => {
   const ids = pickedResources("fc");
   if (!ids.length) { setStatus("fc-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("fc-status")) return;
   const n = $("fc-count").value;
   $("fc-generate").disabled = true;
   setStatus("fc-status", "Generating flashcards from your material...", false, true);
@@ -1923,6 +1997,7 @@ $("fc-save").addEventListener("click", () =>
 $("qz-generate").addEventListener("click", async () => {
   const ids = pickedResources("qz");
   if (!ids.length) { setStatus("qz-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("qz-status")) return;
   const n = $("qz-count").value;
   $("qz-generate").disabled = true;
   setStatus("qz-status", "Writing your quiz...", false, true);
@@ -2049,6 +2124,7 @@ $("sg-generate").addEventListener("click", async () => {
   const ids = pickedResources("sg");
   if (!sgExamDate) { setStatus("sg-status", "Pick your exam day on the calendar first.", true); return; }
   if (!ids.length) { setStatus("sg-status", "Select at least one resource to study from.", true); return; }
+  if (!gateGenerate("sg-status")) return;
   $("sg-generate").disabled = true;
   setStatus("sg-status", "Planning your days...", false, true);
   try {
@@ -2077,6 +2153,7 @@ $("sg-save").addEventListener("click", () =>
 $("nt-generate").addEventListener("click", async () => {
   const ids = pickedResources("nt");
   if (!ids.length) { setStatus("nt-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("nt-status")) return;
   $("nt-generate").disabled = true;
   setStatus("nt-status", "Rewriting your notes, nicely...", false, true);
   try {
@@ -2250,6 +2327,7 @@ const TS_SIZES = { s: [5, 4, 1], m: [6, 5, 2], l: [8, 6, 3] };
 $("ts-generate").addEventListener("click", async () => {
   const ids = pickedResources("ts");
   if (!ids.length) { setStatus("ts-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("ts-status")) return;
   const [nm, nf, ne] = TS_SIZES[$("ts-len").value];
   $("ts-generate").disabled = true;
   setStatus("ts-status", "Writing your exam — three sections...", false, true);
@@ -2418,6 +2496,7 @@ $("tb-generate").addEventListener("click", tbAsk);
 async function tbAsk() {
   const ids = pickedResources("tb");
   if (!ids.length) { setStatus("tb-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("tb-status")) return;
   $("tb-generate").disabled = true;
   setStatus("tb-status", "Picking a concept to test you on...", false, true);
   try {
@@ -2442,6 +2521,7 @@ async function tbAsk() {
 $("tb-grade").addEventListener("click", async () => {
   const ans = $("tb-answer").value.trim();
   if (!ans) { setStatus("tb-grade-status", "Write your explanation first.", true); return; }
+  if (!gateGenerate("tb-grade-status")) return;
   $("tb-grade").disabled = true;
   setStatus("tb-grade-status", "Grading your explanation...", false, true);
   try {
@@ -2470,6 +2550,7 @@ let crResult = null;
 $("cr-generate").addEventListener("click", async () => {
   const ids = pickedResources("cr");
   if (!ids.length) { setStatus("cr-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("cr-status")) return;
   $("cr-generate").disabled = true;
   setStatus("cr-status", "Condensing everything that earns marks...", false, true);
   try {

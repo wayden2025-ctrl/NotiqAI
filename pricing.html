@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Pricing</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1e3a6e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="theme.js"></script>
+<script>notiqLightCanvas();</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264; --orb1: #b8cceb; --orbBtn: #122650;
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10); --card1: #ffffff; --card2: #f2f5fb;
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed; min-height: 100vh;
+  }
+  nav {
+    display: flex; align-items: center; justify-content: space-between; padding: 18px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; color: var(--ink); }
+  .orb {
+    width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
+  }
+  .orb::before {
+    content: "N"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px;
+    color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
+  }
+  .brand span { font-family: 'Instrument Serif', serif; font-size: 23px; }
+  .brand b { color: var(--coral); font-weight: 400; }
+  nav a.plain { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14.5px; }
+  nav a.plain:hover { color: var(--coral); }
+
+  main { max-width: 1020px; margin: 0 auto; padding: 70px 28px 90px; }
+  .eyebrow { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(42px, 6.5vw, 64px); letter-spacing: -2px; line-height: .95; margin: 10px 0 12px;
+  }
+  h1 em { color: var(--coral); }
+  .sub { color: var(--muted); font-size: 16.5px; max-width: 56ch; line-height: 1.6; margin-bottom: 46px; }
+
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+  @media (max-width: 900px) { .plans { grid-template-columns: 1fr; } }
+  .plan {
+    background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1.5px solid var(--line);
+    border-radius: 20px; padding: 30px 26px; display: flex; flex-direction: column;
+    box-shadow: 0 20px 40px -22px rgba(60,40,30,.3);
+    position: relative;
+  }
+  .plan.featured {
+    border-color: var(--coral);
+    box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--g2) 45%, transparent);
+    transform: scale(1.03);
+  }
+  .badge {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff;
+    font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 999px; white-space: nowrap;
+  }
+  .plan h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 27px; letter-spacing: -.5px; }
+  .price { margin: 14px 0 2px; }
+  .price b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 46px; color: var(--coral); }
+  .price span { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .billed { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; min-height: 17px; }
+  .plan ul { list-style: none; margin: 0 0 24px; flex: 1; }
+  .plan li { font-size: 14.5px; line-height: 1.5; padding: 6px 0 6px 26px; position: relative; color: #4a423b; }
+  .plan li::before { content: "\2713"; position: absolute; left: 2px; color: var(--coral); font-weight: 800; }
+  .plan li.lim::before { content: "\2022"; color: var(--muted); }
+  .cta {
+    display: block; text-align: center; text-decoration: none; cursor: pointer;
+    border-radius: 999px; padding: 14px; font-family: inherit; font-weight: 700; font-size: 15px;
+  }
+  .cta.solid { color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); border: 0;
+    box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--g2) 70%, transparent); }
+  .cta.solid:hover { filter: brightness(1.08); }
+  .cta.ghost { color: var(--ink); background: var(--card1); border: 1.5px solid var(--line); }
+  .cta.ghost:hover { border-color: var(--coral); color: var(--coral); }
+  .checkout-note { text-align: center; font-size: 13px; color: var(--muted); margin-top: 26px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html"><div class="orb"></div><span>Notiq<b> AI</b></span></a>
+  <a class="plain" href="app.html">Open app &rarr;</a>
+</nav>
+
+<main>
+  <span class="eyebrow">Pricing</span>
+  <h1>Study free. Go <em>unlimited.</em></h1>
+  <p class="sub">The Free plan covers real studying, every day, forever. Pro removes every ceiling for less than the price of lunch.</p>
+
+  <div class="plans">
+    <div class="plan">
+      <h2>Free</h2>
+      <div class="price"><b>$0</b> <span>forever</span></div>
+      <div class="billed"></div>
+      <ul>
+        <li class="lim">10 AI generations per day</li>
+        <li class="lim">15 resources</li>
+        <li class="lim">5 folders</li>
+        <li class="lim">30 saved items</li>
+        <li>All study tools — flashcards, quizzes, tests, guides, notes</li>
+        <li>All games, Smart review &amp; focus timer</li>
+        <li>All 32 color palettes</li>
+        <li>Print, export &amp; sharing</li>
+      </ul>
+      <a class="cta ghost" href="signin.html?mode=signup">Start Free</a>
+    </div>
+
+    <div class="plan featured">
+      <span class="badge">Best value — save 38%</span>
+      <h2>Pro — Yearly</h2>
+      <div class="price"><b>$7.99</b> <span>/ month</span></div>
+      <div class="billed">Billed yearly at $95.88</div>
+      <ul>
+        <li><b>Unlimited</b> AI generations</li>
+        <li><b>Unlimited</b> resources</li>
+        <li><b>Unlimited</b> folders</li>
+        <li><b>Unlimited</b> saved items</li>
+        <li>Everything in Free</li>
+        <li>Priority support</li>
+      </ul>
+      <a class="cta solid" href="mailto:wayden2025@gmail.com?subject=Notiq%20Pro%20upgrade%20(Yearly)&body=Hi!%20I%27d%20like%20to%20upgrade%20to%20Pro%20Yearly.%20My%20account%20email%20is%3A%20">Go Pro — Yearly</a>
+    </div>
+
+    <div class="plan">
+      <h2>Pro — Monthly</h2>
+      <div class="price"><b>$12.99</b> <span>/ month</span></div>
+      <div class="billed">Billed monthly, cancel anytime</div>
+      <ul>
+        <li><b>Unlimited</b> AI generations</li>
+        <li><b>Unlimited</b> resources</li>
+        <li><b>Unlimited</b> folders</li>
+        <li><b>Unlimited</b> saved items</li>
+        <li>Everything in Free</li>
+        <li>Priority support</li>
+      </ul>
+      <a class="cta ghost" href="mailto:wayden2025@gmail.com?subject=Notiq%20Pro%20upgrade%20(Monthly)&body=Hi!%20I%27d%20like%20to%20upgrade%20to%20Pro%20Monthly.%20My%20account%20email%20is%3A%20">Go Pro — Monthly</a>
+    </div>
+  </div>
+
+  <p class="checkout-note">Card checkout is coming soon. For now, tap Go Pro and we'll upgrade your account the same day you email us.</p>
+</main>
+</body>
+</html>
