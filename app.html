@@ -15,6 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
 <script src="theme.js"></script>
@@ -1646,6 +1649,41 @@ function selectTheme(id) {
   renderThemes();
 }
 
+// ================= MATH (KaTeX everywhere) =================
+// Renders LaTeX in everything — flashcards, quizzes, notes, tests, games, viewers.
+// A MutationObserver re-renders whenever new content lands in the DOM.
+const NOTIQ_MATH_DELIMS = [
+  { left: "$$", right: "$$", display: true },
+  { left: "\\[", right: "\\]", display: true },
+  { left: "\\(", right: "\\)", display: false },
+  { left: "$", right: "$", display: false },
+];
+let mathScheduled = false, mathObserver = null;
+function renderMathNow() {
+  mathScheduled = false;
+  if (!window.renderMathInElement) return;
+  if (mathObserver) mathObserver.disconnect();
+  try {
+    renderMathInElement(document.body, {
+      delimiters: NOTIQ_MATH_DELIMS,
+      throwOnError: false,
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "input", "select", "option"],
+    });
+  } catch (e) { /* never break the app over math */ }
+  observeMath();
+}
+function scheduleMath() {
+  if (mathScheduled) return;
+  mathScheduled = true;
+  setTimeout(renderMathNow, 60);
+}
+function observeMath() {
+  if (!mathObserver) mathObserver = new MutationObserver(scheduleMath);
+  mathObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+observeMath();
+scheduleMath();
+
 // ================= DONATION BAR =================
 function hideDonateBar() {
   $("donate-bar").classList.add("hidden");
@@ -2036,9 +2074,14 @@ async function getMaterial(ids) {
 
 // ================= GROQ =================
 async function groq(messages, jsonMode) {
+  // every generator gets the same math rule: output LaTeX so it renders beautifully
+  const msgs = (messages || []).map((m, i) =>
+    i === 0 && m.role === "system"
+      ? { role: "system", content: m.content + " IMPORTANT: whenever math, chemistry or physics notation appears, write it as LaTeX wrapped in $...$ for inline math or $$...$$ for display equations (e.g. $x^2 + 3x - 4 = 0$, $$\\frac{a}{b}$$) — never plain text like x^2 or sqrt(x)." }
+      : m);
   const body = {
     model: NOTIQ_CONFIG.GROQ_MODEL,
-    messages,
+    messages: msgs,
     temperature: 0.4,
     max_tokens: 6000,
   };
@@ -2446,7 +2489,11 @@ function itemPlainText(d) {
 function printHtml(title, inner) {
   const w = window.open("", "_blank");
   if (!w) { alert("Your browser blocked the print window — allow popups for this site."); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"><\/script>
+    <style>
     body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; max-width: 720px; margin: 40px auto; padding: 0 24px; line-height: 1.6; }
     h1 { color: #1e3a6e; font-style: italic; margin-bottom: 20px; }
     h2 { color: #1e3a6e; margin: 22px 0 8px; }
@@ -2458,7 +2505,12 @@ function printHtml(title, inner) {
     .key { page-break-before: always; }
   </style></head><body><h1>${esc(title)}</h1>${inner}</body></html>`);
   w.document.close();
-  setTimeout(() => { w.focus(); w.print(); }, 350);
+  setTimeout(() => {
+    try {
+      if (w.renderMathInElement) w.renderMathInElement(w.document.body, { delimiters: NOTIQ_MATH_DELIMS, throwOnError: false });
+    } catch (e) {}
+    w.focus(); w.print();
+  }, 650);
 }
 function printMarkdown(title, md) { printHtml(title, marked.parse(md || "")); }
 function printCards(title, cards) {
