@@ -954,6 +954,7 @@
       <h1 class="page-title" id="folder-title">Folder</h1>
       <p class="page-sub" id="folder-sub" style="margin-bottom:14px;"></p>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
+        <button class="btn-ghost" onclick="renameFolder()">Rename</button>
         <button class="btn-ghost" id="share-btn" onclick="toggleShare()">Share this folder</button>
         <button class="btn-ghost hidden" id="copy-share-btn" onclick="copyShareLink()">Copy link</button>
         <button class="btn-ghost btn-danger" onclick="deleteFolder()">Delete folder</button>
@@ -3039,6 +3040,22 @@ async function copyShareLink() {
   } catch (e) {
     prompt("Copy this link:", url);
   }
+}
+
+async function renameFolder() {
+  if (!curFolder) return;
+  let name = prompt("New folder name:", curFolder.name);
+  if (name === null) return;
+  name = name.trim().slice(0, 40);
+  if (!name || name === curFolder.name) return;
+  const { data, error } = await sb.from("folders").update({ name }).eq("id", curFolder.id).select().single();
+  if (error) { $("share-note").textContent = error.message; return; }
+  curFolder = data;
+  const i = folders.findIndex(f => f.id === data.id);
+  if (i > -1) folders[i] = data;
+  $("folder-title").innerHTML = `<em>${esc(data.name)}</em>`;
+  renderFoldersRow();
+  renderPanelFolders();
 }
 
 async function deleteFolder() {
