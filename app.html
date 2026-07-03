@@ -228,6 +228,14 @@
   @keyframes bob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-8px);} }
 
   .dash-hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin-bottom: 38px; }
+  .pro-badge {
+    font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
+    font-size: 17px; color: #fff; letter-spacing: .5px;
+    background: linear-gradient(180deg, var(--g1), var(--g2));
+    padding: 4px 16px 5px; border-radius: 999px;
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--g2) 60%, transparent), inset 0 1px 0 rgba(255,255,255,.3);
+    transform: translateY(-6px);
+  }
   .dash-quote {
     font-family: 'Instrument Serif', serif; font-style: italic; font-size: 19px;
     color: var(--muted); margin: 2px 0 24px; letter-spacing: -.2px;
@@ -801,7 +809,10 @@
       <div class="dash-hero">
         <div>
           <span class="eyebrow">Your study space</span>
-          <h1 class="page-title" id="greeting">Welcome back.</h1>
+          <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
+            <h1 class="page-title" id="greeting">Welcome back.</h1>
+            <span class="pro-badge hidden" id="hero-pro">Pro</span>
+          </div>
           <p class="dash-quote" id="dash-quote">Small steps today. Big marks on exam day.</p>
           <div class="stat-row">
             <div class="stat" title="Study any day to keep your streak alive"><b id="streak-num">0</b><span>day streak</span></div>
@@ -1616,8 +1627,9 @@ function updateProUI() {
   const btn = $("rb-pro");
   btn.classList.toggle("is-pro", pro);
   btn.querySelector(".tip").textContent = pro ? "Notiq Pro — everything unlimited" : "Upgrade to Pro";
-  $("acct-plan").textContent = pro ? "Pro" : "Free plan";
+  $("acct-plan").textContent = pro ? "Pro — everything unlimited" : "Free plan";
   $("acct-upgrade").classList.toggle("hidden", pro);
+  $("hero-pro").classList.toggle("hidden", !pro);
   updateGenStat();
 }
 function updateGenStat() {
