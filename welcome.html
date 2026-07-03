@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Welcome</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1e3a6e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="theme.js"></script>
+<script>notiqLightCanvas();</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264; --orb1: #b8cceb; --orbBtn: #122650;
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10); --card1: #ffffff; --card2: #f2f5fb;
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed;
+    min-height: 100vh; padding: 60px 24px 90px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .logo-row { display: flex; align-items: center; gap: 11px; margin-bottom: 26px; }
+  .orb {
+    width: 32px; height: 32px; border-radius: 10px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
+  }
+  .orb::before {
+    content: "N"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 19px;
+    color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
+  }
+  .logo-row span { font-family: 'Instrument Serif', serif; font-size: 24px; }
+  .logo-row b { color: var(--coral); font-weight: 400; }
+  .eyebrow { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(40px, 6vw, 60px); letter-spacing: -2px; line-height: .95; margin: 10px 0 12px;
+  }
+  h1 em { color: var(--coral); }
+  .sub { color: var(--muted); font-size: 16.5px; line-height: 1.6; max-width: 56ch; margin-bottom: 34px; }
+
+  .step {
+    display: flex; gap: 18px; align-items: flex-start;
+    background: linear-gradient(160deg, var(--card1), var(--card2));
+    border: 1px solid var(--line); border-radius: 16px; padding: 22px;
+    box-shadow: 0 16px 32px -20px rgba(60,40,30,.3);
+    margin-bottom: 14px;
+  }
+  .step .num {
+    flex: none; width: 42px; height: 42px; border-radius: 12px;
+    background: color-mix(in srgb, var(--coral) 10%, transparent); color: var(--coral);
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+  .step p { font-size: 14.5px; color: #5a5148; line-height: 1.6; }
+  .step b { color: var(--coral); }
+
+  .video-slot { display: none; margin-bottom: 24px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 44px -22px rgba(22,50,100,.4); }
+  .video-slot iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; display: block; }
+
+  .actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 30px; align-items: center; }
+  .btn-primary {
+    border: 0; cursor: pointer; color: #fff; text-decoration: none; display: inline-block;
+    background: linear-gradient(180deg, var(--g1), var(--g2));
+    padding: 15px 32px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 16px;
+    box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--g2) 70%, transparent);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .skip { color: var(--muted); font-size: 14.5px; font-weight: 600; text-decoration: none; }
+  .skip:hover { color: var(--coral); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row"><div class="orb"></div><span>Notiq<b> AI</b></span></div>
+  <span class="eyebrow">Welcome aboard</span>
+  <h1>Here's how it <em>works.</em></h1>
+  <p class="sub">Two minutes now saves you twenty later. Everything in Notiq flows through one simple loop — bring material in, turn it into study tools, then master it.</p>
+
+  <!-- Video tutorial slot: when ready, set the iframe src and change display to block -->
+  <div class="video-slot" id="video-slot">
+    <iframe id="video-frame" src="" title="Notiq AI tutorial" allowfullscreen></iframe>
+  </div>
+
+  <div class="step"><div class="num">1</div><div>
+    <h3>Bring your material into Resources</h3>
+    <p>Click the <b>upload icon</b> in the left sidebar. Drop in a PDF, paste your notes, or paste a <b>YouTube lecture link</b> — Notiq reads it all. Everything you generate starts from what's in here.</p>
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div>
+    <h3>Make a folder</h3>
+    <p>Click the <b>folder icon</b> in the sidebar, name it after your class (like "AP Biology"), and pick a color. Folders keep everything you save organized on your dashboard.</p>
+  </div></div>
+
+  <div class="step"><div class="num">3</div><div>
+    <h3>Generate your study tools</h3>
+    <p>From the dashboard, pick <b>Flashcards</b>, <b>Quiz</b>, <b>Test</b>, <b>Study guide</b>, or <b>Notes</b>. Select your resources, hit generate, and — this part matters — press <b>Save to folder</b> on anything you want to keep. Nothing saves automatically.</p>
+  </div></div>
+
+  <div class="step"><div class="num">4</div><div>
+    <h3>Master it, don't just read it</h3>
+    <p>Once a deck is saved, the power tools open up: <b>Smart review</b> brings cards back right before you'd forget them, <b>Match</b>, <b>Blitz</b> and <b>Sprint</b> turn studying into games, and <b>Teach it back</b> grades your own explanations. The <b>Focus timer</b> keeps you honest — leave the tab and it fails you.</p>
+  </div></div>
+
+  <div class="step"><div class="num">5</div><div>
+    <h3>Make it yours</h3>
+    <p>Click your <b>avatar</b> at the bottom of the sidebar to pick from 32 color palettes — everything recolors, even the home page. Study any day to grow your <b>streak</b>.</p>
+  </div></div>
+
+  <div class="actions">
+    <a class="btn-primary" href="app.html">Take me to my dashboard</a>
+    <a class="skip" href="app.html">Skip — I'll figure it out myself</a>
+  </div>
+</div>
+
+<script>
+  const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+  sb.auth.getSession().then(({ data }) => { if (!data.session) location.href = "signin.html"; });
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script>
+</body>
+</html>

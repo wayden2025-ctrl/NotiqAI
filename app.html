@@ -1818,6 +1818,11 @@ async function groq(messages, jsonMode) {
   const url = hasLocalKey ? "https://api.groq.com/openai/v1/chat/completions" : "/api/groq";
   const headers = { "Content-Type": "application/json" };
   if (hasLocalKey) headers["Authorization"] = "Bearer " + NOTIQ_CONFIG.GROQ_API_KEY;
+  else {
+    // pass the user's session token so the server can (optionally) require login
+    const { data: s } = await sb.auth.getSession();
+    if (s.session) headers["X-Notiq-Auth"] = s.session.access_token;
+  }
   const res = await fetch(url, {
     method: "POST",
     headers,

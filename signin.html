@@ -208,7 +208,7 @@
         });
         if (error) throw error;
         if (data.session) {
-          location.href = 'app.html';
+          location.href = 'welcome.html';   // brand-new account -> tutorial first
         } else {
           showMsg('Almost there! Check your email to confirm your account, then sign in.', 'ok');
         }
