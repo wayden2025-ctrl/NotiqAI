@@ -82,6 +82,8 @@
     box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--g2) 70%, transparent);
   }
   .btn-primary:hover { filter: brightness(1.08); }
+  .btn-tutorial { color: var(--coral); font-size: 14.5px; font-weight: 700; text-decoration: none; }
+  .btn-tutorial:hover { text-decoration: underline; }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -111,6 +113,7 @@
 
     <div class="actions">
       <a class="btn-primary" href="app.html" onclick="markSeen()">Take me to my dashboard</a>
+      <a class="btn-tutorial" href="welcome.html" onclick="markSeen()">New here? Show me how it works &rarr;</a>
     </div>
   </div>
 </div>
