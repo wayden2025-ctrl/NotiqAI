@@ -141,26 +141,14 @@
   .rail-btn:hover .tip { opacity: 1; }
   .rail .spacer { flex: 1; }
   .rail-btn.pro-btn {
-    background: #ffffff;
+    background: var(--field);
+    box-shadow: inset 0 0 0 1.5px var(--line), 0 6px 14px -6px rgba(0,0,0,.2);
     margin-bottom: 10px;
-    animation: proGlow 2.8s ease-in-out infinite;
   }
-  .rail-btn.pro-btn:hover { background: #ffffff; transform: translateY(-1px); }
-  @keyframes proGlow {
-    0%, 100% {
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.07),
-                  0 0 8px 1px rgba(255,255,255,.85),
-                  0 0 16px 3px color-mix(in srgb, var(--amber) 40%, transparent);
-    }
-    50% {
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.07),
-                  0 0 12px 2px rgba(255,255,255,.95),
-                  0 0 28px 7px color-mix(in srgb, var(--amber) 65%, transparent);
-    }
-  }
+  .rail-btn.pro-btn:hover { background: var(--field); transform: translateY(-1px); box-shadow: inset 0 0 0 1.5px var(--coral), 0 8px 16px -6px rgba(0,0,0,.25); }
   .pro-word {
     font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
-    font-size: 17px; color: var(--coral); letter-spacing: .5px;
+    font-size: 17px; color: var(--ink); letter-spacing: .5px;
   }
   .rail .avatar {
     width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
