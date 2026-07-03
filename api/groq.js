@@ -9,9 +9,15 @@
 
 const hits = new Map(); // ip -> { minute: [timestamps], day: count, dayStart: ms }
 
-function rateLimited(ip) {
-  const perMin = parseInt(process.env.RATE_PER_MIN || "8", 10);
-  const perDay = parseInt(process.env.RATE_PER_DAY || "120", 10);
+function rateLimited(ip, isPro) {
+  // Pro users get effectively-unlimited generous ceilings (still bot-proof);
+  // free/anonymous traffic gets the tight defaults.
+  const perMin = isPro
+    ? parseInt(process.env.PRO_RATE_PER_MIN || "30", 10)
+    : parseInt(process.env.RATE_PER_MIN || "8", 10);
+  const perDay = isPro
+    ? parseInt(process.env.PRO_RATE_PER_DAY || "3000", 10)
+    : parseInt(process.env.RATE_PER_DAY || "120", 10);
   const now = Date.now();
   let h = hits.get(ip);
   if (!h || now - h.dayStart > 86400000) h = { minute: [], day: 0, dayStart: now };
@@ -36,16 +42,13 @@ module.exports = async (req, res) => {
   }
 
   const ip = ((req.headers["x-forwarded-for"] || "").split(",")[0] || "unknown").trim();
-  const limitMsg = rateLimited(ip);
-  if (limitMsg) {
-    res.status(429).json({ error: { message: limitMsg } });
-    return;
-  }
 
-  // Optional: require a signed-in Notiq user (enable by adding SUPABASE_URL
-  // and SUPABASE_ANON_KEY as Vercel env vars).
+  // Detect the caller's plan so Pro users are never throttled like free ones.
+  // (Requires SUPABASE_URL + SUPABASE_ANON_KEY env vars; without them everyone
+  // gets the free-tier server limits, which is still safe.)
+  let isPro = false;
+  const token = req.headers["x-notiq-auth"];
   if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
-    const token = req.headers["x-notiq-auth"];
     if (!token) {
       res.status(401).json({ error: { message: "Sign in to generate." } });
       return;
@@ -58,10 +61,23 @@ module.exports = async (req, res) => {
         res.status(401).json({ error: { message: "Session expired — sign in again." } });
         return;
       }
+      const p = await fetch(process.env.SUPABASE_URL + "/rest/v1/profiles?select=plan", {
+        headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token },
+      });
+      if (p.ok) {
+        const rows = await p.json();
+        isPro = Array.isArray(rows) && rows[0] && rows[0].plan === "pro";
+      }
     } catch (e) {
       res.status(401).json({ error: { message: "Could not verify your session — try again." } });
       return;
     }
+  }
+
+  const limitMsg = rateLimited(ip, isPro);
+  if (limitMsg) {
+    res.status(429).json({ error: { message: limitMsg } });
+    return;
   }
 
   // Payload guards — reject before spending tokens
