@@ -241,8 +241,16 @@
   .hero-orb .star.s-b { width: 5px; height: 5px; background: var(--coral); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--coral) 55%, transparent); }
   .hero-orb .star.s-c { width: 4px; height: 4px; background: var(--orb1); opacity: .9; }
 
-  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "tip tip fc qz" "tip tip study nt"; gap: 16px; }
-  .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; }
+  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "tip tip fc qz" "tip tip study nt" "ts ts ts ts"; gap: 16px; }
+  .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; } .b-ts { grid-area: ts; }
+  .sec-pill { width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .fib-input { margin-top: 10px; width: min(420px, 100%); }
+  .fib-input.good { border-color: #2e7d4f !important; }
+  .fib-input.bad { border-color: #a33520 !important; }
+  .fib-key { font-size: 13.5px; color: var(--muted); margin-top: 8px; }
+  .fib-key b { color: var(--coral); }
+  .essay-fb { font-size: 14px; line-height: 1.55; background: color-mix(in srgb, var(--coral) 5%, transparent); border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
+  .essay-fb b { color: var(--coral); }
   .bento-card {
     border-radius: 20px; padding: 26px; cursor: pointer; position: relative; overflow: hidden;
     border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2));
@@ -372,7 +380,7 @@
   @media (max-width: 940px) {
     .dash-hero { flex-direction: column-reverse; align-items: flex-start; }
     .hero-orb { align-self: center; }
-    .bento { grid-template-columns: 1fr; grid-template-areas: "tip" "fc" "qz" "study" "nt"; }
+    .bento { grid-template-columns: 1fr; grid-template-areas: "tip" "fc" "qz" "study" "nt" "ts"; }
   }
 
   /* ============ FOCUS TIMER + MASTERY ============ */
@@ -822,6 +830,14 @@
           <p>Any resource, rewritten into beautiful detailed notes.</p>
           <span class="bento-go">Upgrade my notes</span>
         </div>
+        <div class="bento-card b-ts" onclick="showView('test')">
+          <div style="position:absolute; top:20px; right:22px; display:flex; gap:6px;">
+            <span class="sec-pill">A</span><span class="sec-pill">B</span><span class="sec-pill">C</span>
+          </div>
+          <h3>Test</h3>
+          <p>The real thing: multiple choice, fill-in-the-blank, then essays — graded like a teacher, feedback and all.</p>
+          <span class="bento-go">Sit the test</span>
+        </div>
       </div>
 
       <div class="section-label">Power tools</div>
@@ -1041,6 +1057,47 @@
           <span class="save-note" id="nt-save-note"></span>
         </div>
         <div class="md-out" id="nt-md"></div>
+      </div>
+    </div>
+
+    <!-- TEST -->
+    <div class="view hidden" id="view-test">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">The full exam experience</span>
+      <h1 class="page-title">Sit a real <em>test.</em></h1>
+      <p class="page-sub">Three sections, just like the classroom: multiple choice, fill in the blank, then essays. Essays get graded with real feedback.</p>
+      <div class="surface">
+        <label class="field-label">What's the test on? <small>— select from your Resources</small></label>
+        <div class="res-picker" id="ts-resources"></div>
+        <label class="field-label">Save into folder</label>
+        <select id="ts-folder"></select>
+        <label class="field-label">Test length</label>
+        <select id="ts-len">
+          <option value="s">Short — 5 MCQ, 4 blanks, 1 essay</option>
+          <option value="m" selected>Standard — 6 MCQ, 5 blanks, 2 essays</option>
+          <option value="l">Long — 8 MCQ, 6 blanks, 3 essays</option>
+        </select>
+        <div style="margin-top:22px;"><button class="btn-primary" id="ts-generate">Generate test</button></div>
+        <div class="status-line" id="ts-status"></div>
+      </div>
+      <div class="hidden" id="ts-output">
+        <div class="save-bar">
+          <input class="txt-input" id="ts-title" placeholder="Test name (e.g. Bio Unit 3 — Practice Exam)">
+          <button class="btn-primary" id="ts-save">Save to folder</button>
+          <button class="btn-ghost" onclick="printTest($('ts-title').value.trim() || 'Practice Test', tsData)">Print / PDF</button>
+          <span class="save-note" id="ts-save-note"></span>
+        </div>
+        <div class="section-label">Section A — Multiple choice</div>
+        <div id="ts-mcq"></div>
+        <div class="section-label">Section B — Fill in the blank</div>
+        <div id="ts-fib"></div>
+        <div class="section-label">Section C — Essay</div>
+        <div id="ts-essay"></div>
+        <div style="text-align:center; margin-top:14px;">
+          <button class="btn-primary" id="ts-submit" onclick="tsSubmit()">Submit test</button>
+          <div class="status-line" id="ts-grade-status"></div>
+          <div class="quiz-score hidden" id="ts-report"></div>
+        </div>
       </div>
     </div>
 
@@ -1670,8 +1727,8 @@ function renderAll() {
   renderPanelFolders();
   renderResList();
   updateDashStats();
-  ["fc", "qz", "sg", "nt", "tb", "cr"].forEach(p => renderResPicker(p));
-  ["fc", "qz", "sg", "nt", "cr"].forEach(p => renderFolderSelect(p));
+  ["fc", "qz", "sg", "nt", "tb", "cr", "ts"].forEach(p => renderResPicker(p));
+  ["fc", "qz", "sg", "nt", "cr", "ts"].forEach(p => renderFolderSelect(p));
 }
 
 function folderHue(name) {
@@ -2120,6 +2177,8 @@ function itemPlainText(d) {
   const c = (d && d.content) || {};
   if (d.type === "flashcards") return (c.cards || []).map((k, i) => `Card ${i + 1}. ${k.front}. Answer: ${k.back}.`).join(" ");
   if (d.type === "quiz") return (c.questions || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join(" ");
+  if (d.type === "test") return (c.mcq || []).map((q, i) => `Question ${i + 1}. ${q.q}. Answer: ${q.options[q.answer]}.`).join(" ") + " " +
+    (c.fib || []).map((q, i) => `Blank ${i + 1}. ${q.q} Answer: ${q.answer}.`).join(" ");
   return stripMd(c.markdown || "");
 }
 
@@ -2165,7 +2224,178 @@ function printItem() {
   const d = curItem, c = (d && d.content) || {};
   if (d.type === "flashcards") printCards(d.title, c.cards || []);
   else if (d.type === "quiz") printQuiz(d.title, c.questions || []);
+  else if (d.type === "test") printTest(d.title, c);
   else printMarkdown(d.title, c.markdown || "");
+}
+
+// ================= TEST (full exam) =================
+let tsData = null;
+const tsPicks = {};
+const TS_SIZES = { s: [5, 4, 1], m: [6, 5, 2], l: [8, 6, 3] };
+
+$("ts-generate").addEventListener("click", async () => {
+  const ids = pickedResources("ts");
+  if (!ids.length) { setStatus("ts-status", "Select at least one resource.", true); return; }
+  const [nm, nf, ne] = TS_SIZES[$("ts-len").value];
+  $("ts-generate").disabled = true;
+  setStatus("ts-status", "Writing your exam — three sections...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, an expert exam writer. Build tests strictly from the student's material. Respond ONLY with valid JSON: {\"mcq\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}],\"fib\":[{\"q\":\"a full sentence with the missing key term written as _____\",\"answer\":\"the missing word or short phrase\"}],\"essay\":[{\"q\":\"an essay prompt requiring explanation or analysis\",\"points\":[\"key idea a good answer must cover\"]}]}" },
+      { role: "user", content: `Create a test with exactly ${nm} multiple-choice questions (4 options, one correct), ${nf} fill-in-the-blank sentences (one key term each, blank written as _____), and ${ne} essay question(s) (each with 3-5 key points a strong answer must cover). Mix difficulty. Base everything on this material:\n\n${material}` }
+    ], true);
+    tsData = JSON.parse(raw);
+    renderTest();
+    $("ts-output").classList.remove("hidden");
+    $("ts-save-note").textContent = "";
+    setStatus("ts-status", "");
+    logActivity("generate");
+    $("ts-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("ts-status", e.message, true); }
+  $("ts-generate").disabled = false;
+});
+
+function renderTest() {
+  Object.keys(tsPicks).forEach(k => delete tsPicks[k]);
+  $("ts-report").classList.add("hidden");
+  $("ts-submit").classList.remove("hidden");
+  setStatus("ts-grade-status", "");
+  $("ts-mcq").innerHTML = (tsData.mcq || []).map((q, qi) => `
+    <div class="quiz-q" data-qi="${qi}">
+      <h4><span class="qnum">${qi + 1}.</span>${esc(q.q)}</h4>
+      ${q.options.map((o, oi) => `<button class="quiz-opt" data-oi="${oi}" onclick="tsPick(${qi},${oi},this)">${esc(o)}</button>`).join("")}
+      <div class="quiz-expl" id="ts-expl-${qi}">${esc(q.explanation || "")}</div>
+    </div>`).join("");
+  $("ts-fib").innerHTML = (tsData.fib || []).map((q, i) => `
+    <div class="quiz-q">
+      <h4><span class="qnum">${i + 1}.</span>${esc(q.q)}</h4>
+      <input class="txt-input fib-input" id="ts-fib-${i}" placeholder="Your answer" autocomplete="off">
+      <div class="fib-key hidden" id="ts-fibkey-${i}"></div>
+    </div>`).join("");
+  $("ts-essay").innerHTML = (tsData.essay || []).map((q, i) => `
+    <div class="quiz-q">
+      <h4><span class="qnum">${i + 1}.</span>${esc(q.q)}</h4>
+      <textarea class="paste-area" id="ts-essay-${i}" style="min-height:130px;" placeholder="Write your answer — full sentences, like a real exam."></textarea>
+      <div class="essay-fb hidden" id="ts-essayfb-${i}"></div>
+    </div>`).join("");
+}
+function tsPick(qi, oi, btn) {
+  tsPicks[qi] = oi;
+  btn.closest(".quiz-q").querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+
+function tsNorm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
+function tsLev(a, b) {
+  const m = a.length, n = b.length;
+  if (Math.abs(m - n) > 3) return 99;
+  const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[m][n];
+}
+function fibOk(user, ans) {
+  const u = tsNorm(user), a = tsNorm(ans);
+  if (!u) return false;
+  if (u === a) return true;
+  if (a.length > 3 && (u.includes(a) || a.includes(u))) return true;
+  return tsLev(u, a) <= (a.length > 6 ? 2 : 1);
+}
+
+async function tsSubmit() {
+  if (!tsData) return;
+  $("ts-submit").disabled = true;
+  setStatus("ts-grade-status", "Grading your test...", false, true);
+
+  // Section A — auto-grade MCQ
+  let mcqScore = 0;
+  (tsData.mcq || []).forEach((q, qi) => {
+    const qEl = $("ts-mcq").querySelector(`.quiz-q[data-qi="${qi}"]`);
+    qEl.querySelectorAll(".quiz-opt").forEach(b => {
+      const oi = +b.dataset.oi;
+      b.disabled = true;
+      if (oi === q.answer) b.classList.add("correct");
+      else if (tsPicks[qi] === oi) b.classList.add("wrong");
+    });
+    $("ts-expl-" + qi).classList.add("show");
+    if (tsPicks[qi] === q.answer) mcqScore++;
+  });
+
+  // Section B — fuzzy-grade blanks
+  let fibScore = 0;
+  (tsData.fib || []).forEach((q, i) => {
+    const input = $("ts-fib-" + i);
+    input.disabled = true;
+    const ok = fibOk(input.value, q.answer);
+    input.classList.add(ok ? "good" : "bad");
+    if (ok) fibScore++;
+    const key = $("ts-fibkey-" + i);
+    key.classList.remove("hidden");
+    key.innerHTML = ok ? "Correct." : `Expected: <b>${esc(q.answer)}</b>`;
+  });
+
+  // Section C — AI-grade essays
+  const essays = tsData.essay || [];
+  let essayEarned = 0;
+  const essayMax = essays.length * 10;
+  if (essays.length) {
+    try {
+      const payload = essays.map((q, i) =>
+        `ESSAY ${i + 1}\nPrompt: ${q.q}\nKey points a strong answer covers: ${q.points.join("; ")}\nStudent answer: ${($("ts-essay-" + i).value.trim() || "(left blank)")}`
+      ).join("\n\n");
+      const raw = await groq([
+        { role: "system", content: "You are a fair but rigorous teacher grading essay answers. Respond ONLY with valid JSON: {\"grades\":[{\"score\":0,\"feedback\":\"2-3 sentences of specific feedback\",\"missed\":[\"key points not covered\"]}]} with score out of 10 per essay, in order. A blank answer scores 0." },
+        { role: "user", content: payload }
+      ], true);
+      const grades = JSON.parse(raw).grades || [];
+      essays.forEach((q, i) => {
+        const g = grades[i] || { score: 0, feedback: "Could not grade.", missed: [] };
+        essayEarned += Math.max(0, Math.min(10, Number(g.score) || 0));
+        const fb = $("ts-essayfb-" + i);
+        fb.classList.remove("hidden");
+        fb.innerHTML = `<b>${Math.max(0, Math.min(10, Number(g.score) || 0))}/10.</b> ${esc(g.feedback || "")}` +
+          ((g.missed || []).length ? `<br><b>Missing:</b> ${g.missed.map(esc).join("; ")}` : "");
+        $("ts-essay-" + i).disabled = true;
+      });
+    } catch (e) {
+      setStatus("ts-grade-status", "Essay grading failed: " + e.message, true);
+      $("ts-submit").disabled = false;
+      return;
+    }
+  }
+
+  const earned = mcqScore + fibScore + essayEarned;
+  const total = (tsData.mcq || []).length + (tsData.fib || []).length + essayMax;
+  const pct = Math.round(100 * earned / Math.max(1, total));
+  $("ts-report").innerHTML =
+    `${pct}%<div style="font-size:15px; font-family:'Hanken Grotesk',sans-serif; color:var(--muted); margin-top:8px;">` +
+    `Multiple choice ${mcqScore}/${(tsData.mcq || []).length} &nbsp;·&nbsp; Blanks ${fibScore}/${(tsData.fib || []).length}` +
+    (essays.length ? ` &nbsp;·&nbsp; Essays ${essayEarned}/${essayMax}` : "") + `</div>`;
+  $("ts-report").classList.remove("hidden");
+  $("ts-submit").classList.add("hidden");
+  setStatus("ts-grade-status", "");
+  if (pct >= 80) celebrate($("ts-report"));
+  logActivity("test");
+  $("ts-submit").disabled = false;
+}
+
+$("ts-save").addEventListener("click", () =>
+  saveItem("test", $("ts-title").value.trim(), tsData, $("ts-folder").value, "ts-save-note"));
+
+function printTest(title, t) {
+  if (!t) return;
+  const a = (t.mcq || []).map((q, i) =>
+    `<div class="qa"><div class="q">${i + 1}. ${esc(q.q)}</div><ol class="opts" type="A">${q.options.map(o => `<li>${esc(o)}</li>`).join("")}</ol></div>`).join("");
+  const b = (t.fib || []).map((q, i) =>
+    `<div class="qa"><div class="q">${i + 1}. ${esc(q.q)}</div></div>`).join("");
+  const c = (t.essay || []).map((q, i) =>
+    `<div class="qa"><div class="q">${i + 1}. ${esc(q.q)}</div><div style="height:120px; border-bottom:1px solid #ccc;"></div></div>`).join("");
+  const key = `<div class="key"><h2>Answer key</h2><h3>Section A</h3><ol>${(t.mcq || []).map(q => `<li>${esc(q.options[q.answer])}</li>`).join("")}</ol>` +
+    `<h3>Section B</h3><ol>${(t.fib || []).map(q => `<li>${esc(q.answer)}</li>`).join("")}</ol>` +
+    `<h3>Section C — should cover</h3><ol>${(t.essay || []).map(q => `<li>${q.points.map(esc).join("; ")}</li>`).join("")}</ol></div>`;
+  printHtml(title, `<h2>Section A — Multiple choice</h2>${a}<h2>Section B — Fill in the blank</h2>${b}<h2>Section C — Essay</h2>${c}${key}`);
 }
 
 // ================= TEACH IT BACK =================
@@ -2584,7 +2814,7 @@ function spFinish() {
 }
 
 // ================= FOLDER VIEW & ITEM VIEWER =================
-const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet" };
+const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet", test: "Test" };
 
 let curFolder = null;
 
@@ -2670,6 +2900,17 @@ async function openItem(id) {
         <div class="aside">${q.options.map((o, oi) => (oi === q.answer ? "&#10003; <b style='color:var(--coral)'>" + esc(o) + "</b>" : esc(o))).join("<br>")}
         ${q.explanation ? "<br><br><i>" + esc(q.explanation) + "</i>" : ""}</div>
       </div>`).join("");
+  } else if (data.type === "test") {
+    const sec = (t) => `<div class="section-label" style="margin:18px 0 12px;">${t}</div>`;
+    html = sec("Section A — Multiple choice") +
+      (c.mcq || []).map((q, i) => `<div class="qa-pair"><div class="qside">${i + 1}. ${esc(q.q)}</div>
+        <div class="aside">${q.options.map((o, oi) => (oi === q.answer ? "&#10003; <b style='color:var(--coral)'>" + esc(o) + "</b>" : esc(o))).join("<br>")}</div></div>`).join("") +
+      sec("Section B — Fill in the blank") +
+      (c.fib || []).map((q, i) => `<div class="qa-pair"><div class="qside">${i + 1}. ${esc(q.q)}</div>
+        <div class="aside">Answer: <b style="color:var(--coral)">${esc(q.answer)}</b></div></div>`).join("") +
+      sec("Section C — Essay") +
+      (c.essay || []).map((q, i) => `<div class="qa-pair"><div class="qside">${i + 1}. ${esc(q.q)}</div>
+        <div class="aside">A strong answer covers: ${(q.points || []).map(esc).join("; ")}</div></div>`).join("");
   } else {
     html = `<div class="md-out" style="box-shadow:none; border:0; padding:6px 2px;">${marked.parse(c.markdown || "")}</div>`;
   }
