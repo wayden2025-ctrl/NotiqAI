@@ -99,6 +99,7 @@
   }
   .donate-btn:hover { filter: brightness(1.08); }
   .donate-x { flex: none; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px; }
+  .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
   /* ============ LIVING BACKGROUND ============ */
   .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
@@ -1277,7 +1278,8 @@
           <select id="mt-deck"></select>
           <label class="field-label">How many pairs</label>
           <select id="mt-pairs"><option>6</option><option selected>8</option><option>10</option></select>
-          <div style="margin-top:22px;"><button class="btn-primary" onclick="mtStart()">Start the clock</button></div>
+          <p class="game-min">Any saved deck works — if it has fewer cards than pairs, every card gets used.</p>
+          <div style="margin-top:16px;"><button class="btn-primary" onclick="mtStart()">Start the clock</button></div>
         </div>
       </div>
       <div class="hidden" id="mt-play">
@@ -1305,7 +1307,8 @@
           <select id="bz-deck"></select>
           <label class="field-label">Questions</label>
           <select id="bz-rounds"><option>8</option><option selected>10</option><option>15</option></select>
-          <div style="margin-top:22px;"><button class="btn-primary" onclick="bzStart()">Start blitz</button></div>
+          <p class="game-min">Only decks with 4+ cards show here — Blitz needs enough cards to build wrong answers.</p>
+          <div style="margin-top:16px;"><button class="btn-primary" onclick="bzStart()">Start blitz</button></div>
         </div>
       </div>
       <div class="hidden" id="bz-play">
@@ -1333,7 +1336,8 @@
         <div id="sp-controls">
           <label class="field-label">Which deck?</label>
           <select id="sp-deck"></select>
-          <div style="margin-top:22px;"><button class="btn-primary" onclick="spStart()">Start sprint</button></div>
+          <p class="game-min">Only decks with 2+ cards show here.</p>
+          <div style="margin-top:16px;"><button class="btn-primary" onclick="spStart()">Start sprint</button></div>
         </div>
       </div>
       <div class="hidden" id="sp-play">
@@ -2092,6 +2096,7 @@ async function saveItem(type, title, content, folderId, noteId) {
   $(noteId).textContent = "Saved ✓";
   await loadCounts();
   renderFoldersRow(); renderPanelFolders(); updateDashStats();
+  if (type === "flashcards") loadReviewDecks();   // so games & Smart review see the new deck immediately
   logActivity("save");
 }
 
