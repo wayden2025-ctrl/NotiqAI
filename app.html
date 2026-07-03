@@ -333,6 +333,36 @@
   @keyframes mtPop { 40% { transform: scale(1.08); } 100% { transform: scale(0); opacity: 0; } }
   .mt-tile.wrong { animation: mtShake .3s ease; border-color: #a33520; }
   @keyframes mtShake { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  /* ============ BLITZ + SPRINT ============ */
+  .bz-hud { display: flex; gap: 20px; align-items: center; margin-bottom: 16px; }
+  .bz-hud b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 42px; color: var(--amber); line-height: 1; }
+  .combo-pill { background: color-mix(in srgb, var(--coral) 10%, transparent); color: var(--coral); border-radius: 999px; padding: 5px 14px; font-weight: 800; font-size: 14px; }
+  .bz-front {
+    font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: clamp(22px, 2.6vw, 32px); line-height: 1.35; text-align: center;
+    padding: 30px 26px; margin-bottom: 0;
+  }
+  .bz-timer { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; margin: 16px 0 18px; }
+  .bz-timer i { display: block; height: 100%; width: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--amber), var(--coral)); }
+  .bz-opts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .bz-opts { grid-template-columns: 1fr; } }
+  .bz-opt {
+    border: 1.5px solid var(--line); background: var(--field); color: var(--ink); cursor: pointer;
+    border-radius: 13px; padding: 16px; font-family: inherit; font-size: 14.5px; line-height: 1.45;
+    text-align: center; transition: transform .12s, border-color .12s;
+  }
+  .bz-opt:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--amber); }
+  .bz-opt.good { border-color: #2e7d4f; background: rgba(46,125,79,.12); font-weight: 700; }
+  .bz-opt.bad { border-color: #a33520; background: rgba(163,53,32,.10); }
+  .sp-pair { text-align: center; padding: 30px 26px; transition: border-color .15s; }
+  .sp-pair .spf { font-family: 'Instrument Serif', serif; font-style: italic; font-size: clamp(22px, 2.6vw, 30px); margin-bottom: 14px; }
+  .sp-pair .speq { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: 12px; }
+  .sp-pair .spb { font-size: 17px; line-height: 1.5; color: var(--ink); }
+  .sp-pair.good { border-color: #2e7d4f !important; }
+  .sp-pair.bad { border-color: #a33520 !important; }
+  .sp-buttons { display: flex; gap: 16px; justify-content: center; margin-top: 20px; }
+  .sp-buttons button { min-width: 140px; font-size: 17px !important; padding: 15px 30px !important; }
   @media (max-width: 940px) { .power-grid { grid-template-columns: 1fr; } }
   .mini-lines i:nth-child(1) { width: 88%; }
   .mini-lines i:nth-child(2) { width: 100%; background: linear-gradient(90deg, var(--g1), var(--amber)); opacity: .8; }
@@ -820,6 +850,18 @@
           <p>Pair every term with its answer against the clock — then beat your own best time.</p>
           <span class="bento-go">Play</span>
         </div>
+        <div class="bento-card" onclick="openBlitz()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v4l2.6 2"/><path d="M9.5 2.5h5"/></svg></div>
+          <h3>Blitz</h3>
+          <p>Five seconds a question, combo multipliers for hot streaks. Pure score attack.</p>
+          <span class="bento-go">Go fast</span>
+        </div>
+        <div class="bento-card" onclick="openSprint()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 21h12"/><path d="M8 3c0 5.5 8 5.5 8 9s-8 3.5-8 9"/><path d="M16 3c0 5.5-8 5.5-8 9s8 3.5 8 9"/></svg></div>
+          <h3>Sprint</h3>
+          <p>60 seconds of true-or-false pairs. Right +1, wrong -1. How high can you go?</p>
+          <span class="bento-go">Sprint</span>
+        </div>
       </div>
 
       <div class="section-label">Focus</div>
@@ -1101,6 +1143,70 @@
         <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="mt-record"></p>
         <button class="btn-primary" onclick="mtStart()">Play again</button>
         <button class="btn-ghost" onclick="mtReset()" style="margin-left:10px;">Different deck</button>
+      </div>
+    </div>
+
+    <!-- BLITZ -->
+    <div class="view hidden" id="view-blitz">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Five seconds</span>
+      <h1 class="page-title">Blitz <em>round.</em></h1>
+      <p class="page-sub">Each question gives you five seconds and four answers. Chain correct answers for combo multipliers.</p>
+      <div class="surface" id="bz-setup">
+        <p class="empty-hint hidden" id="bz-empty" style="font-size:15px;"><b>Blitz needs a saved deck with at least 4 cards.</b> Generate flashcards, save them, come back.</p>
+        <div id="bz-controls">
+          <label class="field-label">Which deck?</label>
+          <select id="bz-deck"></select>
+          <label class="field-label">Questions</label>
+          <select id="bz-rounds"><option>8</option><option selected>10</option><option>15</option></select>
+          <div style="margin-top:22px;"><button class="btn-primary" onclick="bzStart()">Start blitz</button></div>
+        </div>
+      </div>
+      <div class="hidden" id="bz-play">
+        <div class="bz-hud"><b id="bz-score">0</b><span class="combo-pill" id="bz-combo">1x</span><span class="fc-counter" id="bz-count"></span></div>
+        <div class="surface bz-front" id="bz-front"></div>
+        <div class="bz-timer"><i id="bz-bar"></i></div>
+        <div class="bz-opts" id="bz-opts"></div>
+      </div>
+      <div class="hidden surface" id="bz-done" style="text-align:center;">
+        <div class="tb-score" id="bz-final"></div>
+        <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="bz-record"></p>
+        <button class="btn-primary" onclick="bzStart()">Play again</button>
+        <button class="btn-ghost" onclick="bzReset()" style="margin-left:10px;">Different deck</button>
+      </div>
+    </div>
+
+    <!-- SPRINT -->
+    <div class="view hidden" id="view-sprint">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Sixty seconds</span>
+      <h1 class="page-title">True-false <em>sprint.</em></h1>
+      <p class="page-sub">A term and an answer flash up — sometimes the real pair, sometimes a swap. Right is +1, wrong is -1. Go.</p>
+      <div class="surface" id="sp-setup">
+        <p class="empty-hint hidden" id="sp-empty" style="font-size:15px;"><b>Sprint needs a saved deck with at least 2 cards.</b> Save a deck first.</p>
+        <div id="sp-controls">
+          <label class="field-label">Which deck?</label>
+          <select id="sp-deck"></select>
+          <div style="margin-top:22px;"><button class="btn-primary" onclick="spStart()">Start sprint</button></div>
+        </div>
+      </div>
+      <div class="hidden" id="sp-play">
+        <div class="bz-hud"><b id="sp-score">0</b><span class="combo-pill" id="sp-time">60s</span></div>
+        <div class="surface sp-pair" id="sp-pair">
+          <div class="spf" id="sp-front"></div>
+          <div class="speq">matches with?</div>
+          <div class="spb" id="sp-back"></div>
+        </div>
+        <div class="sp-buttons">
+          <button class="rv-good" onclick="spAnswer(true)">True</button>
+          <button class="rv-again" onclick="spAnswer(false)">False</button>
+        </div>
+      </div>
+      <div class="hidden surface" id="sp-done" style="text-align:center;">
+        <div class="tb-score" id="sp-final"></div>
+        <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="sp-record"></p>
+        <button class="btn-primary" onclick="spStart()">Play again</button>
+        <button class="btn-ghost" onclick="spReset()" style="margin-left:10px;">Different deck</button>
       </div>
     </div>
 
@@ -2309,6 +2415,172 @@ function mtFinish() {
     $("mt-record").textContent = `Best is still ${best.toFixed(1)}s — run it back.`;
   }
   logActivity("match");
+}
+
+// ================= BLITZ =================
+let bzDeck = null, bzQ = [], bzIdx = 0, bzScore = 0, bzCombo = 0, bzTimer = null, bzLock = false;
+
+function renderArcadeDecks() {
+  const bz = rvDecks.filter(d => (d.content.cards || []).length >= 4);
+  $("bz-empty").classList.toggle("hidden", bz.length > 0);
+  $("bz-controls").classList.toggle("hidden", bz.length === 0);
+  if (bz.length) $("bz-deck").innerHTML = bz.map(d =>
+    `<option value="${d.id}">${esc(d.title)} (${(d.content.cards || []).length} cards)</option>`).join("");
+  const sp = rvDecks.filter(d => (d.content.cards || []).length >= 2);
+  $("sp-empty").classList.toggle("hidden", sp.length > 0);
+  $("sp-controls").classList.toggle("hidden", sp.length === 0);
+  if (sp.length) $("sp-deck").innerHTML = sp.map(d =>
+    `<option value="${d.id}">${esc(d.title)} (${(d.content.cards || []).length} cards)</option>`).join("");
+}
+function openBlitz() { showView("blitz"); renderArcadeDecks(); bzReset(); }
+function bzReset() {
+  clearInterval(bzTimer); bzTimer = null;
+  $("bz-setup").classList.remove("hidden");
+  $("bz-play").classList.add("hidden");
+  $("bz-done").classList.add("hidden");
+}
+function bzStart() {
+  bzDeck = rvDecks.find(d => d.id === $("bz-deck").value);
+  if (!bzDeck) return;
+  const cards = bzDeck.content.cards || [];
+  const n = Math.min(+$("bz-rounds").value, cards.length);
+  bzQ = [...cards].sort(() => Math.random() - .5).slice(0, n).map(c => {
+    const decoys = cards.filter(x => x.back !== c.back).sort(() => Math.random() - .5).slice(0, 3).map(x => x.back);
+    return { front: c.front, opts: [c.back, ...decoys].sort(() => Math.random() - .5), answer: c.back };
+  });
+  bzIdx = 0; bzScore = 0; bzCombo = 0;
+  updateBzHud();
+  $("bz-setup").classList.add("hidden");
+  $("bz-done").classList.add("hidden");
+  $("bz-play").classList.remove("hidden");
+  bzNext();
+}
+function bzNext() {
+  if (bzIdx >= bzQ.length) { bzFinish(); return; }
+  bzLock = false;
+  const q = bzQ[bzIdx];
+  $("bz-front").textContent = q.front;
+  $("bz-count").textContent = (bzIdx + 1) + " / " + bzQ.length;
+  $("bz-opts").innerHTML = q.opts.map(o =>
+    `<button class="bz-opt" data-ok="${o === q.answer ? 1 : 0}" onclick="bzPick(this)">${esc(o.length > 100 ? o.slice(0, 97) + "..." : o)}</button>`).join("");
+  const D = 5000, deadline = Date.now() + D;
+  clearInterval(bzTimer);
+  $("bz-bar").style.width = "100%";
+  bzTimer = setInterval(() => {
+    const left = deadline - Date.now();
+    $("bz-bar").style.width = Math.max(0, left / D * 100) + "%";
+    if (left <= 0) bzExpire();
+  }, 50);
+}
+function bzReveal() {
+  [...document.querySelectorAll(".bz-opt")].forEach(b => {
+    b.disabled = true;
+    if (b.dataset.ok === "1") b.classList.add("good");
+  });
+}
+function bzExpire() {
+  if (bzLock) return;
+  bzLock = true; clearInterval(bzTimer);
+  bzCombo = 0; updateBzHud(); bzReveal();
+  setTimeout(() => { bzIdx++; bzNext(); }, 700);
+}
+function bzPick(btn) {
+  if (bzLock) return;
+  bzLock = true; clearInterval(bzTimer);
+  const ok = btn.dataset.ok === "1";
+  bzReveal();
+  if (ok) { bzCombo = Math.min(bzCombo + 1, 5); bzScore += 100 * bzCombo; }
+  else { btn.classList.add("bad"); bzCombo = 0; }
+  updateBzHud();
+  setTimeout(() => { bzIdx++; bzNext(); }, 700);
+}
+function updateBzHud() {
+  $("bz-score").textContent = bzScore;
+  $("bz-combo").textContent = Math.max(1, bzCombo) + "x";
+}
+function bzFinish() {
+  clearInterval(bzTimer);
+  $("bz-play").classList.add("hidden");
+  $("bz-done").classList.remove("hidden");
+  $("bz-final").textContent = bzScore + " pts";
+  const best = bzDeck.content.blitz_best;
+  if (!best || bzScore > best) {
+    bzDeck.content.blitz_best = bzScore;
+    sb.from("saved_items").update({ content: bzDeck.content }).eq("id", bzDeck.id).then(() => {});
+    $("bz-record").textContent = best ? `New record! Old best was ${best} pts.` : "Record set — that's the score to beat.";
+    celebrate($("bz-final"));
+  } else {
+    $("bz-record").textContent = `Best is still ${best} pts — run it back.`;
+  }
+  logActivity("blitz");
+}
+
+// ================= SPRINT =================
+let spDeck = null, spScore = 0, spTimer = null, spEnd = 0, spTruth = true;
+
+function openSprint() { showView("sprint"); renderArcadeDecks(); spReset(); }
+function spReset() {
+  clearInterval(spTimer); spTimer = null;
+  $("sp-setup").classList.remove("hidden");
+  $("sp-play").classList.add("hidden");
+  $("sp-done").classList.add("hidden");
+}
+function spStart() {
+  spDeck = rvDecks.find(d => d.id === $("sp-deck").value);
+  if (!spDeck || (spDeck.content.cards || []).length < 2) return;
+  spScore = 0;
+  spEnd = Date.now() + 60000;
+  $("sp-score").textContent = "0";
+  $("sp-time").textContent = "60s";
+  $("sp-setup").classList.add("hidden");
+  $("sp-done").classList.add("hidden");
+  $("sp-play").classList.remove("hidden");
+  spNextPair();
+  clearInterval(spTimer);
+  spTimer = setInterval(() => {
+    const left = spEnd - Date.now();
+    $("sp-time").textContent = Math.max(0, Math.ceil(left / 1000)) + "s";
+    if (left <= 0) spFinish();
+  }, 100);
+}
+function spNextPair() {
+  const cards = spDeck.content.cards;
+  const c = cards[Math.floor(Math.random() * cards.length)];
+  let truth = Math.random() < 0.5;
+  let back = c.back;
+  if (!truth) {
+    const others = cards.filter(x => x.back !== c.back);
+    if (others.length) back = others[Math.floor(Math.random() * others.length)].back;
+    else truth = true;
+  }
+  spTruth = truth;
+  $("sp-front").textContent = c.front;
+  $("sp-back").textContent = back.length > 160 ? back.slice(0, 157) + "..." : back;
+}
+function spAnswer(val) {
+  if (!spTimer || Date.now() > spEnd) return;
+  const pair = $("sp-pair");
+  if (val === spTruth) { spScore++; pair.classList.add("good"); }
+  else { spScore = Math.max(0, spScore - 1); pair.classList.add("bad"); }
+  setTimeout(() => pair.classList.remove("good", "bad"), 200);
+  $("sp-score").textContent = spScore;
+  spNextPair();
+}
+function spFinish() {
+  clearInterval(spTimer); spTimer = null;
+  $("sp-play").classList.add("hidden");
+  $("sp-done").classList.remove("hidden");
+  $("sp-final").textContent = spScore + " right";
+  const best = spDeck.content.sprint_best;
+  if (!best || spScore > best) {
+    spDeck.content.sprint_best = spScore;
+    sb.from("saved_items").update({ content: spDeck.content }).eq("id", spDeck.id).then(() => {});
+    $("sp-record").textContent = best ? `New record! Old best was ${best}.` : "Record set — that's the score to beat.";
+    celebrate($("sp-final"));
+  } else {
+    $("sp-record").textContent = `Best is still ${best} — run it back.`;
+  }
+  logActivity("sprint");
 }
 
 // ================= FOLDER VIEW & ITEM VIEWER =================
