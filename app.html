@@ -1507,6 +1507,11 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   $("acct-email").textContent = user.email;
 
   await Promise.all([loadFolders(), loadResources(), loadCounts(), loadActivity(), loadPlan()]);
+
+  // presence heartbeat — powers the "online now" number on the admin stats page
+  const heartbeat = () => sb.from("presence").upsert({ user_id: user.id, last_seen: new Date().toISOString() }).then(() => {}, () => {});
+  heartbeat();
+  setInterval(() => { if (!document.hidden) heartbeat(); }, 60000);
   renderAll();
   buildCalendar();
   pickQuote();

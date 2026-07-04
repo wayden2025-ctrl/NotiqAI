@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Stats</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="theme.js"></script>
+<script>notiqLightCanvas();</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264; --orb1: #b8cceb; --orbBtn: #122650;
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10); --card1: #ffffff; --card2: #f2f5fb;
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed; min-height: 100vh; padding: 50px 24px 80px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .eyebrow { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(38px, 6vw, 54px); letter-spacing: -2px; line-height: .98; margin: 8px 0 6px;
+  }
+  h1 em { color: var(--coral); }
+  .updated { color: var(--muted); font-size: 13px; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .stat {
+    background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line);
+    border-radius: 16px; padding: 20px 20px 16px; box-shadow: 0 16px 32px -20px rgba(60,40,30,.3);
+  }
+  .stat b { display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 42px; color: var(--coral); line-height: 1; }
+  .stat span { font-size: 12.5px; color: var(--muted); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .stat.live b { color: #1d7a3e; }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #1d7a3e; margin-right: 6px; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; color: var(--coral); font-size: 24px; margin: 26px 0 12px; }
+  .chart {
+    background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line);
+    border-radius: 16px; padding: 20px; box-shadow: 0 16px 32px -20px rgba(60,40,30,.3);
+    display: flex; align-items: flex-end; gap: 6px; height: 150px;
+  }
+  .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; height: 100%; }
+  .bar i {
+    display: block; width: 100%; border-radius: 6px 6px 2px 2px; min-height: 3px;
+    background: linear-gradient(180deg, var(--g1), var(--g2));
+  }
+  .bar em { font-style: normal; font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .bar b { font-size: 11px; color: var(--ink); }
+  .err { background: rgba(200,60,40,.08); color: #a33520; border-radius: 12px; padding: 14px 18px; font-size: 14px; line-height: 1.6; display: none; }
+  .err.show { display: block; }
+  a.back { color: var(--muted); text-decoration: none; font-size: 13.5px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="app.html">&larr; Back to app</a>
+  <div style="margin-top:14px;"><span class="eyebrow">Admin only</span></div>
+  <h1>Notiq <em>stats.</em></h1>
+  <p class="updated" id="updated">Loading...</p>
+  <div class="err" id="err"></div>
+
+  <div class="grid">
+    <div class="stat live"><b id="s-online">–</b><span><i class="live-dot"></i>online right now</span></div>
+    <div class="stat"><b id="s-total">–</b><span>total accounts</span></div>
+    <div class="stat"><b id="s-today">–</b><span>new accounts today</span></div>
+    <div class="stat"><b id="s-week">–</b><span>new this week</span></div>
+    <div class="stat"><b id="s-active">–</b><span>active users today</span></div>
+    <div class="stat"><b id="s-gens">–</b><span>generations today</span></div>
+    <div class="stat"><b id="s-gens7">–</b><span>generations this week</span></div>
+  </div>
+
+  <h2>Signups — last 14 days</h2>
+  <div class="chart" id="chart-signups"></div>
+
+  <h2>AI generations — last 14 days</h2>
+  <div class="chart" id="chart-gens"></div>
+</div>
+
+<script>
+  const sb = supabase.createClient(NOTIQ_CONFIG.SUPABASE_URL, NOTIQ_CONFIG.SUPABASE_ANON_KEY);
+  const $ = (id) => document.getElementById(id);
+  const ADMIN_EMAILS = ["wayden2025@gmail.com"];
+
+  function bars(elId, series) {
+    // series: [{day:"2026-07-01", n:3}, ...] — fill in missing days with 0
+    const byDay = {};
+    (series || []).forEach(r => { byDay[String(r.day).slice(0, 10)] = Number(r.n); });
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      const iso = d.toISOString().slice(0, 10);
+      days.push({ iso, label: (d.getMonth() + 1) + "/" + d.getDate(), n: byDay[iso] || 0 });
+    }
+    const max = Math.max(1, ...days.map(d => d.n));
+    $(elId).innerHTML = days.map(d =>
+      `<div class="bar"><b>${d.n || ""}</b><i style="height:${Math.round(88 * d.n / max)}%"></i><em>${d.label}</em></div>`).join("");
+  }
+
+  async function refresh() {
+    const { data, error } = await sb.rpc("admin_stats");
+    if (error) {
+      $("err").textContent = /admin_stats/.test(error.message)
+        ? "Run the stats SQL block in Supabase first (SQL Editor) — then reload this page."
+        : error.message;
+      $("err").classList.add("show");
+      $("updated").textContent = "";
+      return;
+    }
+    $("err").classList.remove("show");
+    $("s-online").textContent = data.online_now;
+    $("s-total").textContent = data.total_users;
+    $("s-today").textContent = data.users_today;
+    $("s-week").textContent = data.users_7d;
+    $("s-active").textContent = data.active_today;
+    $("s-gens").textContent = data.gens_today;
+    $("s-gens7").textContent = data.gens_7d;
+    bars("chart-signups", data.signup_series);
+    bars("chart-gens", data.gen_series);
+    $("updated").textContent = "Live from your database — refreshes every 30 seconds. Last update " + new Date().toLocaleTimeString();
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    const email = data.session && data.session.user && (data.session.user.email || "").toLowerCase();
+    if (!data.session) { location.href = "signin.html"; return; }
+    if (!ADMIN_EMAILS.includes(email)) { location.href = "app.html"; return; }
+    refresh();
+    setInterval(refresh, 30000);
+  });
+</script>
+</body>
+</html>
