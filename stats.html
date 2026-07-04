@@ -132,9 +132,19 @@
   }
 
   sb.auth.getSession().then(({ data }) => {
-    const email = data.session && data.session.user && (data.session.user.email || "").toLowerCase();
-    if (!data.session) { location.href = "signin.html"; return; }
-    if (!ADMIN_EMAILS.includes(email)) { location.href = "app.html"; return; }
+    if (!data.session) {
+      $("err").innerHTML = 'You are not signed in on this browser. <a href="signin.html">Sign in</a> first, then come back.';
+      $("err").classList.add("show");
+      $("updated").textContent = "";
+      return;
+    }
+    const email = ((data.session.user && data.session.user.email) || "").trim().toLowerCase();
+    if (!ADMIN_EMAILS.includes(email)) {
+      $("err").textContent = `This page is admin-only. You are signed in as "${email || "(no email found)"}" which is not on the admin list.`;
+      $("err").classList.add("show");
+      $("updated").textContent = "";
+      return;
+    }
     refresh();
     setInterval(refresh, 30000);
   });
