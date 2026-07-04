@@ -8,6 +8,19 @@
 //   only signed-in Notiq users can generate at all.
 
 const hits = new Map(); // ip -> { minute: [timestamps], day: count, dayStart: ms }
+const guestHits = new Map(); // ip -> { day: count, dayStart: ms } — signed-out "try it" visitors
+
+function guestLimited(ip) {
+  const perDay = parseInt(process.env.GUEST_RATE_PER_DAY || "3", 10);
+  const now = Date.now();
+  let g = guestHits.get(ip);
+  if (!g || now - g.dayStart > 86400000) g = { day: 0, dayStart: now };
+  if (g.day >= perDay) { guestHits.set(ip, g); return true; }
+  g.day++;
+  guestHits.set(ip, g);
+  if (guestHits.size > 5000) guestHits.clear();
+  return false;
+}
 
 function rateLimited(ip, isPro) {
   // Pro users get effectively-unlimited generous ceilings (still bot-proof);
@@ -54,9 +67,12 @@ module.exports = async (req, res) => {
   const token = req.headers["x-notiq-auth"];
   if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
     if (!token) {
-      res.status(401).json({ error: { message: "Sign in to generate." } });
-      return;
-    }
+      // signed-out visitors get a tiny "try it" allowance per IP per day
+      if (guestLimited(ip)) {
+        res.status(401).json({ error: { message: "Sign in to keep generating — Notiq is still completely free." } });
+        return;
+      }
+    } else {
     try {
       const u = await fetch(process.env.SUPABASE_URL + "/auth/v1/user", {
         headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token },
@@ -75,6 +91,7 @@ module.exports = async (req, res) => {
     } catch (e) {
       res.status(401).json({ error: { message: "Could not verify your session — try again." } });
       return;
+    }
     }
   }
 

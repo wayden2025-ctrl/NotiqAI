@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notiq AI — Try it free</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1e3a6e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="config.js"></script>
+<script src="theme.js"></script>
+<script>notiqLightCanvas();</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --g1: #2a4d8a; --g1b: #2e5490; --g2: #163264; --orb1: #b8cceb; --orbBtn: #122650;
+    --coral: #1e3a6e; --amber: #4a7cc9; --ink: #241d18; --muted: #7c7168;
+    --line: rgba(36,29,24,.10); --card1: #ffffff; --card2: #f2f5fb;
+  }
+  html { background: #f8f5f1; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink);
+    background:
+      radial-gradient(120% 80% at 78% 8%, #f0f4fa 0%, rgba(240,244,250,0) 55%),
+      linear-gradient(180deg, #f9f6f2 0%, #f4efe9 100%);
+    background-attachment: fixed; min-height: 100vh;
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--line); }
+  .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; color: var(--ink); }
+  .orb {
+    width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
+    box-shadow: inset -4px -5px 10px rgba(14,30,60,.5), inset 3px 3px 7px rgba(255,255,255,.55);
+  }
+  .orb::before {
+    content: "N"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px;
+    color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
+  }
+  .brand span { font-family: 'Instrument Serif', serif; font-size: 23px; }
+  .brand b { color: var(--coral); font-weight: 400; }
+  .cta-pill {
+    color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); padding: 9px 20px; border-radius: 999px;
+    font-weight: 700; font-size: 14px; text-decoration: none;
+    box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--g2) 70%, transparent);
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 60px 24px 90px; }
+  .eyebrow { font-size: 13px; letter-spacing: .24em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
+  h1 {
+    font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
+    font-size: clamp(40px, 6.5vw, 60px); letter-spacing: -2px; line-height: .95; margin: 10px 0 12px;
+  }
+  h1 em { color: var(--coral); }
+  .sub { color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 58ch; margin-bottom: 30px; }
+  .surface {
+    background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line);
+    border-radius: 18px; padding: 26px; box-shadow: 0 20px 40px -22px rgba(60,40,30,.3); margin-bottom: 20px;
+  }
+  .field-label { display: block; font-size: 13px; font-weight: 700; margin: 16px 0 7px 2px; }
+  .field-label:first-child { margin-top: 0; }
+  textarea {
+    width: 100%; min-height: 170px; resize: vertical; padding: 14px 16px;
+    border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink);
+    font-family: inherit; font-size: 14.5px; line-height: 1.55; outline: none;
+  }
+  textarea:focus { border-color: var(--amber); box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber) 14%, transparent); }
+  select {
+    padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff;
+    font-family: inherit; font-size: 14.5px; color: var(--ink); outline: none; min-width: 180px;
+  }
+  .btn-primary {
+    border: 0; cursor: pointer; color: #fff;
+    background: linear-gradient(180deg, var(--g1), var(--g2));
+    padding: 14px 32px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 15.5px;
+    box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--g2) 70%, transparent);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:disabled { opacity: .6; cursor: wait; }
+  .btn-ghost {
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+    padding: 10px 20px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 14px;
+  }
+  .btn-ghost:hover { border-color: var(--amber); color: var(--coral); }
+  .status { margin-top: 14px; font-size: 14px; color: var(--muted); display: none; }
+  .status.show { display: block; }
+  .status.error { color: #a33520; }
+
+  /* flashcard stage */
+  .fc-card { perspective: 1200px; width: 100%; max-width: 540px; height: 250px; margin: 0 auto 14px; cursor: pointer; }
+  .fc-inner { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+  .fc-card.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 26px;
+    font-size: 17px; line-height: 1.5; border: 1.5px solid var(--line);
+    background: #fff; box-shadow: 0 18px 36px -20px rgba(60,40,30,.35); overflow-y: auto;
+  }
+  .fc-face.back { transform: rotateY(180deg); background: linear-gradient(160deg, #fff, var(--card2)); }
+  .fc-nav { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .fc-counter { font-size: 13.5px; color: var(--muted); font-weight: 700; }
+
+  .qa { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; background: #fff; }
+  .qa .q { font-weight: 700; margin-bottom: 8px; }
+  .qa .opt { font-size: 14.5px; padding: 4px 0; color: #4a423b; }
+  .qa .ans { margin-top: 8px; font-size: 14px; color: var(--coral); font-weight: 700; display: none; }
+  .qa.open .ans { display: block; }
+  .md-out { line-height: 1.65; font-size: 15px; }
+  .md-out h1, .md-out h2, .md-out h3 { font-family: 'Instrument Serif', serif; font-weight: 400; color: var(--coral); margin: 18px 0 8px; }
+  .md-out p, .md-out li { margin-bottom: 8px; color: #3c342d; }
+  .md-out ul, .md-out ol { margin-left: 22px; }
+  .md-out table { border-collapse: collapse; margin: 10px 0; }
+  .md-out th, .md-out td { border: 1px solid var(--line); padding: 6px 10px; font-size: 14px; }
+
+  /* sign-in popup */
+  .overlay {
+    position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center;
+    background: rgba(20, 16, 12, .45); backdrop-filter: blur(6px); padding: 24px;
+  }
+  .popup {
+    width: 100%; max-width: 440px; background: #fff; border-radius: 22px; padding: 36px 34px 32px;
+    box-shadow: 0 40px 80px -24px rgba(0,0,0,.5); text-align: center; position: relative;
+    animation: popIn .25s ease;
+  }
+  @keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+  .popup h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 30px; color: var(--coral); letter-spacing: -1px; margin-bottom: 10px; }
+  .popup p { font-size: 14.5px; color: #5a5148; line-height: 1.65; margin-bottom: 20px; }
+  .popup .x { position: absolute; top: 14px; right: 16px; border: 0; background: transparent; font-size: 16px; color: var(--muted); cursor: pointer; }
+  .popup .stack { display: flex; flex-direction: column; gap: 10px; }
+  .free-badge {
+    display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--coral); background: color-mix(in srgb, var(--coral) 10%, transparent);
+    padding: 5px 14px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .hidden { display: none !important; }
+</style>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html"><div class="orb"></div><span>Notiq<b> AI</b></span></a>
+  <a class="cta-pill" href="signin.html?mode=signup">Start Free</a>
+</nav>
+
+<main>
+  <span class="eyebrow">No account needed</span>
+  <h1>Try it. Right <em>now.</em></h1>
+  <p class="sub">Paste anything you're studying — lecture notes, a textbook chapter, whatever — pick a tool, and watch it happen. Your first generation is on us, no sign-up.</p>
+
+  <div class="surface">
+    <label class="field-label">Paste your study material</label>
+    <textarea id="try-text" maxlength="20000" placeholder="Paste your notes here — at least a good paragraph so the AI has something to work with."></textarea>
+    <label class="field-label">What should it make?</label>
+    <select id="try-type">
+      <option value="flashcards">Flashcards</option>
+      <option value="quiz">Quiz</option>
+      <option value="notes">Clean notes</option>
+      <option value="cram">Cram sheet</option>
+    </select>
+    <div style="margin-top:20px;"><button class="btn-primary" id="try-go">Generate</button></div>
+    <div class="status" id="try-status"></div>
+  </div>
+
+  <div class="surface hidden" id="try-out">
+    <div id="try-render"></div>
+    <p style="margin-top:18px; font-size:13.5px; color:var(--muted);">Like it? <a href="signin.html?mode=signup" style="color:var(--coral); font-weight:800;">Make a free account</a> to save this, build folders, play study games, and generate as much as you want.</p>
+  </div>
+</main>
+
+<!-- sign-in popup: appears on the second generation -->
+<div class="overlay hidden" id="gate">
+  <div class="popup">
+    <button class="x" onclick="document.getElementById('gate').classList.add('hidden')">&#10005;</button>
+    <span class="free-badge">Still 100% free</span>
+    <h2>Sign in to keep going.</h2>
+    <p>That was your free taste — and this is where it gets good. Make a free account to keep generating, save decks into folders, play Match, Blitz and Sprint, and study anywhere. No card, no catch. Free.</p>
+    <div class="stack">
+      <a class="btn-primary" style="text-decoration:none;" href="signin.html?mode=signup">Create my free account</a>
+      <a class="btn-ghost" style="text-decoration:none;" href="signin.html">I already have one — sign in</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // math rendering, same as the app
+  const D = [{ left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false }];
+  function mathify() {
+    if (window.renderMathInElement) try { renderMathInElement($("try-render"), { delimiters: D, throwOnError: false }); } catch (e) {}
+  }
+
+  function status(text, err) {
+    const el = $("try-status");
+    el.textContent = text;
+    el.className = "status" + (text ? " show" : "") + (err ? " error" : "");
+  }
+
+  async function groq(messages, jsonMode) {
+    const body = { model: (window.NOTIQ_CONFIG && NOTIQ_CONFIG.GROQ_MODEL) || "llama-3.3-70b-versatile", messages, temperature: 0.4, max_tokens: 4000 };
+    if (jsonMode) body.response_format = { type: "json_object" };
+    const hasLocalKey = ((window.NOTIQ_CONFIG && NOTIQ_CONFIG.GROQ_API_KEY) || "").startsWith("gsk_");
+    const url = hasLocalKey ? "https://api.groq.com/openai/v1/chat/completions" : "/api/groq";
+    const headers = { "Content-Type": "application/json" };
+    if (hasLocalKey) headers["Authorization"] = "Bearer " + NOTIQ_CONFIG.GROQ_API_KEY;
+    let res;
+    try { res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) }); }
+    catch (e) { throw new Error("Couldn't reach the AI — check your connection and try again."); }
+    if (res.status === 401) { showGate(); throw new Error("Sign in to keep generating — it's still free."); }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      let msg = err.error?.message || "";
+      if (res.status === 429 && (!msg || /rate limit reached/i.test(msg))) msg = "Too many people are generating at the same time — give it a minute and try again.";
+      else if (res.status >= 500 || !msg) msg = "Small technical hiccup on our end — try again in a minute.";
+      throw new Error(msg);
+    }
+    const json = await res.json();
+    return json.choices[0].message.content;
+  }
+
+  const MATH_RULE = " Whenever math or chemistry appears, write it as LaTeX wrapped in $...$ (inline) or $$...$$ (display).";
+  let fcDeck = [], fcIndex = 0;
+
+  function showGate() { $("gate").classList.remove("hidden"); }
+  function usedFreeTaste() {
+    try { return localStorage.getItem("notiq_try_done") === "1"; } catch (e) { return false; }
+  }
+  function markUsed() {
+    try { localStorage.setItem("notiq_try_done", "1"); } catch (e) {}
+  }
+
+  function renderFc() {
+    $("try-render").innerHTML = `
+      <div class="fc-card" id="try-fc" onclick="this.classList.toggle('flipped')">
+        <div class="fc-inner">
+          <div class="fc-face front" id="try-fc-front"></div>
+          <div class="fc-face back" id="try-fc-back"></div>
+        </div>
+      </div>
+      <div class="fc-nav">
+        <button class="btn-ghost" onclick="fcMove(-1)">&larr; Prev</button>
+        <span class="fc-counter" id="try-fc-count"></span>
+        <button class="btn-ghost" onclick="fcMove(1)">Next &rarr;</button>
+      </div>
+      <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:10px;">Click the card to flip it.</p>`;
+    fcShow();
+  }
+  function fcShow() {
+    $("try-fc").classList.remove("flipped");
+    $("try-fc-front").textContent = fcDeck[fcIndex].front;
+    $("try-fc-back").textContent = fcDeck[fcIndex].back;
+    $("try-fc-count").textContent = (fcIndex + 1) + " / " + fcDeck.length;
+    mathify();
+  }
+  function fcMove(d) {
+    fcIndex = (fcIndex + d + fcDeck.length) % fcDeck.length;
+    fcShow();
+  }
+
+  $("try-go").addEventListener("click", async () => {
+    if (usedFreeTaste()) { showGate(); return; }
+    const text = $("try-text").value.trim();
+    if (text.length < 80) { status("Paste a bit more material first — a solid paragraph at least.", true); return; }
+    const type = $("try-type").value;
+    $("try-go").disabled = true;
+    status("Generating — a few seconds...");
+    try {
+      let html = "";
+      if (type === "flashcards") {
+        const raw = await groq([
+          { role: "system", content: 'You are Notiq AI, an expert study assistant. Create flashcards strictly from the student\'s material. Respond ONLY with valid JSON: {"cards":[{"front":"question or term","back":"clear, concise answer"}]}.' + MATH_RULE },
+          { role: "user", content: "Create exactly 8 high-quality flashcards from this material:\n\n" + text }
+        ], true);
+        fcDeck = (JSON.parse(raw).cards || []).filter(c => c.front && c.back);
+        if (!fcDeck.length) throw new Error("Couldn't build cards from that — try different material.");
+        fcIndex = 0;
+        $("try-out").classList.remove("hidden");
+        renderFc();
+      } else if (type === "quiz") {
+        const raw = await groq([
+          { role: "system", content: 'You are Notiq AI. Write a multiple-choice quiz strictly from the material. Respond ONLY with valid JSON: {"questions":[{"q":"...","options":["a","b","c","d"],"answer":0}]}.' + MATH_RULE },
+          { role: "user", content: "Write exactly 5 multiple-choice questions from this material:\n\n" + text }
+        ], true);
+        const qs = (JSON.parse(raw).questions || []);
+        if (!qs.length) throw new Error("Couldn't build a quiz from that — try different material.");
+        html = qs.map((q, i) => `<div class="qa" onclick="this.classList.toggle('open')">
+            <div class="q">${i + 1}. ${esc(q.q)}</div>
+            ${q.options.map((o, oi) => `<div class="opt">${String.fromCharCode(65 + oi)}. ${esc(o)}</div>`).join("")}
+            <div class="ans">Answer: ${String.fromCharCode(65 + q.answer)}. ${esc(q.options[q.answer])}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:6px;">Click to reveal the answer</div>
+          </div>`).join("");
+        $("try-render").innerHTML = html;
+        $("try-out").classList.remove("hidden");
+        mathify();
+      } else {
+        const prompt = type === "notes"
+          ? "Turn this material into clean, detailed, well-structured study notes in Markdown — headings, bolded key terms, and a short summary at the end:\n\n"
+          : "Condense this material into one dense cram page in Markdown: the 10 must-know ideas, key terms with one-line definitions, commonly-confused pairs, and the 5 most likely exam questions with short model answers:\n\n";
+        const raw = await groq([
+          { role: "system", content: "You are Notiq AI, an expert study assistant. Respond in clean Markdown only." + MATH_RULE },
+          { role: "user", content: prompt + text }
+        ]);
+        $("try-render").innerHTML = `<div class="md-out">${marked.parse(raw)}</div>`;
+        $("try-out").classList.remove("hidden");
+        mathify();
+      }
+      status("");
+      markUsed();   // the next Generate click opens the sign-in popup
+      $("try-out").scrollIntoView({ behavior: "smooth" });
+    } catch (e) {
+      status(e.message, true);
+    }
+    $("try-go").disabled = false;
+  });
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script>
+</body>
+</html>
