@@ -120,7 +120,12 @@
   }
   .subj:hover { border-color: var(--amber); transform: translateY(-2px); }
   .subj.sel { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 9%, transparent); }
-  .subj .ic { font-size: 19px; }
+  .subj .ic {
+    flex: none; width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 17px;
+    color: var(--coral); background: color-mix(in srgb, var(--coral) 10%, transparent);
+  }
   .sub-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .sub-chip {
     padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--field);
@@ -2046,30 +2051,30 @@ $("paste-add").addEventListener("click", async () => {
 
 // ================= LEARN A TOPIC =================
 const NOTIQ_SUBJECTS = {
-  "Math":             ["\u2797", "Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Statistics", "Probability"],
-  "Biology":          ["\ud83e\uddec", "Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
-  "Chemistry":        ["\u2697\ufe0f", "Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
-  "Physics":          ["\ud83c\udf4e", "Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
-  "History":          ["\ud83c\udfdb\ufe0f", "US History", "World History", "Ancient civilizations", "The World Wars", "The Cold War", "The civil rights movement", "The Renaissance"],
-  "Economics":        ["\ud83d\udcc8", "Supply & demand", "Microeconomics", "Macroeconomics", "Inflation & money", "Market structures", "Personal finance", "International trade"],
-  "English":          ["\ud83d\udcda", "Grammar essentials", "Literary devices", "Essay writing", "Poetry analysis", "Shakespeare", "Rhetoric & persuasion"],
-  "Computer Science": ["\ud83d\udcbb", "Programming basics", "Data structures", "Algorithms", "How the internet works", "Databases", "Cybersecurity basics", "AI & machine learning"],
-  "Psychology":       ["\ud83e\udde0", "The brain & neurons", "Memory & learning", "Developmental psychology", "Social psychology", "Disorders & therapy", "Research methods"],
-  "Geography":        ["\ud83c\udf0d", "Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
-  "Government":       ["\u2696\ufe0f", "The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
-  "Languages":        ["\ud83d\udde3\ufe0f", "Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
+  "Math":             ["Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Statistics", "Probability"],
+  "Biology":          ["Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
+  "Chemistry":        ["Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
+  "Physics":          ["Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
+  "History":          ["US History", "World History", "Ancient civilizations", "The World Wars", "The Cold War", "The civil rights movement", "The Renaissance"],
+  "Economics":        ["Supply & demand", "Microeconomics", "Macroeconomics", "Inflation & money", "Market structures", "Personal finance", "International trade"],
+  "English":          ["Grammar essentials", "Literary devices", "Essay writing", "Poetry analysis", "Shakespeare", "Rhetoric & persuasion"],
+  "Computer Science": ["Programming basics", "Data structures", "Algorithms", "How the internet works", "Databases", "Cybersecurity basics", "AI & machine learning"],
+  "Psychology":       ["The brain & neurons", "Memory & learning", "Developmental psychology", "Social psychology", "Disorders & therapy", "Research methods"],
+  "Geography":        ["Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
+  "Government":       ["The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
+  "Languages":        ["Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
 };
 let curSubject = null;
 function renderSubjects() {
   $("subj-grid").innerHTML = Object.keys(NOTIQ_SUBJECTS).map(s =>
-    `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${NOTIQ_SUBJECTS[s][0]}</span>${s}</div>`).join("");
+    `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${s.charAt(0)}</span>${s}</div>`).join("");
 }
 function pickSubject(s) {
   curSubject = s;
   renderSubjects();
   $("sub-wrap").classList.remove("hidden");
   $("sub-label").textContent = s + " — narrow it down, or pick one and make it your own";
-  $("sub-grid").innerHTML = NOTIQ_SUBJECTS[s].slice(1).map((t, i) =>
+  $("sub-grid").innerHTML = NOTIQ_SUBJECTS[s].map((t, i) =>
     `<button class="sub-chip" style="animation-delay:${i * 35}ms" onclick="pickSub(this)">${esc(t)}</button>`).join("");
 }
 function pickSub(el) {
