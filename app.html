@@ -104,6 +104,27 @@
   .donate-x { flex: none; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px; }
   .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
+  /* ============ TOPIC PICKER ============ */
+  .topic-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .subj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .subj {
+    display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 14px; cursor: pointer;
+    background: var(--field); border: 1.5px solid var(--line); font-weight: 700; font-size: 14px;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .subj:hover { border-color: var(--amber); transform: translateY(-2px); }
+  .subj.sel { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 9%, transparent); }
+  .subj .ic { font-size: 19px; }
+  .sub-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sub-chip {
+    padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--field);
+    cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink);
+    transition: transform .15s ease, border-color .15s ease, color .15s ease;
+    animation: chipIn .25s ease both;
+  }
+  .sub-chip:hover { border-color: var(--coral); color: var(--coral); transform: translateY(-2px); }
+  @keyframes chipIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+
   /* ============ LIVING BACKGROUND ============ */
   .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .amb-grid {
@@ -816,14 +837,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 8.8V21h13V8.8"/><path d="M10 21v-6h4v6"/></svg>
       <span class="tip">Home</span>
     </button>
-    <button class="rail-btn" id="rb-resources" onclick="openPanel('resources')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></svg>
-      <span class="tip">Resources — import notes &amp; slides</span>
-    </button>
-    <button class="rail-btn" id="rb-folder" onclick="openPanel('folder')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/><path d="M12 11.5v5"/><path d="M9.5 14h5"/></svg>
-      <span class="tip">New folder</span>
-    </button>
     <button class="rail-btn" id="rb-feedback" onclick="window.open('https://docs.google.com/forms/d/1rFwTc_BWUC0pAEqc6YWp1BRBjRdxbZEkaITDMBH9fPw/viewform', '_blank')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8.5 10h7"/><path d="M8.5 13.5h4.5"/></svg>
       <span class="tip">Feedback &amp; problems</span>
@@ -856,6 +869,9 @@
             <div class="stat"><b id="stat-folders">0</b><span>folders</span></div>
             <div class="stat exam" id="stat-exam-wrap" style="display:none;"><b id="stat-exam">–</b><span id="exam-label">days until your exam</span></div>
             <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used today"><b id="stat-gens">0/10</b><span>AI today</span></div>
+          </div>
+          <div style="margin-top:16px;">
+            <button class="btn-primary" onclick="showView('import')" style="padding:12px 26px; font-size:14.5px;">+ Add material or learn a topic</button>
           </div>
         </div>
         <div class="hero-orb">
@@ -895,6 +911,12 @@
           <p class="tip-body" id="tip-body"></p>
           <span class="tip-foot" id="tip-foot"></span>
         </div>
+        <div class="bento-card b-nt" onclick="showView('notes')">
+          <div class="mini-lines"><i></i><i></i><i></i><i></i></div>
+          <h3>Notes</h3>
+          <p>Any resource, rewritten into beautiful detailed notes.</p>
+          <span class="bento-go">Upgrade my notes</span>
+        </div>
         <div class="bento-card b-fc" onclick="showView('flashcards')">
           <div class="mini-deck"><i></i><i></i><i></i></div>
           <h3>Flashcards</h3>
@@ -915,12 +937,6 @@
           <h3>Study guide</h3>
           <p>Pick your exam day — Notiq plans every day until then.</p>
           <span class="bento-go">Plan my exam</span>
-        </div>
-        <div class="bento-card b-nt" onclick="showView('notes')">
-          <div class="mini-lines"><i></i><i></i><i></i><i></i></div>
-          <h3>Notes</h3>
-          <p>Any resource, rewritten into beautiful detailed notes.</p>
-          <span class="bento-go">Upgrade my notes</span>
         </div>
         <div class="bento-card b-ts" onclick="showView('test')">
           <div style="position:absolute; top:20px; right:22px; display:flex; gap:6px;">
@@ -1002,6 +1018,62 @@
         <span class="save-note" id="share-note"></span>
       </div>
       <div class="item-grid" id="folder-items"></div>
+    </div>
+
+
+    <!-- LEARN / IMPORT -->
+    <div class="view hidden" id="view-import">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Your library</span>
+      <h1 class="page-title">What do you want to <em>learn?</em></h1>
+      <p class="page-sub">Type anything — or start from a subject and narrow it down. Notiq builds the study material, names it, and puts it in your library so you can generate flashcards, quizzes, notes and more from it.</p>
+
+      <div class="surface">
+        <label class="field-label">Type any topic</label>
+        <div class="topic-row">
+          <input class="txt-input" id="topic-input" maxlength="120" placeholder="e.g. photosynthesis, the Cold War, supply and demand..." style="flex:1; min-width:0;">
+          <button class="btn-primary" id="topic-go" onclick="learnTopic()">Build it</button>
+        </div>
+        <div class="status-line" id="topic-status"></div>
+        <label class="field-label" style="margin-top:22px;">Or browse by subject</label>
+        <div class="subj-grid" id="subj-grid"></div>
+        <div class="sub-wrap hidden" id="sub-wrap">
+          <label class="field-label" style="margin-top:20px;" id="sub-label">Narrow it down</label>
+          <div class="sub-grid" id="sub-grid"></div>
+        </div>
+      </div>
+
+      <div class="surface">
+        <label class="field-label" style="margin-top:0;">Or bring your own material</label>
+        <div class="dropzone" id="dropzone">
+          <div class="dz-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></svg></div>
+          <b>Click to upload</b> or drag &amp; drop<br>your notes or lecture slides — <b>PDF, TXT, MD</b>
+          <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display:none;">
+        </div>
+        <label class="field-label" style="margin-top:20px;">Or import a YouTube video</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input class="txt-input" id="yt-url" maxlength="200" placeholder="Paste a YouTube link" style="flex:1; min-width:0;">
+          <button class="btn-ghost" id="yt-add">Add</button>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:6px;">Works for videos with captions/subtitles — Notiq reads the transcript.</p>
+        <div id="yt-help" class="hidden" style="font-size:13px; background:color-mix(in srgb, var(--coral) 7%, transparent); border:1px solid color-mix(in srgb, var(--coral) 20%, transparent); border-radius:10px; padding:12px 14px; margin-top:10px; line-height:1.65;">
+          <b>YouTube is blocking our server right now — here's the 10-second workaround:</b><br>
+          1. Open the video on YouTube<br>
+          2. Under the title, click <b>...more</b> &rarr; <b>Show transcript</b><br>
+          3. Select the whole transcript, copy it<br>
+          4. Paste it in the <b>"Or paste text directly"</b> box below and hit Add
+        </div>
+        <label class="field-label" style="margin-top:20px;">Or paste text directly <small>— Notiq names it for you</small></label>
+        <textarea class="paste-area" id="paste-area" maxlength="50000" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
+        <p style="font-size:11.5px; color:var(--muted); text-align:right; margin-top:4px;" id="paste-count">0 / 50,000</p>
+        <div style="margin-top:10px;"><button class="btn-ghost" id="paste-add">Add to library</button></div>
+        <div class="status-line" id="res-status"></div>
+      </div>
+
+      <div class="surface">
+        <label class="field-label" style="margin-top:0;">Your library</label>
+        <div id="res-list"></div>
+      </div>
     </div>
 
     <!-- FLASHCARDS -->
@@ -1402,39 +1474,7 @@
   <!-- ============ SLIDE-IN PANELS ============ -->
   <div class="scrim" id="scrim" onclick="closePanels()"></div>
 
-  <aside class="panel" id="panel-resources">
-    <div class="panel-head"><h2>Resources</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
-    <div class="panel-body">
-      <div class="dropzone" id="dropzone">
-        <div class="dz-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 16.5v2A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></svg></div>
-        <b>Click to upload</b> or drag &amp; drop<br>your notes or lecture slides — <b>PDF, TXT, MD</b>
-        <input type="file" id="file-input" accept=".pdf,.txt,.md" multiple style="display:none;">
-      </div>
-      <label class="field-label" style="margin-top:20px;">Or import a YouTube video</label>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <input class="txt-input" id="yt-url" maxlength="200" placeholder="Paste a YouTube link" style="flex:1; min-width:0;">
-        <button class="btn-ghost" id="yt-add">Add</button>
-      </div>
-      <p style="font-size:12px; color:var(--muted); margin-top:6px;">Works for videos with captions/subtitles — Notiq reads the transcript.</p>
-      <div id="yt-help" class="hidden" style="font-size:13px; background:color-mix(in srgb, var(--coral) 7%, transparent); border:1px solid color-mix(in srgb, var(--coral) 20%, transparent); border-radius:10px; padding:12px 14px; margin-top:10px; line-height:1.65;">
-        <b>YouTube is blocking our server right now — here's the 10-second workaround:</b><br>
-        1. Open the video on YouTube<br>
-        2. Under the title, click <b>...more</b> &rarr; <b>Show transcript</b><br>
-        3. Select the whole transcript, copy it<br>
-        4. Paste it in the <b>"Or paste text directly"</b> box below and hit Add
-      </div>
-      <label class="field-label" style="margin-top:20px;">Or paste text directly</label>
-      <textarea class="paste-area" id="paste-area" maxlength="50000" placeholder="Paste lecture notes, a chapter, anything..."></textarea>
-      <p style="font-size:11.5px; color:var(--muted); text-align:right; margin-top:4px;" id="paste-count">0 / 50,000</p>
-      <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
-        <input class="txt-input" id="paste-name" maxlength="60" placeholder="Name it (e.g. Bio Lecture 7)" style="flex:1; min-width:0;">
-        <button class="btn-ghost" id="paste-add">Add</button>
-      </div>
-      <div class="status-line" id="res-status"></div>
-      <label class="field-label" style="margin-top:26px;">Your resources</label>
-      <div id="res-list"></div>
-    </div>
-  </aside>
+  
 
   <aside class="panel" id="panel-folder">
     <div class="panel-head"><h2>New folder</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
@@ -1519,6 +1559,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   loadExamCountdown();
   renderStreak();
   loadReviewDecks();
+  renderSubjects();
+  if (!resources.length) showView("import");   // brand-new library -> start by adding material
   renderThemes();
   renderFolderColors();
   logActivity("visit");   // today counts toward your streak
@@ -1785,14 +1827,10 @@ function openPanel(name) {
   closePanels(true);
   $("panel-" + name).classList.add("open");
   $("scrim").classList.add("open");
-  $("rb-resources").classList.toggle("active", name === "resources");
-  $("rb-folder").classList.toggle("active", name === "folder");
 }
 function closePanels(keepScrim) {
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("open"));
   if (!keepScrim) $("scrim").classList.remove("open");
-  $("rb-resources").classList.remove("active");
-  $("rb-folder").classList.remove("active");
 }
 
 function setStatus(id, msg, isError, spinning) {
@@ -1961,7 +1999,6 @@ $("yt-add").addEventListener("click", async () => {
   } catch (e) {
     setStatus("res-status", e.message, true);
     $("yt-help").classList.remove("hidden");
-    $("paste-name").value = $("paste-name").value || "YouTube: ";
   }
 });
 
@@ -1974,16 +2011,87 @@ $("paste-area").addEventListener("input", () => {
 $("paste-add").addEventListener("click", async () => {
   if (!gateResources("res-status")) return;
   const text = $("paste-area").value.trim();
-  const name = $("paste-name").value.trim() || "Pasted notes " + new Date().toLocaleDateString();
   if (!text) { setStatus("res-status", "Paste some text first.", true); return; }
-  setStatus("res-status", "Adding...", false, true);
+  setStatus("res-status", "Reading it and picking a name...", false, true);
+  const name = await aiTitle(text);
   const { error } = await sb.from("resources").insert({ user_id: user.id, name, content: text.slice(0, 200000) });
   if (error) { setStatus("res-status", error.message, true); return; }
-  $("paste-area").value = ""; $("paste-name").value = "";
-  setStatus("res-status", `"${name}" added.`);
+  $("paste-area").value = "";
+  $("paste-count").textContent = "0 / 50,000";
+  setStatus("res-status", `Added as "${name}".`);
   await loadResources();
   renderAll();
 });
+
+// ================= LEARN A TOPIC =================
+const NOTIQ_SUBJECTS = {
+  "Math":             ["\u2797", "Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Statistics", "Probability"],
+  "Biology":          ["\ud83e\uddec", "Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
+  "Chemistry":        ["\u2697\ufe0f", "Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
+  "Physics":          ["\ud83c\udf4e", "Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
+  "History":          ["\ud83c\udfdb\ufe0f", "US History", "World History", "Ancient civilizations", "The World Wars", "The Cold War", "The civil rights movement", "The Renaissance"],
+  "Economics":        ["\ud83d\udcc8", "Supply & demand", "Microeconomics", "Macroeconomics", "Inflation & money", "Market structures", "Personal finance", "International trade"],
+  "English":          ["\ud83d\udcda", "Grammar essentials", "Literary devices", "Essay writing", "Poetry analysis", "Shakespeare", "Rhetoric & persuasion"],
+  "Computer Science": ["\ud83d\udcbb", "Programming basics", "Data structures", "Algorithms", "How the internet works", "Databases", "Cybersecurity basics", "AI & machine learning"],
+  "Psychology":       ["\ud83e\udde0", "The brain & neurons", "Memory & learning", "Developmental psychology", "Social psychology", "Disorders & therapy", "Research methods"],
+  "Geography":        ["\ud83c\udf0d", "Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
+  "Government":       ["\u2696\ufe0f", "The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
+  "Languages":        ["\ud83d\udde3\ufe0f", "Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
+};
+let curSubject = null;
+function renderSubjects() {
+  $("subj-grid").innerHTML = Object.keys(NOTIQ_SUBJECTS).map(s =>
+    `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${NOTIQ_SUBJECTS[s][0]}</span>${s}</div>`).join("");
+}
+function pickSubject(s) {
+  curSubject = s;
+  renderSubjects();
+  $("sub-wrap").classList.remove("hidden");
+  $("sub-label").textContent = s + " — narrow it down, or pick one and make it your own";
+  $("sub-grid").innerHTML = NOTIQ_SUBJECTS[s].slice(1).map((t, i) =>
+    `<button class="sub-chip" style="animation-delay:${i * 35}ms" onclick="pickSub(this)">${esc(t)}</button>`).join("");
+}
+function pickSub(el) {
+  $("topic-input").value = el.textContent + (curSubject ? " (" + curSubject + ")" : "");
+  $("topic-input").focus();
+  $("topic-input").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+async function learnTopic() {
+  const topic = $("topic-input").value.trim();
+  if (topic.length < 3) { setStatus("topic-status", "Type a topic first — or pick one below.", true); return; }
+  if (!gateGenerate("topic-status") || !gateResources("topic-status")) return;
+  $("topic-go").disabled = true;
+  setStatus("topic-status", `Building your study material on "${topic}" — ten seconds or so...`, false, true);
+  try {
+    const md = await groq([
+      { role: "system", content: "You are Notiq AI, an expert teacher writing study material for a student. Respond in clean, well-structured Markdown only." },
+      { role: "user", content: `Write a thorough, well-organized study overview of: ${topic}. Use clear headings for the core concepts a student must know. Include definitions, key terms in bold, concrete examples (worked examples for anything mathematical), common mistakes or misconceptions, and end with a short summary of the most important takeaways. Be accurate and detailed.` }
+    ]);
+    const { error } = await sb.from("resources").insert({ user_id: user.id, name: "\u2726 " + topic.slice(0, 76), content: md.slice(0, 200000) });
+    if (error) throw error;
+    logActivity("generate");
+    await loadResources();
+    renderAll();
+    setStatus("topic-status", "");
+    $("topic-input").value = "";
+    showView("dashboard");
+  } catch (e) { setStatus("topic-status", e.message, true); }
+  $("topic-go").disabled = false;
+}
+
+// AI names pasted material so students never have to
+async function aiTitle(text) {
+  try {
+    const raw = await groq([
+      { role: "system", content: 'Respond ONLY with valid JSON: {"title":"..."} — a specific 2-6 word title describing the study material.' },
+      { role: "user", content: "Title this study material:\n\n" + text.slice(0, 4000) }
+    ], true);
+    const t = (JSON.parse(raw).title || "").trim();
+    if (t) return t.slice(0, 60);
+  } catch (e) { /* fall through */ }
+  const firstLine = text.split("\n").find(l => l.trim());
+  return (firstLine || "Pasted notes").trim().slice(0, 60);
+}
 
 async function deleteResource(id, path) {
   if (!confirm("Delete this resource?")) return;
@@ -2051,7 +2159,7 @@ function renderResPicker(prefix) {
   el.innerHTML = resources.length
     ? resources.map(r => `<label class="res-option"><input type="checkbox" value="${r.id}">
         ${esc(r.name)}<span class="rdate">${new Date(r.created_at).toLocaleDateString()}</span></label>`).join("")
-    : `<p class="empty-hint">No resources yet. Open <b>Resources</b> in the sidebar (the upload icon) to import notes or lecture slides first.</p>`;
+    : `<p class="empty-hint">Your library is empty. <a href="#" onclick="showView('import'); return false;" style="color:var(--coral); font-weight:800;">Add material or learn a topic</a> first.</p>`;
 }
 
 function renderFolderSelect(prefix) {
