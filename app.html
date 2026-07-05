@@ -837,6 +837,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 8.8V21h13V8.8"/><path d="M10 21v-6h4v6"/></svg>
       <span class="tip">Home</span>
     </button>
+    <button class="rail-btn" id="rb-themes" onclick="openPanel('themes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18h.9a2.1 2.1 0 0 0 1.6-3.5 2.1 2.1 0 0 1 1.6-3.5H18a3.5 3.5 0 0 0 3.5-3.5C21.5 6 17.2 3 12 3z"/><circle cx="7.5" cy="10.5" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.15" fill="currentColor" stroke="none"/><circle cx="16.5" cy="10" r="1.15" fill="currentColor" stroke="none"/></svg>
+      <span class="tip">Color palettes — make it yours</span>
+    </button>
+    <button class="rail-btn" id="rb-donate" onclick="window.open('https://ko-fi.com/ayden1234', '_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.7-9.3-9.2C1.3 7.8 3.6 4.5 7 4.5c2 0 3.7 1.1 5 2.9 1.3-1.8 3-2.9 5-2.9 3.4 0 5.7 3.3 4.3 6.8-1.8 4.5-9.3 9.2-9.3 9.2z"/></svg>
+      <span class="tip">Donate — keep Notiq free</span>
+    </button>
     <button class="rail-btn" id="rb-feedback" onclick="window.open('https://docs.google.com/forms/d/1rFwTc_BWUC0pAEqc6YWp1BRBjRdxbZEkaITDMBH9fPw/viewform', '_blank')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8.5 10h7"/><path d="M8.5 13.5h4.5"/></svg>
       <span class="tip">Feedback &amp; problems</span>
@@ -1450,9 +1458,6 @@
           <button class="btn-ghost" onclick="signOut()">Sign out</button>
         </div>
       </div>
-      <div class="section-label">Color palette</div>
-      <p class="page-sub" style="margin-bottom:18px;">Pick how Notiq looks. It changes the whole app — and the home page picks up your accent colors too. Remembered on this device.</p>
-      <div class="theme-grid" id="theme-grid"></div>
     </div>
 
   </main>
@@ -1475,6 +1480,14 @@
   <div class="scrim" id="scrim" onclick="closePanels()"></div>
 
   
+
+  <aside class="panel" id="panel-themes">
+    <div class="panel-head"><h2>Color palette</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
+    <div class="panel-body">
+      <p style="font-size:14px; color:var(--muted); line-height:1.55; margin-bottom:18px;">Pick how Notiq looks. It changes the whole app — the home page picks up your colors too. Remembered on this device.</p>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+  </aside>
 
   <aside class="panel" id="panel-folder">
     <div class="panel-head"><h2>New folder</h2><button class="panel-close" onclick="closePanels()">&#10005;</button></div>
