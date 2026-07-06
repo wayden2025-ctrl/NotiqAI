@@ -1672,6 +1672,10 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
 
   await Promise.all([loadFolders(), loadResources(), loadCounts(), loadActivity(), loadPlan()]);
 
+  // returning to this tab re-checks the plan — so paying on Ko-fi in another
+  // tab flips the account to Pro the moment they come back, no refresh needed
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) loadPlan(); });
+
   // presence heartbeat — powers the "online now" number on the admin stats page
   const heartbeat = () => sb.from("presence").upsert({ user_id: user.id, last_seen: new Date().toISOString() }).then(() => {}, () => {});
   heartbeat();
