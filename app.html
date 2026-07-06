@@ -103,6 +103,28 @@
   .donate-btn:hover { filter: brightness(1.08); }
   .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
+  /* ============ LEARN CTA (dashboard) ============ */
+  .learn-cta {
+    display: inline-flex; align-items: center; gap: 13px;
+    border: 0; cursor: pointer; color: #fff;
+    background: linear-gradient(135deg, var(--g1), var(--g2));
+    padding: 16px 32px 16px 22px; border-radius: 999px;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
+    font-size: clamp(19px, 2.2vw, 23px); letter-spacing: -.4px;
+    box-shadow: 0 20px 44px -14px color-mix(in srgb, var(--g2) 75%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+  }
+  .learn-cta em { color: color-mix(in srgb, var(--orb1) 80%, #fff); }
+  .learn-cta:hover {
+    transform: translateY(-2px); filter: brightness(1.09);
+    box-shadow: 0 26px 52px -14px color-mix(in srgb, var(--g2) 85%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .learn-cta .plus {
+    flex: none; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;
+    font-family: 'Hanken Grotesk', sans-serif; font-style: normal; font-weight: 700; font-size: 20px;
+  }
+
   /* ============ TOPIC PICKER ============ */
   .learn-h {
     font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
@@ -888,8 +910,8 @@
             <div class="stat exam" id="stat-exam-wrap" style="display:none;"><b id="stat-exam">–</b><span id="exam-label">days until your exam</span></div>
             <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used today"><b id="stat-gens">0/10</b><span>AI today</span></div>
           </div>
-          <div style="margin-top:16px;">
-            <button class="btn-primary" onclick="showView('import')" style="padding:12px 26px; font-size:14.5px;">+ Add material or learn a topic</button>
+          <div style="margin-top:18px;">
+            <button class="learn-cta" onclick="showView('import')"><span class="plus">+</span>Add material — or learn something <em>new.</em></button>
           </div>
         </div>
         <div class="hero-orb">
