@@ -1782,18 +1782,20 @@ try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is p
 // BETA SWITCH — set to true to bring back Free-plan limits, the Pro sidebar
 // button, the gen counter and the pricing page. (pricing.html has a matching
 // NOTIQ_PLANS_ENABLED switch at the top — flip BOTH when plans return.)
-const PLANS_ENABLED = false;
+const PLANS_ENABLED = true;
 let userPlan = "free", genToday = 0;
 const FREE_LIMITS = { gens: 10, resources: 15, folders: 5, saved: 30 };
 
 async function loadPlan() {
   try {
-    let { data } = await sb.from("profiles").select("plan").eq("user_id", user.id).maybeSingle();
+    let { data } = await sb.from("profiles").select("plan, plan_until").eq("user_id", user.id).maybeSingle();
     if (!data) {
       await sb.from("profiles").insert({ user_id: user.id, plan: "free" });
       data = { plan: "free" };
     }
     userPlan = data.plan || "free";
+    // subscriptions carry an expiry — lapse gracefully back to free
+    if (userPlan === "pro" && data.plan_until && new Date(data.plan_until) < new Date()) userPlan = "free";
   } catch (e) { userPlan = "free"; }   // profiles table not created yet -> treat as free
   try {
     const { count } = await sb.from("activity").select("id", { count: "exact", head: true })

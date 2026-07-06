@@ -36,10 +36,11 @@ function rateLimited(ip, isPro) {
   if (!h || now - h.dayStart > 86400000) h = { minute: [], day: 0, dayStart: now };
   h.minute = h.minute.filter(t => now - t < 60000);
   if (h.minute.length >= perMin) { hits.set(ip, h); return "You're generating too fast — wait a minute and try again."; }
-  // NOTE: when plans come back, re-add the "upgrade to Pro" pitch to the free-tier message here.
   if (h.day >= perDay) {
     hits.set(ip, h);
-    return "You've generated a lot today — daily cap reached. Come back tomorrow.";
+    return isPro
+      ? "Daily generation limit reached — come back tomorrow."
+      : "Daily generation limit reached — come back tomorrow, or upgrade to Pro for unlimited generations.";
   }
   h.minute.push(now);
   h.day++;
@@ -81,12 +82,13 @@ module.exports = async (req, res) => {
         res.status(401).json({ error: { message: "Session expired — sign in again." } });
         return;
       }
-      const p = await fetch(process.env.SUPABASE_URL + "/rest/v1/profiles?select=plan", {
+      const p = await fetch(process.env.SUPABASE_URL + "/rest/v1/profiles?select=plan,plan_until", {
         headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token },
       });
       if (p.ok) {
         const rows = await p.json();
-        isPro = Array.isArray(rows) && rows[0] && rows[0].plan === "pro";
+        const row = Array.isArray(rows) && rows[0];
+        isPro = !!(row && row.plan === "pro" && (!row.plan_until || new Date(row.plan_until) > new Date()));
       }
     } catch (e) {
       res.status(401).json({ error: { message: "Could not verify your session — try again." } });
