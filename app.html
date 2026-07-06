@@ -103,6 +103,29 @@
   .donate-btn:hover { filter: brightness(1.08); }
   .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
+  /* ============ READY POPUP ============ */
+  .ready-pop {
+    position: fixed; inset: 0; z-index: 900; display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 1; transition: opacity .7s ease;
+  }
+  .ready-pop.fade { opacity: 0; }
+  .ready-card {
+    background: var(--panel); backdrop-filter: blur(14px);
+    border: 1.5px solid color-mix(in srgb, var(--coral) 35%, transparent);
+    border-radius: 22px; padding: 34px 48px; text-align: center; max-width: min(480px, 88vw);
+    box-shadow: 0 40px 80px -24px rgba(0,0,0,.45);
+    animation: readyIn .35s ease;
+  }
+  @keyframes readyIn { from { opacity: 0; transform: translateY(16px) scale(.95); } to { opacity: 1; transform: none; } }
+  .ready-check {
+    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 14px;
+    background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800;
+    box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--g2) 70%, transparent);
+  }
+  .ready-card h3 { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 28px; color: var(--ink); letter-spacing: -.5px; margin-bottom: 6px; }
+  .ready-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
   /* ============ LEARN CTA (dashboard) ============ */
   .learn-cta {
     display: inline-flex; align-items: center; gap: 13px;
@@ -1496,6 +1519,14 @@
   </main>
 
   <!-- Free plan limit toast -->
+  <div class="ready-pop hidden" id="ready-pop">
+    <div class="ready-card">
+      <div class="ready-check">&#10003;</div>
+      <h3 id="ready-title">Ready for generation.</h3>
+      <p id="ready-sub"></p>
+    </div>
+  </div>
+
   <div class="limit-toast hidden" id="limit-toast">
     <p id="limit-toast-text"></p>
     <a href="pricing.html">Upgrade now</a>
@@ -1983,12 +2014,12 @@ async function extractText(file) {
 }
 
 async function addResourceFile(file) {
-  if (!gateResources("res-status")) return;
+  if (!gateResources("res-status")) return false;
   setStatus("res-status", `Reading ${file.name}...`, false, true);
   let text = "";
   try { text = await extractText(file); }
-  catch (e) { setStatus("res-status", `Couldn't read ${file.name}: ${e.message}`, true); return; }
-  if (!text) { setStatus("res-status", `${file.name} has no selectable text. If it's a scanned or photographed PDF, Notiq can't read it yet — paste the text in instead.`, true); return; }
+  catch (e) { setStatus("res-status", `Couldn't read ${file.name}: ${e.message}`, true); return false; }
+  if (!text) { setStatus("res-status", `${file.name} has no selectable text. If it's a scanned or photographed PDF, Notiq can't read it yet — paste the text in instead.`, true); return false; }
   let trimmed = "";
   if (text.length > 200000) { text = text.slice(0, 200000); trimmed = " (long file — kept the first 200,000 characters)"; }
 
@@ -1999,22 +2030,31 @@ async function addResourceFile(file) {
   if (!upErr) storage_path = path;
 
   const { error } = await sb.from("resources").insert({ user_id: user.id, name: file.name, storage_path, content: text.slice(0, 200000) });
-  if (error) { setStatus("res-status", error.message, true); return; }
+  if (error) { setStatus("res-status", error.message, true); return false; }
   setStatus("res-status", `${file.name} added${trimmed}${upErr ? " (file kept as text only — storage upload failed: " + upErr.message + ")" : ""}.`);
   await loadResources();
   renderAll();
+  return true;
 }
 
 $("dropzone").addEventListener("click", () => $("file-input").click());
 $("file-input").addEventListener("change", async (e) => {
-  for (const f of e.target.files) await addResourceFile(f);
+  let ok = 0;
+  for (const f of e.target.files) { if (await addResourceFile(f)) ok++; }
   e.target.value = "";
+  if (ok) readyPop(ok === 1 ? "Your notes are ready for generation." : ok + " files are ready for generation.");
 });
 ["dragover", "dragleave", "drop"].forEach(evt =>
   $("dropzone").addEventListener(evt, (e) => {
     e.preventDefault();
     $("dropzone").classList.toggle("drag", evt === "dragover");
-    if (evt === "drop") { for (const f of e.dataTransfer.files) addResourceFile(f); }
+    if (evt === "drop") {
+      (async () => {
+        let ok = 0;
+        for (const f of e.dataTransfer.files) { if (await addResourceFile(f)) ok++; }
+        if (ok) readyPop(ok === 1 ? "Your notes are ready for generation." : ok + " files are ready for generation.");
+      })();
+    }
   })
 );
 
@@ -2038,6 +2078,7 @@ $("yt-add").addEventListener("click", async () => {
     setStatus("res-status", `Transcript added: "${j.title || "YouTube video"}".`);
     await loadResources();
     renderAll();
+    readyPop(`"${(j.title || "YouTube video").slice(0, 42)}" is ready for generation.`);
   } catch (e) {
     setStatus("res-status", e.message, true);
     $("yt-help").classList.remove("hidden");
@@ -2063,7 +2104,21 @@ $("paste-add").addEventListener("click", async () => {
   setStatus("res-status", `Added as "${name}".`);
   await loadResources();
   renderAll();
+  readyPop(`"${name}" is ready for generation.`);
 });
+
+// ================= READY POPUP =================
+let readyT1 = null, readyT2 = null;
+function readyPop(title, sub) {
+  showView("dashboard");
+  const el = $("ready-pop");
+  $("ready-title").textContent = title;
+  $("ready-sub").textContent = sub || "Pick any tool below — flashcards, quiz, notes, test — and generate.";
+  clearTimeout(readyT1); clearTimeout(readyT2);
+  el.classList.remove("hidden", "fade");
+  readyT1 = setTimeout(() => el.classList.add("fade"), 2300);
+  readyT2 = setTimeout(() => el.classList.add("hidden"), 3100);
+}
 
 // ================= LEARN A TOPIC =================
 const NOTIQ_SUBJECTS = {
@@ -2116,7 +2171,7 @@ async function learnTopic() {
     renderAll();
     setStatus("topic-status", "");
     $("topic-input").value = "";
-    showView("dashboard");
+    readyPop(`"${topic.slice(0, 42)}" is ready for generation.`);
   } catch (e) { setStatus("topic-status", e.message, true); }
   $("topic-go").disabled = false;
 }
