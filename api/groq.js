@@ -66,7 +66,8 @@ module.exports = async (req, res) => {
   // gets the free-tier server limits, which is still safe.)
   let isPro = false;
   const token = req.headers["x-notiq-auth"];
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+  const sbBase = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  if (sbBase && process.env.SUPABASE_ANON_KEY) {
     if (!token) {
       // signed-out visitors get a tiny "try it" allowance per IP per day
       if (guestLimited(ip)) {
@@ -75,24 +76,24 @@ module.exports = async (req, res) => {
       }
     } else {
     try {
-      const u = await fetch(process.env.SUPABASE_URL + "/auth/v1/user", {
-        headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token },
+      const u = await fetch(sbBase + "/auth/v1/user", {
+        headers: { apikey: (process.env.SUPABASE_ANON_KEY || "").trim(), Authorization: "Bearer " + token },
       });
-      if (!u.ok) {
+      if (u.status === 401 || u.status === 403) {
         res.status(401).json({ error: { message: "Session expired — sign in again." } });
         return;
       }
-      const p = await fetch(process.env.SUPABASE_URL + "/rest/v1/profiles?select=plan,plan_until", {
-        headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: "Bearer " + token },
-      });
+      // any other failure = our config/infra problem, never block the student
+      const p = u.ok ? await fetch(sbBase + "/rest/v1/profiles?select=plan,plan_until", {
+        headers: { apikey: (process.env.SUPABASE_ANON_KEY || "").trim(), Authorization: "Bearer " + token },
+      }) : { ok: false };
       if (p.ok) {
         const rows = await p.json();
         const row = Array.isArray(rows) && rows[0];
         isPro = !!(row && row.plan === "pro" && (!row.plan_until || new Date(row.plan_until) > new Date()));
       }
     } catch (e) {
-      res.status(401).json({ error: { message: "Could not verify your session — try again." } });
-      return;
+      // network hiccup verifying the session — let the request through on free-tier limits
     }
     }
   }

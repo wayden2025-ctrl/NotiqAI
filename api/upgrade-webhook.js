@@ -13,7 +13,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY  (Supabase Settings -> API -> service_role)
 
 async function setPlanByEmail(email, plan, until) {
-  const base = process.env.SUPABASE_URL;
+  const base = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
   const svc = process.env.SUPABASE_SERVICE_KEY;
   const headers = { apikey: svc, Authorization: "Bearer " + svc, "Content-Type": "application/json" };
 
