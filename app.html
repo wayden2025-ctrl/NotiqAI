@@ -425,7 +425,22 @@
   .hero-orb .star.s-b { width: 5px; height: 5px; background: var(--coral); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--coral) 55%, transparent); }
   .hero-orb .star.s-c { width: 4px; height: 4px; background: var(--orb1); opacity: .9; }
 
-  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "nt nt fc qz" "nt nt study ts" "tip tip tip tip"; gap: 16px; }
+  .bento { display: flex; flex-direction: column; gap: 16px; }
+  .tool-row {
+    display: flex; gap: 16px; overflow-x: auto; padding: 6px 2px 14px;
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+  }
+  .tool-row::-webkit-scrollbar { height: 7px; }
+  .tool-row::-webkit-scrollbar-track { background: transparent; }
+  .tool-row::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--coral) 28%, transparent); border-radius: 99px; }
+  .tool-row::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--coral) 45%, transparent); }
+  .tool-row .bento-card {
+    flex: 0 0 min(262px, 76vw); min-height: 218px; scroll-snap-align: start;
+    display: flex; flex-direction: column;
+  }
+  .tool-row .bento-card .bento-go { margin-top: auto; }
   .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; } .b-ts { grid-area: ts; }
   .sec-pill { width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
   .fib-input { margin-top: 10px; width: min(420px, 100%); }
@@ -564,7 +579,7 @@
   @media (max-width: 940px) {
     .dash-hero { flex-direction: column-reverse; align-items: flex-start; }
     .hero-orb { align-self: center; }
-    .bento { grid-template-columns: 1fr; grid-template-areas: "nt" "fc" "qz" "study" "ts" "tip"; }
+
   }
 
   /* ============ FOCUS TIMER + MASTERY ============ */
@@ -1001,15 +1016,8 @@
       </div>
 
       <div class="bento">
-        <div class="bento-card b-tip">
-          <div class="sheen"></div>
-          <span class="tip-ghost" id="tip-ghost">01</span>
-          <span class="tip-eyebrow">Tip of the day</span>
-          <h3 class="tip-title" id="tip-title">Test yourself first.</h3>
-          <p class="tip-body" id="tip-body"></p>
-          <span class="tip-foot" id="tip-foot"></span>
-        </div>
-        <div class="bento-card b-nt" onclick="showView('notes')">
+        <div class="tool-row" id="tool-row">
+          <div class="bento-card b-nt" onclick="showView('notes')">
           <div class="mini-lines"><i></i><i></i><i></i><i></i></div>
           <h3>Notes</h3>
           <p>Any resource, rewritten into beautiful detailed notes.</p>
@@ -1043,6 +1051,15 @@
           <h3>Test</h3>
           <p>The real thing: multiple choice, fill-in-the-blank, then essays — graded like a teacher, feedback and all.</p>
           <span class="bento-go">Sit the test</span>
+        </div>
+        </div>
+        <div class="bento-card b-tip">
+          <div class="sheen"></div>
+          <span class="tip-ghost" id="tip-ghost">01</span>
+          <span class="tip-eyebrow">Tip of the day</span>
+          <h3 class="tip-title" id="tip-title">Test yourself first.</h3>
+          <p class="tip-body" id="tip-body"></p>
+          <span class="tip-foot" id="tip-foot"></span>
         </div>
       </div>
 
@@ -1856,6 +1873,14 @@ function observeMath() {
 }
 observeMath();
 scheduleMath();
+
+// ================= TOOL ROW (horizontal scroll) =================
+$("tool-row").addEventListener("wheel", (e) => {
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    e.preventDefault();
+    $("tool-row").scrollLeft += e.deltaY;
+  }
+}, { passive: false });
 
 // ================= DONATION BAR =================
 try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is permanent now
