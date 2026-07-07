@@ -140,6 +140,34 @@
   .wb-chip.on { background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff; border-color: transparent; }
   .wb-chip i { font-style: normal; font-size: 11px; opacity: .7; padding: 2px 5px; border-radius: 50%; }
   .wb-chip i:hover { opacity: 1; background: rgba(0,0,0,.15); }
+  /* fullscreen canvas mode */
+  #view-board .eyebrow, #view-board .page-title, #view-board .page-sub { display: none; }
+  #view-board .back-link {
+    position: fixed; top: 14px; left: calc(var(--rail-w) + 16px); z-index: 60; margin: 0;
+    background: var(--panel); backdrop-filter: blur(12px);
+    padding: 9px 18px; border-radius: 999px; border: 1.5px solid var(--line);
+    box-shadow: 0 12px 26px -12px rgba(0,0,0,.35);
+  }
+  #view-board .wb-wrap {
+    position: fixed; top: 0; right: 0; bottom: 0; left: var(--rail-w);
+    border-radius: 0; border: 0; z-index: 40; box-shadow: none;
+  }
+  #view-board div.wb-bar:nth-of-type(1) {
+    position: fixed; bottom: 16px; left: calc(50% + var(--rail-w) / 2); transform: translateX(-50%);
+    z-index: 60; margin: 0; flex-wrap: nowrap; overflow-x: auto;
+    max-width: min(94vw - var(--rail-w), 1080px);
+    background: var(--panel); backdrop-filter: blur(14px);
+    border: 1.5px solid color-mix(in srgb, var(--coral) 25%, transparent);
+    border-radius: 18px; box-shadow: 0 24px 50px -18px rgba(0,0,0,.4);
+  }
+  #view-board div.wb-bar:nth-of-type(2) {
+    position: fixed; top: 12px; right: 16px; left: auto; z-index: 60; margin: 0;
+    max-width: min(78vw, 720px);
+    background: var(--panel); backdrop-filter: blur(14px);
+    border: 1.5px solid var(--line); border-radius: 16px;
+    box-shadow: 0 16px 34px -14px rgba(0,0,0,.35);
+  }
+
   .wb-textin {
     position: absolute; z-index: 5; min-width: 140px;
     border: 1.5px dashed var(--coral); background: rgba(255,255,255,.96); color: #241d18;
@@ -2081,7 +2109,7 @@ function wbResize() {
   const c = $("wb-canvas"), wrap = $("wb-wrap");
   const dpr = window.devicePixelRatio || 1;
   const cw = wrap.clientWidth || 900;
-  const ch = Math.max(520, window.innerHeight - 320);
+  const ch = wrap.clientHeight || Math.max(520, window.innerHeight - 320);
   c.width = cw * dpr; c.height = ch * dpr;
   c.style.height = ch + "px";
   wbCtx().setTransform(dpr, 0, 0, dpr, 0, 0);
