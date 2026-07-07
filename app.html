@@ -2772,7 +2772,7 @@ function readyPop(title, sub) {
 
 // ================= LEARN A TOPIC =================
 const NOTIQ_SUBJECTS = {
-  "Math":             ["Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Statistics", "Probability"],
+  "Math":             ["Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Linear algebra", "Differential equations", "Statistics", "Probability"],
   "Biology":          ["Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
   "Chemistry":        ["Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
   "Physics":          ["Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
@@ -2784,6 +2784,9 @@ const NOTIQ_SUBJECTS = {
   "Geography":        ["Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
   "Government":       ["The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
   "Languages":        ["Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
+  "Business":         ["Marketing basics", "Accounting 101", "Finance fundamentals", "Entrepreneurship", "Business management", "Business ethics", "Supply chains & operations"],
+  "Engineering":      ["Statics & dynamics", "Circuits & electronics", "Thermodynamics for engineers", "Fluid mechanics", "Materials science", "The engineering design process"],
+  "AI":               ["How neural networks work", "Machine learning basics", "Large language models", "Computer vision", "Prompt engineering", "Training & fine-tuning", "AI ethics"],
 };
 let curSubject = null;
 function renderSubjects() {
