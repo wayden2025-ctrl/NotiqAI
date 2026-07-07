@@ -251,6 +251,7 @@
   }
   .subj:hover { border-color: var(--amber); transform: translateY(-2px); }
   .subj.sel { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 9%, transparent); }
+  .subj.subj-more { border-style: dashed; border-color: color-mix(in srgb, var(--coral) 45%, transparent); color: var(--coral); }
   .subj .ic {
     flex: none; width: 30px; height: 30px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
@@ -2772,26 +2773,68 @@ function readyPop(title, sub) {
 
 // ================= LEARN A TOPIC =================
 const NOTIQ_SUBJECTS = {
-  "Math":             ["Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Linear algebra", "Differential equations", "Statistics", "Probability"],
-  "Biology":          ["Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
-  "Chemistry":        ["Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
-  "Physics":          ["Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
-  "History":          ["US History", "World History", "Ancient civilizations", "The World Wars", "The Cold War", "The civil rights movement", "The Renaissance"],
-  "Economics":        ["Supply & demand", "Microeconomics", "Macroeconomics", "Inflation & money", "Market structures", "Personal finance", "International trade"],
-  "English":          ["Grammar essentials", "Literary devices", "Essay writing", "Poetry analysis", "Shakespeare", "Rhetoric & persuasion"],
-  "Computer Science": ["Programming basics", "Data structures", "Algorithms", "How the internet works", "Databases", "Cybersecurity basics", "AI & machine learning"],
-  "Psychology":       ["The brain & neurons", "Memory & learning", "Developmental psychology", "Social psychology", "Disorders & therapy", "Research methods"],
-  "Geography":        ["Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
-  "Government":       ["The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
-  "Languages":        ["Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
-  "Business":         ["Marketing basics", "Accounting 101", "Finance fundamentals", "Entrepreneurship", "Business management", "Business ethics", "Supply chains & operations"],
-  "Engineering":      ["Statics & dynamics", "Circuits & electronics", "Thermodynamics for engineers", "Fluid mechanics", "Materials science", "The engineering design process"],
-  "AI":               ["How neural networks work", "Machine learning basics", "Large language models", "Computer vision", "Prompt engineering", "Training & fine-tuning", "AI ethics"],
+  "Math":                   ["Algebra", "Geometry", "Trigonometry", "Pre-calculus", "Calculus", "Linear algebra", "Differential equations", "Statistics", "Probability"],
+  "Biology":                ["Cell biology", "Genetics", "Evolution", "Ecology", "Human anatomy", "Photosynthesis & respiration", "Microbiology"],
+  "Chemistry":              ["Atomic structure", "The periodic table", "Chemical bonding", "Stoichiometry", "Acids & bases", "Thermochemistry", "Organic chemistry"],
+  "Physics":                ["Motion & forces", "Energy & work", "Waves & sound", "Electricity & magnetism", "Light & optics", "Thermodynamics", "Modern physics"],
+  "History":                ["US History", "World History", "Ancient civilizations", "The World Wars", "The Cold War", "The civil rights movement", "The Renaissance"],
+  "Economics":              ["Supply & demand", "Microeconomics", "Macroeconomics", "Inflation & money", "Market structures", "International trade"],
+  "English":                ["Grammar essentials", "Literary devices", "Essay writing", "Poetry analysis", "Shakespeare", "Rhetoric & persuasion"],
+  "Computer Science":       ["Programming basics", "Data structures", "Algorithms", "How the internet works", "Databases", "Operating systems"],
+  "Psychology":             ["The brain & neurons", "Memory & learning", "Developmental psychology", "Social psychology", "Disorders & therapy", "Research methods"],
+  "Business":               ["Marketing basics", "Accounting 101", "Finance fundamentals", "Entrepreneurship", "Business management", "Business ethics", "Supply chains & operations"],
+  "Engineering":            ["Statics & dynamics", "Circuits & electronics", "Thermodynamics for engineers", "Fluid mechanics", "Materials science", "The engineering design process"],
+  "AI":                     ["How neural networks work", "Machine learning basics", "Large language models", "Computer vision", "Prompt engineering", "AI ethics"],
+  "Government":             ["The US Constitution", "Branches of government", "Elections & voting", "Landmark Supreme Court cases"],
+  "Geography":              ["Physical geography", "Climate & weather", "Plate tectonics", "Population & migration", "Maps & regions"],
+  "Languages":              ["Spanish basics", "French basics", "Vocabulary building", "Verb conjugation"],
+  "Nursing":                ["Vital signs & assessment", "Pharmacology basics", "Medical terminology", "Patient care fundamentals", "Infection control", "Dosage calculations"],
+  "Pre-Med / Medicine":     ["Medical terminology", "Pathophysiology basics", "The MCAT sciences", "Pharmacology introduction", "Medical ethics", "Body systems overview"],
+  "Anatomy & Physiology":   ["The skeletal system", "The muscular system", "The cardiovascular system", "The nervous system", "The respiratory system", "The digestive system", "The endocrine system"],
+  "Neuroscience":           ["Neuron structure & signaling", "Brain regions & functions", "Neurotransmitters", "The senses", "Memory & plasticity", "Neurological disorders"],
+  "Biochemistry":           ["Proteins & enzymes", "Carbohydrates & lipids", "DNA & RNA", "Metabolism & ATP", "Enzyme kinetics", "Cell signaling"],
+  "Public Health":          ["Epidemiology basics", "Health policy", "Global health", "Biostatistics introduction", "Disease prevention", "Environmental health"],
+  "Nutrition":              ["Macronutrients", "Vitamins & minerals", "Digestion & metabolism", "Diet planning", "Sports nutrition", "Food safety"],
+  "Kinesiology":            ["Exercise physiology", "Biomechanics", "Motor learning", "Sports psychology", "Injury prevention", "Strength & conditioning"],
+  "Sociology":              ["Culture & society", "Social institutions", "Inequality & class", "Race & ethnicity", "Deviance & crime", "Research methods"],
+  "Anthropology":           ["Cultural anthropology", "Human evolution", "Archaeology basics", "Language & culture", "Kinship & society"],
+  "Philosophy":             ["Logic & arguments", "Ethics & moral theory", "Ancient philosophy", "Epistemology", "Philosophy of mind", "Existentialism"],
+  "Criminal Justice":       ["The court system", "Criminology theories", "Policing", "Corrections & sentencing", "Criminal law basics", "Forensics introduction"],
+  "Pre-Law / Law":          ["The Constitution & rights", "Contracts basics", "Torts basics", "Criminal vs civil law", "Legal reasoning & writing", "Landmark cases"],
+  "Education":              ["Learning theories", "Child development", "Classroom management", "Curriculum & assessment", "Educational psychology", "Special education basics"],
+  "Communications":         ["Public speaking", "Interpersonal communication", "Media & society", "Persuasion theory", "Nonverbal communication"],
+  "Journalism & Media":     ["News writing", "Media ethics", "Interviewing techniques", "Digital media", "The First Amendment & press"],
+  "Marketing":              ["The 4 Ps", "Consumer behavior", "Digital marketing", "Branding", "Market research", "Social media strategy"],
+  "Accounting":             ["The accounting equation", "Debits & credits", "Financial statements", "Managerial accounting", "Auditing basics", "Taxes introduction"],
+  "Finance":                ["Time value of money", "Stocks & bonds", "Risk & return", "Corporate finance", "Personal finance", "Financial markets"],
+  "Data Science":           ["Statistics for data science", "Python for data", "Data visualization", "Regression & prediction", "SQL basics", "Machine learning overview"],
+  "Cybersecurity":          ["Network security basics", "Encryption & cryptography", "Common attacks & defenses", "Ethical hacking concepts", "Security best practices"],
+  "Electrical Engineering": ["Circuit analysis", "Ohms law & Kirchhoffs laws", "AC vs DC", "Digital logic", "Signals & systems", "Electromagnetics"],
+  "Mechanical Engineering": ["Statics", "Dynamics", "Thermodynamics", "Fluid mechanics", "Machine design", "Heat transfer"],
+  "Civil Engineering":      ["Structural analysis", "Materials & concrete", "Geotechnical basics", "Transportation engineering", "Water resources"],
+  "Chemical Engineering":   ["Mass & energy balances", "Reaction engineering", "Separations", "Process control", "Transport phenomena"],
+  "Aerospace Engineering":  ["Aerodynamics", "Propulsion", "Flight mechanics", "Orbital mechanics", "Aircraft structures"],
+  "Environmental Science":  ["Ecosystems & biodiversity", "Climate change", "Pollution & waste", "Renewable energy", "Conservation", "Sustainability"],
+  "Earth Science":          ["Rocks & minerals", "Plate tectonics", "Earthquakes & volcanoes", "The water cycle", "Geologic time"],
+  "Astronomy":              ["The solar system", "Stars & their life cycles", "Galaxies", "Black holes", "The Big Bang", "Telescopes & observation"],
+  "Architecture":           ["Architectural history", "Design principles", "Structures for architects", "Building materials", "Urban planning basics"],
+  "Art & Design":           ["Art history movements", "Color theory", "Composition & design principles", "Drawing fundamentals", "Graphic design basics"],
+  "Music":                  ["Music theory basics", "Reading sheet music", "Chords & harmony", "Music history", "Ear training"],
+  "Theater & Film":         ["Film analysis", "Screenwriting basics", "Acting techniques", "Theater history", "Cinematography"],
+  "International Relations":["Theories of IR", "The United Nations", "Foreign policy", "Globalization", "War & diplomacy"],
+  "Social Work":            ["Human behavior & environment", "Case management", "Social welfare policy", "Ethics in social work", "Community practice"],
+  "Religious Studies":      ["World religions overview", "Comparative religion", "Religious texts", "Religion & society"],
+  "Linguistics":            ["Phonetics & phonology", "Syntax", "Semantics", "Language acquisition", "Sociolinguistics"],
+  "Hospitality & Tourism":  ["Hotel management", "Food & beverage operations", "Event planning", "Tourism economics", "Customer service excellence"],
+  "Agriculture":            ["Soil science", "Crop production", "Animal science", "Agricultural economics", "Sustainable farming"],
 };
-let curSubject = null;
+let curSubject = null, subjExpanded = false;
 function renderSubjects() {
-  $("subj-grid").innerHTML = Object.keys(NOTIQ_SUBJECTS).map(s =>
-    `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${s.charAt(0)}</span>${s}</div>`).join("");
+  const keys = Object.keys(NOTIQ_SUBJECTS);
+  const shown = subjExpanded ? keys : keys.slice(0, 15);
+  $("subj-grid").innerHTML = shown.map(s =>
+    `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${s.charAt(0)}</span>${s}</div>`).join("") +
+    `<div class="subj subj-more" onclick="subjExpanded = !subjExpanded; renderSubjects();"><span class="ic">${subjExpanded ? "\u2212" : "+"}</span>${subjExpanded ? "Show fewer" : "All " + keys.length + " subjects"}</div>`;
 }
 function pickSubject(s) {
   curSubject = s;
