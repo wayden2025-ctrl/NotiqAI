@@ -308,6 +308,7 @@
     100% { opacity: 0; transform: translate(var(--cx), var(--cy)) rotate(var(--cr)); }
   }
   .view { animation: viewIn .28s ease both; }
+  #view-board { animation: none; }   /* a transform on the parent would break the fixed toolbar/canvas */
   @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .fc-face { overflow: hidden; }
   .fc-face::after {
