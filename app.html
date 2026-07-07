@@ -425,7 +425,7 @@
   .hero-orb .star.s-b { width: 5px; height: 5px; background: var(--coral); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--coral) 55%, transparent); }
   .hero-orb .star.s-c { width: 4px; height: 4px; background: var(--orb1); opacity: .9; }
 
-  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "tip tip fc qz" "tip tip study nt" "ts ts ts ts"; gap: 16px; }
+  .bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-areas: "nt nt fc qz" "nt nt study ts" "tip tip tip tip"; gap: 16px; }
   .b-tip { grid-area: tip; } .b-study { grid-area: study; } .b-fc { grid-area: fc; } .b-qz { grid-area: qz; } .b-nt { grid-area: nt; } .b-ts { grid-area: ts; }
   .sec-pill { width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
   .fib-input { margin-top: 10px; width: min(420px, 100%); }
@@ -448,7 +448,7 @@
   .bento-go::after { content: "→"; transition: transform .18s ease; }
   .bento-card:hover .bento-go::after { transform: translateX(5px); }
 
-  .b-tip { background: linear-gradient(135deg, var(--g1b), var(--g2)); border: 0; min-height: 300px; display: flex; flex-direction: column; justify-content: center; padding: 32px 36px; cursor: default; }
+  .b-tip { background: linear-gradient(135deg, var(--g1b), var(--g2)); border: 0; min-height: 210px; display: flex; flex-direction: column; justify-content: center; padding: 30px 36px; cursor: default; }
   .b-tip:hover { transform: none; box-shadow: 0 20px 40px -22px rgba(60,40,30,.32); }
   .b-tip .sheen { position: absolute; top: -30%; left: -45%; width: 52%; height: 160%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); transform: skewX(-18deg); animation: sheen 7s ease-in-out infinite; }
   .tip-ghost {
@@ -564,7 +564,7 @@
   @media (max-width: 940px) {
     .dash-hero { flex-direction: column-reverse; align-items: flex-start; }
     .hero-orb { align-self: center; }
-    .bento { grid-template-columns: 1fr; grid-template-areas: "tip" "fc" "qz" "study" "nt" "ts"; }
+    .bento { grid-template-columns: 1fr; grid-template-areas: "nt" "fc" "qz" "study" "ts" "tip"; }
   }
 
   /* ============ FOCUS TIMER + MASTERY ============ */
