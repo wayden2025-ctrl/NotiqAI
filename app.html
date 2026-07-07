@@ -131,6 +131,15 @@
     box-shadow: 0 26px 52px -24px rgba(60,40,30,.4);
   }
   #wb-canvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
+  .wb-chip {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-radius: 999px;
+    border: 1.5px solid color-mix(in srgb, var(--coral) 40%, transparent);
+    background: color-mix(in srgb, var(--coral) 9%, transparent);
+    color: var(--coral); font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .wb-chip.on { background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff; border-color: transparent; }
+  .wb-chip i { font-style: normal; font-size: 11px; opacity: .7; padding: 2px 5px; border-radius: 50%; }
+  .wb-chip i:hover { opacity: 1; background: rgba(0,0,0,.15); }
   .wb-textin {
     position: absolute; z-index: 5; min-width: 140px;
     border: 1.5px dashed var(--coral); background: rgba(255,255,255,.96); color: #241d18;
@@ -1288,6 +1297,15 @@
         <button class="wb-tool" onclick="wbDownload()" title="Download as PNG"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg></button>
       </div>
 
+      <div class="wb-bar">
+        <input class="txt-input" id="wb-name" maxlength="60" placeholder="Board name (e.g. Cell cycle diagram)" style="flex:1; min-width:150px; max-width:300px;">
+        <button class="btn-primary" onclick="wbSaveBoard()" style="padding:10px 24px; font-size:14px;">Save board</button>
+        <button class="btn-ghost" onclick="wbNewBoard()" style="padding:9px 16px; font-size:13px;">New board</button>
+        <span class="wb-sep"></span>
+        <span id="wb-boards" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></span>
+        <div class="status-line" id="wb-status" style="flex-basis:100%; margin:2px 0 0;"></div>
+      </div>
+
       <div class="wb-wrap" id="wb-wrap">
         <canvas id="wb-canvas"></canvas>
         <input class="wb-textin hidden" id="wb-textin" maxlength="200" placeholder="Type, then press Enter">
@@ -1984,10 +2002,77 @@ const wb = {
 };
 const WB_COLORS = ["#1e3a6e", "#241d18", "#c0392b", "#2e7d4f", "#e67e22", "#7d3fc0", "#0e7490", "#d4a017"];
 
+let wbBoards = [];
 function openBoard() {
   showView("board");
   if (!wb.inited) { wbInit(); wb.inited = true; }
   setTimeout(wbResize, 30);
+  wbLoadBoards();
+}
+async function wbLoadBoards() {
+  try {
+    const { data, error } = await sb.from("boards").select("id, name, updated_at").order("updated_at", { ascending: false });
+    if (error) throw error;
+    wbBoards = data || [];
+  } catch (e) { wbBoards = []; }
+  renderWbBoards();
+}
+function renderWbBoards() {
+  $("wb-boards").innerHTML = wbBoards.length
+    ? wbBoards.map(b => `<span class="wb-chip${b.id === wb.boardId ? " on" : ""}" onclick="wbOpenBoard('${b.id}')">${esc(b.name)}<i title="Delete board" onclick="event.stopPropagation(); wbDeleteBoard('${b.id}')">&#10005;</i></span>`).join("")
+    : `<span style="font-size:12.5px; color:var(--muted);">No saved boards yet.</span>`;
+}
+async function wbSaveBoard() {
+  const name = $("wb-name").value.trim() || "Untitled board";
+  if (!wb.objs.length) { setStatus("wb-status", "Draw something first.", true); return; }
+  if (!wb.boardId && PLANS_ENABLED && userPlan !== "pro" && wbBoards.length >= FREE_LIMITS.boards) {
+    limitMsg($("wb-status"), `You've hit the free plan's ${FREE_LIMITS.boards}-whiteboard limit.`);
+    return;
+  }
+  const snap = wbSnapshot();
+  if (snap.length > 4000000) { setStatus("wb-status", "This board is too big to save — remove or shrink a large image.", true); return; }
+  setStatus("wb-status", "Saving...", false, true);
+  let res;
+  if (wb.boardId) {
+    res = await sb.from("boards").update({ name, data: JSON.parse(snap), updated_at: new Date().toISOString() }).eq("id", wb.boardId).select().single();
+  } else {
+    res = await sb.from("boards").insert({ user_id: user.id, name, data: JSON.parse(snap) }).select().single();
+  }
+  if (res.error) {
+    setStatus("wb-status", /relation .*boards/i.test(res.error.message)
+      ? "One-time setup needed: run the whiteboard SQL block in Supabase (check the chat), then save again."
+      : res.error.message, true);
+    return;
+  }
+  wb.boardId = res.data.id;
+  $("wb-name").value = name;
+  setStatus("wb-status", `Saved "${name}" — you can keep editing and save again anytime.`);
+  logActivity("save");
+  wbLoadBoards();
+}
+async function wbOpenBoard(id) {
+  const { data, error } = await sb.from("boards").select("*").eq("id", id).single();
+  if (error) { setStatus("wb-status", error.message, true); return; }
+  wb.boardId = data.id;
+  $("wb-name").value = data.name;
+  wb.undoStack = []; wb.redoStack = []; wb.sel = null;
+  wbRestore(JSON.stringify(data.data || []));
+  renderWbBoards();
+  setStatus("wb-status", `Opened "${data.name}" — edit away, then hit Save board.`);
+}
+async function wbDeleteBoard(id) {
+  if (!confirm("Delete this saved board?")) return;
+  await sb.from("boards").delete().eq("id", id);
+  if (wb.boardId === id) wb.boardId = null;
+  wbLoadBoards();
+}
+function wbNewBoard() {
+  if (wb.objs.length) wbPushUndo();
+  wb.objs = []; wb.sel = null; wb.boardId = null;
+  $("wb-name").value = "";
+  setStatus("wb-status", "");
+  renderWbBoards();
+  wbDraw();
 }
 
 function wbCtx() { return $("wb-canvas").getContext("2d"); }
@@ -2353,7 +2438,7 @@ try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is p
 // NOTIQ_PLANS_ENABLED switch at the top — flip BOTH when plans return.)
 const PLANS_ENABLED = true;
 let userPlan = "free", genToday = 0;
-const FREE_LIMITS = { gens: 10, resources: 15, folders: 5, saved: 30 };
+const FREE_LIMITS = { gens: 10, resources: 15, folders: 5, saved: 30, boards: 2 };
 
 async function loadPlan() {
   try {
