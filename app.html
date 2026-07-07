@@ -1011,7 +1011,7 @@
       <!-- DONATE: swap the href below (and the matching box on the landing page) for the real donation link when ready -->
       <div class="donate-bar" id="donate-bar">
         <span class="donate-heart">&#9829;</span>
-        <div class="donate-txt"><b>Students helping students.</b> The Free plan stays free because Pro members cover the bills — <b>$4.99/mo</b> for everything unlimited, cancel anytime. <i class="donate-note">Rather just tip once? <a href="https://ko-fi.com/ayden1234" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700;">Donations</a> are always welcome too.</i></div>
+        <div class="donate-txt"><b>Students helping students.</b> The Free plan stays free because Pro members cover the bills — <b>$8.99/mo</b> for everything unlimited, cancel anytime. <i class="donate-note">Rather just tip once? <a href="https://ko-fi.com/ayden1234" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700;">Donations</a> are always welcome too.</i></div>
         <a class="donate-btn" href="pricing.html">Go Pro</a>
       </div>
 
@@ -1577,8 +1577,8 @@
       <button class="pro-pop-x" onclick="$('pro-pop').classList.remove('open')">&#10005;</button>
       <span class="pro-pop-badge">Free limit reached</span>
       <h3 id="pro-pop-text">You've hit a free plan limit.</h3>
-      <p>Pro removes every ceiling — <b>unlimited</b> generations, resources, folders and saves — for <b>$4.99 a month</b>. Cancel anytime, and every cent goes back into the site.</p>
-      <a class="btn-primary" href="pricing.html" style="text-decoration:none; display:block; text-align:center;">Go Pro — $4.99/mo</a>
+      <p>Pro removes every ceiling — <b>unlimited</b> generations, resources, folders and saves — for <b>$8.99 a month</b>. Cancel anytime, and every cent goes back into the site.</p>
+      <a class="btn-primary" href="pricing.html" style="text-decoration:none; display:block; text-align:center;">Go Pro — $8.99/mo</a>
       <button class="pro-pop-later" onclick="$('pro-pop').classList.remove('open')">Maybe later</button>
     </div>
   </div>
@@ -1740,7 +1740,7 @@ async function logActivity(action) {
       genToday++;
       updateGenStat();
       if (PLANS_ENABLED && userPlan !== "pro" && genToday === FREE_LIMITS.gens) {
-        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow, or go unlimited for $4.99/mo.`);
+        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow, or go unlimited for $8.99/mo.`);
       }
     }
     renderStreak();
