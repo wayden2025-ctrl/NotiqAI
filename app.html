@@ -1369,6 +1369,7 @@
         <input class="txt-input" id="wb-name" maxlength="60" placeholder="Board name (e.g. Cell cycle diagram)" style="flex:1; min-width:150px; max-width:300px;">
         <button class="btn-primary" onclick="wbSaveBoard()" style="padding:10px 24px; font-size:14px;">Save board</button>
         <button class="btn-ghost" onclick="wbNewBoard()" style="padding:9px 16px; font-size:13px;">New board</button>
+        <button class="btn-ghost" onclick="wbMapOpen()" style="padding:9px 16px; font-size:13px; border-color: color-mix(in srgb, var(--coral) 45%, transparent); color: var(--coral);">&#10022; Map my notes</button>
         <span class="wb-sep"></span>
         <span id="wb-boards" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></span>
         <div class="status-line" id="wb-status" style="flex-basis:100%; margin:2px 0 0;"></div>
@@ -1767,6 +1768,18 @@
       <p>Pro removes every ceiling — <b>unlimited</b> generations, resources, folders and saves — for <b>$8.99 a month</b>. Cancel anytime, and every cent goes back into the site.</p>
       <a class="btn-primary" href="pricing.html" style="text-decoration:none; display:block; text-align:center;">Go Pro — $8.99/mo</a>
       <button class="pro-pop-later" onclick="$('pro-pop').classList.remove('open')">Maybe later</button>
+    </div>
+  </div>
+
+  <div class="modal-scrim" id="wb-map-pop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="pro-pop-card" style="text-align:left; max-width:470px;">
+      <button class="pro-pop-x" onclick="$('wb-map-pop').classList.remove('open')">&#10005;</button>
+      <h3 style="text-align:left;">Concept map from your notes.</h3>
+      <p style="text-align:left;">Best for <b>processes, timelines and step-by-step chains</b> — photosynthesis, causes of a war, a formula's ingredients. The AI finds the sequence in your material and draws it as boxes and arrows you can move, recolor and edit.</p>
+      <label class="field-label">Map which resource?</label>
+      <select id="wb-map-res" style="width:100%;"></select>
+      <div style="margin-top:16px;"><button class="btn-primary" id="wb-map-go" onclick="wbMapGenerate()">Draw the map</button></div>
+      <div class="status-line" id="wb-map-status"></div>
     </div>
   </div>
 
@@ -2575,6 +2588,89 @@ function wbDownload() {
   a.download = "notiq-whiteboard.png";
   a.href = out.toDataURL("image/png");
   a.click();
+}
+
+// ================= CONCEPT MAP (draws onto the whiteboard) =================
+function wbMapOpen() {
+  const el = $("wb-map-res");
+  el.innerHTML = resources.length
+    ? resources.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join("")
+    : `<option value="">No resources yet — add material first</option>`;
+  setStatus("wb-map-status", "");
+  $("wb-map-pop").classList.add("open");
+}
+async function wbMapGenerate() {
+  const id = $("wb-map-res").value;
+  if (!id) { setStatus("wb-map-status", "Add material from your dashboard first.", true); return; }
+  if (!gateGenerate("wb-map-status")) return;
+  $("wb-map-go").disabled = true;
+  setStatus("wb-map-status", "Finding the structure in your notes...", false, true);
+  try {
+    const material = await getMaterial([id]);
+    const raw = await groq([
+      { role: "system", content: 'You extract the main PROCESS, SEQUENCE, TIMELINE or cause-and-effect chain from study material as a directed graph. Respond ONLY with valid JSON: {"nodes":[{"id":"n1","label":"short label"}],"edges":[{"from":"n1","to":"n2","label":"verb phrase"}]}. Rules: 5-12 nodes; labels under 38 characters; edge labels under 18 characters (e.g. "produces", "leads to", "requires"); the graph must flow in one overall direction like steps or a timeline. If the material has several themes, map the single most sequential one.' },
+      { role: "user", content: "Build the concept map from this material:\n\n" + material.slice(0, 14000) }
+    ], true);
+    const g = JSON.parse(raw);
+    const nodes = (g.nodes || []).filter(n => n.id && n.label).slice(0, 14);
+    const edges = (g.edges || []).filter(e => e.from && e.to);
+    if (nodes.length < 2) throw new Error("Couldn't find a clear sequence in that material — try a different resource.");
+    wbPushUndo();
+    wbDrawMap(nodes, edges);
+    logActivity("generate");
+    $("wb-map-pop").classList.remove("open");
+    setStatus("wb-map-status", "");
+  } catch (e) {
+    setStatus("wb-map-status", e.message.includes("JSON") ? "The AI drew a messy map — hit the button again." : e.message, true);
+  }
+  $("wb-map-go").disabled = false;
+}
+function wbDrawMap(nodes, edges) {
+  // layer the graph like a left-to-right timeline
+  const level = {};
+  const indeg = {};
+  nodes.forEach(n => indeg[n.id] = 0);
+  edges.forEach(e => { if (indeg[e.to] !== undefined) indeg[e.to]++; });
+  nodes.forEach(n => { if (!indeg[n.id]) level[n.id] = 0; });
+  if (!Object.keys(level).length) level[nodes[0].id] = 0;
+  for (let pass = 0; pass < 20; pass++) {
+    let changed = false;
+    edges.forEach(e => {
+      if (level[e.from] !== undefined) {
+        const lv = Math.min(level[e.from] + 1, 19);
+        if ((level[e.to] ?? -1) < lv) { level[e.to] = lv; changed = true; }
+      }
+    });
+    if (!changed) break;
+  }
+  nodes.forEach(n => { if (level[n.id] === undefined) level[n.id] = 0; });
+
+  const ctx = wbCtx();
+  ctx.font = "600 15px 'Hanken Grotesk', sans-serif";
+  const coral = (getComputedStyle(document.documentElement).getPropertyValue("--coral") || "#1e3a6e").trim();
+  const ink = "#241d18";
+  const byLevel = {};
+  nodes.forEach(n => (byLevel[level[n.id]] = byLevel[level[n.id]] || []).push(n));
+  const pos = {};
+  const canvasW = $("wb-canvas").getBoundingClientRect().width || 1000;
+  Object.keys(byLevel).sort((a, b) => a - b).forEach(L => {
+    byLevel[L].forEach((n, i) => {
+      const w = Math.min(280, ctx.measureText(n.label).width + 30);
+      const x = 60 + L * Math.max(210, Math.min(260, (canvasW - 120) / Math.max(1, Object.keys(byLevel).length)));
+      const y = 90 + i * 108 + (L % 2) * 26;
+      pos[n.id] = { x, y, w, h: 46 };
+      wb.objs.push({ type: "rect", x, y, wd: w, ht: 46, color: coral, w: 2.5, fill: false });
+      wb.objs.push({ type: "text", text: n.label, x: x + 14, y: y + 14, color: ink, size: 15 });
+    });
+  });
+  edges.forEach(e => {
+    const a = pos[e.from], b = pos[e.to];
+    if (!a || !b) return;
+    const x1 = a.x + a.w, y1 = a.y + a.h / 2, x2 = b.x, y2 = b.y + b.h / 2;
+    wb.objs.push({ type: "arrow", x1, y1, x2, y2, color: coral, w: 2.5 });
+    if (e.label) wb.objs.push({ type: "text", text: e.label, x: (x1 + x2) / 2 - 24, y: (y1 + y2) / 2 - 20, color: "#7c7168", size: 12 });
+  });
+  wbDraw();
 }
 
 // ================= TOOL ROW (horizontal scroll) =================
