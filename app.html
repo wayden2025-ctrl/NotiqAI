@@ -706,6 +706,12 @@
   .theme-card { border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; cursor: pointer; background: var(--card1); transition: transform .14s ease; }
   .theme-card:hover { transform: translateY(-2px); }
   .theme-card.sel { border-color: var(--coral); box-shadow: 0 0 0 3px color-mix(in srgb, var(--coral) 18%, transparent); }
+  .theme-card.locked .theme-prev { opacity: .45; filter: saturate(.6); }
+  .theme-lock {
+    display: inline-block; margin-left: 6px; font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: 11px; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2));
+    padding: 1px 9px 2px; border-radius: 999px; transform: translateY(-1px);
+  }
   .theme-prev { height: 72px; border-radius: 10px; border: 1px solid rgba(0,0,0,.08); position: relative; display: flex; gap: 6px; align-items: flex-end; padding: 10px; }
   .theme-prev span { width: 16px; height: 16px; border-radius: 50%; }
   .theme-prev b { position: absolute; top: 6px; right: 12px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 24px; font-weight: 400; }
@@ -2096,20 +2102,29 @@ async function signOut() {
 }
 
 // ================= THEME PICKER =================
+const FREE_THEMES = ["midnight", "forest", "crimson"];
+function themeLocked(id) {
+  return PLANS_ENABLED && userPlan !== "pro" && !FREE_THEMES.includes(id);
+}
 function renderThemes() {
   const cur = notiqTheme();
   $("theme-grid").innerHTML = Object.entries(NOTIQ_THEMES).map(([id, t]) => `
-    <div class="theme-card${id === cur ? " sel" : ""}" onclick="selectTheme('${id}')">
+    <div class="theme-card${id === cur ? " sel" : ""}${themeLocked(id) ? " locked" : ""}" onclick="selectTheme('${id}')">
       <div class="theme-prev" style="background:${t.bgC1}; border-color:${t.dark ? "rgba(255,255,255,.15)" : "rgba(0,0,0,.08)"};">
         <span style="background:${t.coral};"></span>
         <span style="background:${t.amber};"></span>
         <span style="background:linear-gradient(180deg,${t.g1},${t.g2});"></span>
         <b style="color:${t.coral};">Aa</b>
       </div>
-      <div class="theme-name">${t.name}</div>
+      <div class="theme-name">${t.name}${themeLocked(id) ? '<span class="theme-lock">Pro</span>' : ""}</div>
     </div>`).join("");
 }
 function selectTheme(id) {
+  if (themeLocked(id)) {
+    $("pro-pop-text").textContent = `The "${(NOTIQ_THEMES[id] || {}).name || id}" palette is a Pro perk — free accounts get Midnight, Forest and Crimson.`;
+    $("pro-pop").classList.add("open");
+    return;
+  }
   try { localStorage.setItem("notiq_theme", id); } catch (e) {}
   notiqApplyTheme(id);
   renderThemes();
@@ -2925,6 +2940,11 @@ async function loadPlan() {
   updateProUI();
 }
 function updateProUI() {
+  // free accounts can only keep the three free palettes
+  if (PLANS_ENABLED && userPlan !== "pro" && !FREE_THEMES.includes(notiqTheme())) {
+    try { localStorage.setItem("notiq_theme", "midnight"); } catch (e) {}
+    notiqApplyTheme("midnight");
+  }
   if (!PLANS_ENABLED) {
     $("rb-pro").classList.add("hidden");
     $("acct-plan").textContent = "Beta — everything unlimited, free";
