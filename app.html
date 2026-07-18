@@ -1777,6 +1777,15 @@
     </div>
   </div>
 
+  <div class="modal-scrim" id="wb-card-pop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="pro-pop-card" style="text-align:left; max-width:520px;">
+      <button class="pro-pop-x" onclick="$('wb-card-pop').classList.remove('open')">&#10005;</button>
+      <span class="itype" id="wb-card-date" style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--coral); background:color-mix(in srgb, var(--coral) 10%, transparent); padding:4px 11px; border-radius:999px; margin-bottom:10px;"></span>
+      <h3 id="wb-card-name" style="text-align:left;"></h3>
+      <p id="wb-card-body" style="text-align:left; font-size:14.5px; color:#4a423b; line-height:1.65; margin-bottom:6px;"></p>
+    </div>
+  </div>
+
   <div class="modal-scrim" id="wb-map-pop" onclick="if(event.target===this) this.classList.remove('open')">
     <div class="pro-pop-card" style="text-align:left; max-width:470px;">
       <button class="pro-pop-x" onclick="$('wb-map-pop').classList.remove('open')">&#10005;</button>
@@ -2341,6 +2350,28 @@ function wbDrawObj(ctx, o) {
     ctx.beginPath();
     ctx.ellipse(o.x + o.wd / 2, o.y + o.ht / 2, Math.abs(o.wd / 2), Math.abs(o.ht / 2), 0, 0, Math.PI * 2);
     o.fill ? ctx.fill() : ctx.stroke();
+  } else if (o.type === "card") {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(o.x, o.y, o.wd, o.ht);
+    ctx.strokeRect(o.x, o.y, o.wd, o.ht);
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "#241d18";
+    ctx.font = "600 15px 'Hanken Grotesk', sans-serif";
+    ctx.fillText(o.name.length > 34 ? o.name.slice(0, 32) + "\u2026" : o.name, o.x + 12, o.y + 10);
+    let ty = o.y + 31;
+    if (o.date) {
+      ctx.fillStyle = o.color;
+      ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
+      ctx.fillText(String(o.date), o.x + 12, ty);
+      ty += 20;
+    }
+    ctx.fillStyle = "#5a5148";
+    ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
+    const lines = wbWrapText(ctx, o.desc, o.wd - 24, 2);
+    lines.forEach((ln, li) => ctx.fillText(ln, o.x + 12, ty + li * 17));
+    ctx.fillStyle = o.color;
+    ctx.font = "600 11px 'Hanken Grotesk', sans-serif";
+    ctx.fillText("Click for more \u2192", o.x + 12, o.y + o.ht - 19);
   } else if (o.type === "text") {
     ctx.font = `600 ${o.size}px 'Hanken Grotesk', sans-serif`;
     ctx.textBaseline = "top";
@@ -2531,7 +2562,7 @@ function wbDown(e) {
   if (wb.tool === "select") {
     const hit = wbHit(x, y);
     wb.sel = hit;
-    if (hit) { wb.drag = { x, y, moved: false }; }
+    if (hit) { wb.drag = { x, y, sx: x, sy: y, moved: false }; }
     wbDraw();
     return;
   }
@@ -2552,7 +2583,11 @@ function wbMoveEv(e) {
   const [x, y] = wbPos(e);
   wb.mouse = [x, y];
   if (wb.tool === "select" && wb.drag && wb.sel) {
-    if (!wb.drag.moved) { wbPushUndo(); wb.drag.moved = true; }
+    if (!wb.drag.moved) {
+      if (Math.hypot(x - wb.drag.sx, y - wb.drag.sy) < 4) return;   // still just a click
+      wbPushUndo();
+      wb.drag.moved = true;
+    }
     wbMove(wb.sel, x - wb.drag.x, y - wb.drag.y);
     wb.drag.x = x; wb.drag.y = y;
     wbDraw();
@@ -2569,7 +2604,12 @@ function wbMoveEv(e) {
   if (wb.arrowStart) wbDraw();
 }
 function wbUp() {
-  if (wb.drag) { wb.drag = null; return; }
+  if (wb.drag) {
+    const clicked = !wb.drag.moved;
+    wb.drag = null;
+    if (clicked && wb.sel && wb.sel.type === "card") wbCardPop(wb.sel);
+    return;
+  }
   if (!wb.draft) return;
   const d = wb.draft;
   wb.draft = null;
@@ -2618,7 +2658,7 @@ async function wbMapGenerate() {
   try {
     const material = await getMaterial([id]);
     const raw = await groq([
-      { role: "system", content: 'You turn study material into a clean ORDERED sequence — a timeline, process, or step-by-step chain. Respond ONLY with valid JSON: {"title":"short map title","steps":[{"name":"event or step name, under 34 chars","date":"year/date or empty string","desc":"1-2 full sentences of real substance, 100-180 chars — what happened, who was involved, why it mattered (or exactly what this step does)"}]}. Rules: 6 to 12 steps in strict chronological or process order; every step MUST have a rich desc that teaches something, never a fragment; use dates whenever the material is historical.' },
+      { role: "system", content: 'You turn study material into a clean ORDERED sequence — a timeline, process, or step-by-step chain. Respond ONLY with valid JSON: {"title":"short map title","steps":[{"name":"event or step name, under 34 chars","date":"year/date or empty string","desc":"1-2 full sentences of real substance, 100-180 chars — what happened, who was involved, why it mattered (or exactly what this step does)","detail":"a deeper 3-5 sentence explanation, 250-500 chars, with names, causes, consequences and anything a test might ask"}]}. Rules: 6 to 12 steps in strict chronological or process order; every step MUST have both desc and detail; use dates whenever the material is historical.' },
       { role: "user", content: "Build the sequence from this material:\n\n" + material.slice(0, 14000) }
     ], true);
     const g = JSON.parse(raw);
@@ -2654,62 +2694,47 @@ function wbWrapText(ctx, text, maxW, maxLines) {
   return lines;
 }
 function wbDrawTimeline(title, steps) {
-  // snake grid: column 1 goes top->bottom, cross over, column 2 goes bottom->top, repeat.
-  const ctx = wbCtx();
+  // snake grid of uniform clickable cards: down the column, across, back up, repeat.
   const rect = $("wb-canvas").getBoundingClientRect();
   const coral = (getComputedStyle(document.documentElement).getPropertyValue("--coral") || "#1e3a6e").trim();
-  const CW = 284, GX = 72, GY = 38, TOP = 128, LEFT = 46;
-
-  // measure every description first so ALL cards fit their full text — nothing gets cut off
-  ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
-  const wrapped = steps.map(s => wbWrapText(ctx, s.desc, CW - 24, 6));
-  const maxLines = Math.max(2, ...wrapped.map(w => w.length));
   const hasDates = steps.some(s => s.date);
-  const CH = 44 + (hasDates ? 20 : 0) + maxLines * 17;
-
+  const CW = 268, CH = hasDates ? 122 : 102, GX = 72, GY = 40, TOP = 128, LEFT = 46;
   const usable = Math.max(300, (rect.height || 700) - TOP - 110);
   const rows = Math.max(2, Math.min(4, Math.floor((usable + GY) / (CH + GY))));
 
-  // map title
   wb.objs.push({ type: "text", text: title, x: LEFT, y: 86, color: coral, size: 21 });
 
   const pos = [];
   steps.forEach((s, n) => {
     const col = Math.floor(n / rows);
     const idx = n % rows;
-    const goingDown = col % 2 === 0;
-    const row = goingDown ? idx : rows - 1 - idx;
+    const row = col % 2 === 0 ? idx : rows - 1 - idx;
     const x = LEFT + col * (CW + GX);
     const y = TOP + row * (CH + GY);
-    pos.push({ x, y, goingDown });
-
-    // card
-    wb.objs.push({ type: "rect", x, y, wd: CW, ht: CH, color: coral, w: 2.5, fill: false });
-    // name
-    ctx.font = "600 15px 'Hanken Grotesk', sans-serif";
-    const name = s.name.length > 34 ? s.name.slice(0, 32) + "\u2026" : s.name;
-    wb.objs.push({ type: "text", text: name, x: x + 12, y: y + 10, color: "#241d18", size: 15 });
-    // date
-    if (s.date) wb.objs.push({ type: "text", text: String(s.date), x: x + 12, y: y + 31, color: coral, size: 12 });
-    // full description, wrapped — the card was sized to hold every line
-    wrapped[n].forEach((ln, li) => {
-      wb.objs.push({ type: "text", text: ln, x: x + 12, y: y + (hasDates ? 52 : 34) + li * 17, color: "#5a5148", size: 12 });
+    pos.push({ x, y });
+    wb.objs.push({
+      type: "card", x, y, wd: CW, ht: CH, color: coral, w: 2.5,
+      name: s.name || "", date: s.date || "", desc: s.desc || "", detail: s.detail || "",
     });
   });
 
-  // straight arrows between consecutive cards
   for (let n = 0; n < steps.length - 1; n++) {
     const a = pos[n], b = pos[n + 1];
     if (Math.abs(a.x - b.x) < 2) {
-      // same column: straight vertical arrow
       if (b.y > a.y) wb.objs.push({ type: "arrow", x1: a.x + CW / 2, y1: a.y + CH, x2: b.x + CW / 2, y2: b.y - 4, color: coral, w: 2.5 });
       else wb.objs.push({ type: "arrow", x1: a.x + CW / 2, y1: a.y, x2: b.x + CW / 2, y2: b.y + CH + 4, color: coral, w: 2.5 });
     } else {
-      // crossing to the next column: straight horizontal arrow
       wb.objs.push({ type: "arrow", x1: a.x + CW, y1: a.y + CH / 2, x2: b.x - 4, y2: b.y + CH / 2, color: coral, w: 2.5 });
     }
   }
   wbDraw();
+}
+function wbCardPop(o) {
+  $("wb-card-name").textContent = o.name;
+  $("wb-card-date").textContent = o.date || "";
+  $("wb-card-date").style.display = o.date ? "inline-block" : "none";
+  $("wb-card-body").innerHTML = esc(o.desc) + (o.detail ? "<br><br>" + esc(o.detail) : "");
+  $("wb-card-pop").classList.add("open");
 }
 
 // ================= TOOL ROW (horizontal scroll) =================
