@@ -147,6 +147,20 @@ module.exports = async (req, res) => {
       if (r.status === 429) {
         r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant" });
       }
+      // second engine: Google Gemini (free tier, separate allowance from Groq)
+      if (r.status === 429 && process.env.GEMINI_API_KEY) {
+        try {
+          const g = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + process.env.GEMINI_API_KEY,
+            },
+            body: JSON.stringify({ ...body, model: process.env.GEMINI_MODEL || "gemini-2.0-flash" }),
+          });
+          if (g.ok) { res.status(200).json(await g.json()); return; }
+        } catch (e) { /* fall through to the friendly message */ }
+      }
       if (r.status === 429) {
         res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
         return;
