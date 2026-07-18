@@ -103,6 +103,14 @@
   .donate-btn:hover { filter: brightness(1.08); }
   .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
+  /* ============ BLURTING ============ */
+  .bl-miss {
+    background: rgba(200,60,40,.05); border: 1px solid rgba(200,60,40,.18);
+    border-radius: 12px; padding: 12px 15px; margin-bottom: 10px;
+  }
+  .bl-miss b { display: block; color: #a33520; font-size: 14.5px; margin-bottom: 4px; }
+  .bl-miss span { display: block; font-size: 14px; color: #4a423b; line-height: 1.6; }
+
   /* ============ WHITEBOARD ============ */
   .wb-bar {
     display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
@@ -2292,7 +2300,7 @@ async function blSubmit() {
   try {
     const material = await getMaterial([blResId]);
     const raw = await groq([
-      { role: "system", content: 'You grade a student\'s memory brain-dump against their study material. Respond ONLY with valid JSON: {"coverage": 0-100, "nailed": ["short point the student correctly remembered"], "missed": ["important point from the material the student did NOT mention"], "tip": "one concrete, encouraging study tip based on what they missed"}. Rules: 3-8 items per list, each under 90 chars; coverage = how much of the important material they recalled; be fair — credit ideas even when worded loosely or misspelled.' },
+      { role: "system", content: 'You grade a student\'s memory brain-dump against their study material. Respond ONLY with valid JSON: {"coverage": 0-100, "nailed": ["short point the student correctly remembered"], "missed": [{"topic": "name of the missed concept, under 40 chars", "notes": "2-3 full sentences that actually TEACH the missed content — the facts, dates, names and why it matters, written like study notes so the student can learn it right here"}], "tip": "one concrete, encouraging study tip based on what they missed"}. Rules: 3-8 nailed items under 90 chars; 3-6 missed items, each with substantial notes of 150-300 chars; coverage = how much of the important material they recalled; be fair — credit ideas even when worded loosely or misspelled.' },
       { role: "user", content: "MATERIAL:\n" + material.slice(0, 12000) + "\n\nSTUDENT BRAIN-DUMP:\n" + dump }
     ], true);
     const g = JSON.parse(raw);
@@ -2305,7 +2313,10 @@ async function blSubmit() {
       cov >= 50 ? "of the material recalled — solid base, now attack the misses." :
       "of the material recalled — good news: now you know exactly what to study.";
     $("bl-nailed").innerHTML = (g.nailed || []).map(p => `<div>&#10003; ${esc(p)}</div>`).join("") || "<div>—</div>";
-    $("bl-missed").innerHTML = (g.missed || []).map(p => `<div>&bull; ${esc(p)}</div>`).join("") || "<div>Nothing important missed.</div>";
+    $("bl-missed").innerHTML = (g.missed || []).map(p => {
+      if (typeof p === "string") return `<div class="bl-miss"><b>${esc(p)}</b></div>`;
+      return `<div class="bl-miss"><b>${esc(p.topic || "")}</b><span>${esc(p.notes || "")}</span></div>`;
+    }).join("") || "<div>Nothing important missed.</div>";
     $("bl-tip").textContent = g.tip || "";
     if (cov >= 80) celebrate($("bl-score"));
     setStatus("bl-status", "");
