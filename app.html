@@ -103,6 +103,18 @@
   .donate-btn:hover { filter: brightness(1.08); }
   .game-min { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 
+  /* whiteboard popups sit over the always-white board: force white bg + dark text on every palette */
+  #wb-card-pop .pro-pop-card, #wb-map-pop .pro-pop-card {
+    background: #ffffff;
+    border-color: rgba(30,58,110,.25);
+  }
+  #wb-card-pop h3, #wb-map-pop h3 { color: #241d18; }
+  #wb-card-pop p, #wb-map-pop p { color: #4a423b; }
+  #wb-map-pop .field-label { color: #241d18; }
+  #wb-map-pop select { background: #fff; color: #241d18; border: 1.5px solid rgba(36,29,24,.15); }
+  #wb-card-pop .pro-pop-x, #wb-map-pop .pro-pop-x { color: #7c7168; }
+  #wb-map-pop .status-line { color: #7c7168; }
+
   /* ============ BLURTING ============ */
   .bl-miss {
     background: rgba(200,60,40,.05); border: 1px solid rgba(200,60,40,.18);
@@ -1847,7 +1859,7 @@
   <div class="modal-scrim" id="wb-card-pop" onclick="if(event.target===this) this.classList.remove('open')">
     <div class="pro-pop-card" style="text-align:left; max-width:520px;">
       <button class="pro-pop-x" onclick="$('wb-card-pop').classList.remove('open')">&#10005;</button>
-      <span class="itype" id="wb-card-date" style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--coral); background:color-mix(in srgb, var(--coral) 10%, transparent); padding:4px 11px; border-radius:999px; margin-bottom:10px;"></span>
+      <span class="itype" id="wb-card-date" style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#1e3a6e; background:rgba(30,58,110,.09); padding:4px 11px; border-radius:999px; margin-bottom:10px;"></span>
       <h3 id="wb-card-name" style="text-align:left;"></h3>
       <p id="wb-card-body" style="text-align:left; font-size:14.5px; color:#4a423b; line-height:1.65; margin-bottom:6px;"></p>
     </div>
@@ -1857,7 +1869,7 @@
     <div class="pro-pop-card" style="text-align:left; max-width:470px;">
       <button class="pro-pop-x" onclick="$('wb-map-pop').classList.remove('open')">&#10005;</button>
       <h3 style="text-align:left;">Concept map from your notes.</h3>
-      <p style="text-align:left;">Best for <b>processes, timelines and step-by-step chains</b> — photosynthesis, causes of a war, a formula's ingredients. The AI finds the sequence in your material and draws it as boxes and arrows you can move, recolor and edit.</p>
+      <p style="text-align:left;">Best for <b style="color:#1e3a6e;">processes, timelines and step-by-step chains</b> — photosynthesis, causes of a war, a formula's ingredients. The AI finds the sequence in your material and draws it as boxes and arrows you can move, recolor and edit.</p>
       <label class="field-label">Map which resource?</label>
       <select id="wb-map-res" style="width:100%;"></select>
       <div style="margin-top:16px;"><button class="btn-primary" id="wb-map-go" onclick="wbMapGenerate()">Draw the map</button></div>
