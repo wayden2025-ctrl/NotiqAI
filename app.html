@@ -1176,6 +1176,12 @@
           <p>Short on time? Get a lot of information into your head fast — must-know ideas, key terms, and the questions most likely to show up.</p>
           <span class="bento-go">Make my sheet</span>
         </div>
+        <div class="bento-card" onclick="openWrite()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h7"/><path d="M7 9.5h.01"/><path d="M11 9.5h.01"/><path d="M15 9.5h.01"/></svg></div>
+          <h3>Write mode</h3>
+          <p>See the question, type the answer from memory. Misses keep coming back until you clear the whole deck.</p>
+          <span class="bento-go">Type it out</span>
+        </div>
         <div class="bento-card" onclick="openReview()">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v5h-5"/></svg></div>
           <h3>Smart review</h3>
@@ -1289,6 +1295,41 @@
         <h2 class="learn-h">Everything you've <em>added.</em></h2>
         <p class="learn-sub">Every generator builds from what's in here. Delete anything you're done with.</p>
         <div id="res-list"></div>
+      </div>
+    </div>
+
+    <!-- WRITE MODE -->
+    <div class="view hidden" id="view-write">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Type it to know it</span>
+      <h1 class="page-title">Write <em>mode.</em></h1>
+      <p class="page-sub">See the question, type the answer from memory. Small typos are forgiven — and every card you miss comes back until you clear it.</p>
+
+      <div class="surface" id="wr-setup">
+        <p class="empty-hint hidden" id="wr-empty" style="font-size:15px;"><b>Save a flashcard deck first.</b> Generate flashcards, hit Save, then come back.</p>
+        <div id="wr-controls">
+          <label class="field-label">Which deck?</label>
+          <select id="wr-deck"></select>
+          <p class="game-min">Typed recall is the strongest kind — expect it to feel harder than flipping cards. That's the point.</p>
+          <div style="margin-top:16px;"><button class="btn-primary" onclick="wrStart()">Start writing</button></div>
+        </div>
+      </div>
+
+      <div class="hidden" id="wr-play">
+        <div class="fc-counter" id="wr-count" style="margin-bottom:12px; display:block;"></div>
+        <div class="surface" style="min-height:120px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:18px; line-height:1.5;" id="wr-front"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input class="txt-input" id="wr-input" maxlength="300" placeholder="Type the answer, then press Enter" style="flex:1; min-width:220px;" autocomplete="off">
+          <button class="btn-primary" id="wr-btn" onclick="wrCheck()">Check</button>
+        </div>
+        <div class="status-line" id="wr-fb" style="font-size:15px;"></div>
+      </div>
+
+      <div class="hidden surface" id="wr-done" style="text-align:center;">
+        <div class="tb-score" id="wr-final"></div>
+        <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="wr-msg"></p>
+        <button class="btn-primary" onclick="wrStart()">Run it again</button>
+        <button class="btn-ghost" onclick="wrReset()" style="margin-left:10px;">Different deck</button>
       </div>
     </div>
 
@@ -2019,6 +2060,107 @@ function observeMath() {
 }
 observeMath();
 scheduleMath();
+
+// ================= WRITE MODE =================
+let wrDeckObj = null, wrQueue = [], wrCur = null, wrFirstRight = 0, wrTotal = 0, wrAwait = false, wrCurWrong = false;
+
+function openWrite() {
+  showView("write");
+  renderWriteDecks();
+  wrReset();
+}
+function renderWriteDecks() {
+  const has = rvDecks.length > 0;
+  $("wr-empty").classList.toggle("hidden", has);
+  $("wr-controls").classList.toggle("hidden", !has);
+  if (has) $("wr-deck").innerHTML = rvDecks.map(d =>
+    `<option value="${d.id}">${esc(d.title)} (${(d.content.cards || []).length} cards)</option>`).join("");
+}
+function wrReset() {
+  $("wr-setup").classList.remove("hidden");
+  $("wr-play").classList.add("hidden");
+  $("wr-done").classList.add("hidden");
+}
+function wrStart() {
+  wrDeckObj = rvDecks.find(d => d.id === $("wr-deck").value);
+  if (!wrDeckObj) return;
+  wrQueue = [...(wrDeckObj.content.cards || [])].sort(() => Math.random() - .5).map(c => ({ ...c, tried: false }));
+  wrTotal = wrQueue.length;
+  wrFirstRight = 0; wrAwait = false;
+  $("wr-setup").classList.add("hidden");
+  $("wr-done").classList.add("hidden");
+  $("wr-play").classList.remove("hidden");
+  wrShow();
+}
+function wrShow() {
+  wrCur = wrQueue[0];
+  wrAwait = false; wrCurWrong = false;
+  const cleared = wrTotal - wrQueue.length;
+  $("wr-count").textContent = `Cleared ${cleared} / ${wrTotal}` + (wrQueue.length ? ` — ${wrQueue.length} to go` : "");
+  $("wr-front").textContent = wrCur.front;
+  $("wr-input").value = "";
+  $("wr-input").disabled = false;
+  $("wr-btn").textContent = "Check";
+  setStatus("wr-fb", "");
+  setTimeout(() => $("wr-input").focus(), 30);
+}
+function wrOk(user, ans) {
+  if (fibOk(user, ans)) return true;
+  const aw = tsNorm(ans).split(" ").filter(w => w.length > 3);
+  if (aw.length >= 4) {
+    const u = tsNorm(user);
+    const hit = aw.filter(w => u.includes(w)).length;
+    return hit / aw.length >= 0.6;
+  }
+  return false;
+}
+function wrCheck() {
+  if (wrAwait) { wrNext(); return; }
+  const guess = $("wr-input").value.trim();
+  if (!guess) { setStatus("wr-fb", "Type something first — even a guess counts.", true); return; }
+  wrAwait = true;
+  $("wr-input").disabled = true;
+  $("wr-btn").textContent = "Next";
+  if (wrOk(guess, wrCur.back)) {
+    if (!wrCur.tried) wrFirstRight++;
+    wrCur._clear = true;
+    $("wr-fb").className = "status-line show";
+    $("wr-fb").innerHTML = `<b style="color:#2e7d4f;">Correct.</b> ${esc(wrCur.back)}`;
+  } else {
+    wrCur.tried = true;
+    wrCurWrong = true;
+    $("wr-fb").className = "status-line show error";
+    $("wr-fb").innerHTML = `Answer: <b>${esc(wrCur.back)}</b> — it'll come back around. <a href="#" onclick="wrOverride(); return false;" style="color:var(--coral); font-weight:800;">I was right</a>`;
+  }
+}
+function wrOverride() {
+  // self-grade: the fuzzy matcher isn't perfect, students know best
+  if (wrCur.tried && !wrCurWrong) return;
+  wrCur._clear = true;
+  if (!(wrCur.tried && wrCurWrong && wrCur._sawBefore)) { /* first-try credit only if truly first try */ }
+  if (!wrCur._sawBefore && wrCurWrong) { wrFirstRight++; }
+  wrCur.tried = wrCur._sawBefore || false;
+  wrCurWrong = false;
+  $("wr-fb").className = "status-line show";
+  $("wr-fb").innerHTML = `<b style="color:#2e7d4f;">Counted as correct.</b>`;
+}
+function wrNext() {
+  const cur = wrQueue.shift();
+  if (!cur._clear) { cur._sawBefore = true; wrQueue.push(cur); }
+  if (!wrQueue.length) { wrFinish(); return; }
+  wrShow();
+}
+function wrFinish() {
+  $("wr-play").classList.add("hidden");
+  $("wr-done").classList.remove("hidden");
+  const pct = Math.round(100 * wrFirstRight / Math.max(1, wrTotal));
+  $("wr-final").textContent = pct + "%";
+  $("wr-msg").textContent = `Deck cleared. ${wrFirstRight} of ${wrTotal} right on the first try` +
+    (pct === 100 ? " — perfect run." : pct >= 70 ? " — solid. Run the deck again tomorrow." : " — the comeback cards are where the learning happened. Run it again.");
+  if (pct === 100) celebrate($("wr-final"));
+  logActivity("write");
+}
+$("wr-input").addEventListener("keydown", (e) => { if (e.key === "Enter") wrCheck(); });
 
 // ================= WHITEBOARD =================
 const wb = {
