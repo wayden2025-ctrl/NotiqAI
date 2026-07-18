@@ -2931,7 +2931,7 @@ try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is p
 // NOTIQ_PLANS_ENABLED switch at the top — flip BOTH when plans return.)
 const PLANS_ENABLED = true;
 let userPlan = "free", genToday = 0;
-const FREE_LIMITS = { gens: 10, resources: 10, folders: 3, saved: 15, boards: 2 };
+const FREE_LIMITS = { gens: 10, resources: 10, folders: 3, saved: 10, boards: 2 };
 
 async function loadPlan() {
   try {
