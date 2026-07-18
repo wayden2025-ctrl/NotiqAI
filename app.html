@@ -1188,6 +1188,12 @@
           <p>Turn a process, timeline or step-by-step chain from your notes into boxes and arrows — drawn onto your whiteboard, fully editable.</p>
           <span class="bento-go">Map it out</span>
         </div>
+        <div class="bento-card" onclick="openBlurt()">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a7 7 0 0 1 7 7c0 2.4-1.2 4.2-2.6 5.6-.9.9-1.4 1.6-1.4 2.4v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1c0-.8-.5-1.5-1.4-2.4C6.2 14.2 5 12.4 5 10a7 7 0 0 1 7-7z"/><path d="M10 21h4"/></svg></div>
+          <h3>Blurting</h3>
+          <p>Timer starts, you type everything you remember — then see exactly what you know and what slipped your mind.</p>
+          <span class="bento-go">Dump my brain</span>
+        </div>
         <div class="bento-card" onclick="openReview()">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v5h-5"/></svg></div>
           <h3>Smart review</h3>
@@ -1336,6 +1342,53 @@
         <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="wr-msg"></p>
         <button class="btn-primary" onclick="wrStart()">Run it again</button>
         <button class="btn-ghost" onclick="wrReset()" style="margin-left:10px;">Different deck</button>
+      </div>
+    </div>
+
+    <!-- BLURTING -->
+    <div class="view hidden" id="view-blurt">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Brain dump</span>
+      <h1 class="page-title">Blurting <em>mode.</em></h1>
+      <p class="page-sub">Pick a topic, get a timer, and type <b>everything you can remember</b> — no peeking. Then Notiq compares your brain-dump to the actual material and shows exactly what you know and what slipped.</p>
+
+      <div class="surface" id="bl-setup">
+        <p class="empty-hint hidden" id="bl-empty" style="font-size:15px;"><b>Add material first.</b> <a href="#" onclick="showView('import'); return false;" style="color:var(--coral); font-weight:800;">Add material or learn a topic</a> — then come blurt it.</p>
+        <div id="bl-controls">
+          <label class="field-label">Blurt what?</label>
+          <select id="bl-res"></select>
+          <label class="field-label">Timer</label>
+          <select id="bl-mins"><option value="2">2 minutes</option><option value="3" selected>3 minutes</option><option value="5">5 minutes</option></select>
+          <div style="margin-top:16px;"><button class="btn-primary" onclick="blStart()">Start the timer</button></div>
+        </div>
+      </div>
+
+      <div class="hidden" id="bl-play">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <b id="bl-clock" style="font-family:'Instrument Serif',serif; font-style:italic; font-size:30px; color:var(--coral);">3:00</b>
+          <div style="flex:1; height:8px; border-radius:99px; background:color-mix(in srgb, var(--ink) 8%, transparent); overflow:hidden;"><i id="bl-bar" style="display:block; height:100%; width:100%; background:linear-gradient(90deg, var(--g1), var(--g2)); transition:width 1s linear;"></i></div>
+          <button class="btn-ghost" onclick="blSubmit()" style="flex:none;">I'm done early</button>
+        </div>
+        <textarea class="paste-area" id="bl-text" maxlength="8000" placeholder="Go — everything you remember. Facts, names, dates, causes, formulas. Don't stop to fix typos." style="min-height:280px; font-size:15px;"></textarea>
+        <div class="status-line" id="bl-status"></div>
+      </div>
+
+      <div class="hidden" id="bl-done">
+        <div class="surface" style="text-align:center;">
+          <div class="tb-score" id="bl-score"></div>
+          <p style="margin:8px 0 0; color:var(--muted); font-size:15px;" id="bl-verdict"></p>
+        </div>
+        <div class="surface">
+          <label class="field-label" style="margin-top:0; color:#2e7d4f;">What you nailed</label>
+          <div id="bl-nailed" style="font-size:14.5px; line-height:1.7;"></div>
+          <label class="field-label" style="color:#a33520;">What slipped your mind</label>
+          <div id="bl-missed" style="font-size:14.5px; line-height:1.7;"></div>
+          <p id="bl-tip" style="margin-top:14px; font-size:14px; color:var(--muted); background:color-mix(in srgb, var(--coral) 6%, transparent); border-radius:10px; padding:12px 14px;"></p>
+          <div style="margin-top:18px;">
+            <button class="btn-primary" onclick="blStart()">Blurt it again</button>
+            <button class="btn-ghost" onclick="blReset()" style="margin-left:10px;">Different topic</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2189,6 +2242,79 @@ function wrFinish() {
   logActivity("write");
 }
 $("wr-input").addEventListener("keydown", (e) => { if (e.key === "Enter") wrCheck(); });
+
+// ================= BLURTING =================
+let blTimer = null, blEndAt = 0, blResId = null, blTotalMs = 0;
+
+function openBlurt() {
+  showView("blurt");
+  const has = resources.length > 0;
+  $("bl-empty").classList.toggle("hidden", has);
+  $("bl-controls").classList.toggle("hidden", !has);
+  if (has) $("bl-res").innerHTML = resources.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join("");
+  blReset();
+}
+function blReset() {
+  clearInterval(blTimer); blTimer = null;
+  $("bl-setup").classList.remove("hidden");
+  $("bl-play").classList.add("hidden");
+  $("bl-done").classList.add("hidden");
+}
+function blStart() {
+  blResId = $("bl-res").value;
+  if (!blResId) return;
+  blTotalMs = (+$("bl-mins").value) * 60000;
+  blEndAt = Date.now() + blTotalMs;
+  $("bl-setup").classList.add("hidden");
+  $("bl-done").classList.add("hidden");
+  $("bl-play").classList.remove("hidden");
+  $("bl-text").value = "";
+  setStatus("bl-status", "");
+  setTimeout(() => $("bl-text").focus(), 30);
+  clearInterval(blTimer);
+  blTick();
+  blTimer = setInterval(blTick, 1000);
+}
+function blTick() {
+  if ($("view-blurt").classList.contains("hidden")) { clearInterval(blTimer); blTimer = null; return; }
+  const left = blEndAt - Date.now();
+  if (left <= 0) { blSubmit(); return; }
+  const s = Math.ceil(left / 1000);
+  $("bl-clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  $("bl-bar").style.width = (100 * left / blTotalMs) + "%";
+}
+async function blSubmit() {
+  clearInterval(blTimer); blTimer = null;
+  const dump = $("bl-text").value.trim();
+  if (dump.length < 20) { setStatus("bl-status", "Write a bit more first — even fragments count.", true); blEndAt = Date.now() + 30000; blTimer = setInterval(blTick, 1000); return; }
+  if (!gateGenerate("bl-status")) return;
+  setStatus("bl-status", "Comparing your brain-dump to the material...", false, true);
+  try {
+    const material = await getMaterial([blResId]);
+    const raw = await groq([
+      { role: "system", content: 'You grade a student\'s memory brain-dump against their study material. Respond ONLY with valid JSON: {"coverage": 0-100, "nailed": ["short point the student correctly remembered"], "missed": ["important point from the material the student did NOT mention"], "tip": "one concrete, encouraging study tip based on what they missed"}. Rules: 3-8 items per list, each under 90 chars; coverage = how much of the important material they recalled; be fair — credit ideas even when worded loosely or misspelled.' },
+      { role: "user", content: "MATERIAL:\n" + material.slice(0, 12000) + "\n\nSTUDENT BRAIN-DUMP:\n" + dump }
+    ], true);
+    const g = JSON.parse(raw);
+    logActivity("generate");
+    $("bl-play").classList.add("hidden");
+    $("bl-done").classList.remove("hidden");
+    const cov = Math.max(0, Math.min(100, Math.round(g.coverage || 0)));
+    $("bl-score").textContent = cov + "%";
+    $("bl-verdict").textContent = cov >= 80 ? "of the material recalled — that's exam-ready." :
+      cov >= 50 ? "of the material recalled — solid base, now attack the misses." :
+      "of the material recalled — good news: now you know exactly what to study.";
+    $("bl-nailed").innerHTML = (g.nailed || []).map(p => `<div>&#10003; ${esc(p)}</div>`).join("") || "<div>—</div>";
+    $("bl-missed").innerHTML = (g.missed || []).map(p => `<div>&bull; ${esc(p)}</div>`).join("") || "<div>Nothing important missed.</div>";
+    $("bl-tip").textContent = g.tip || "";
+    if (cov >= 80) celebrate($("bl-score"));
+    setStatus("bl-status", "");
+  } catch (e) {
+    setStatus("bl-status", e.message, true);
+    blEndAt = Date.now() + 60000;
+    blTimer = setInterval(blTick, 1000);
+  }
+}
 
 // ================= WHITEBOARD =================
 const wb = {
