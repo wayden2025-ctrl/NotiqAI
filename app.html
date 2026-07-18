@@ -2618,7 +2618,7 @@ async function wbMapGenerate() {
   try {
     const material = await getMaterial([id]);
     const raw = await groq([
-      { role: "system", content: 'You turn study material into a clean ORDERED sequence — a timeline, process, or step-by-step chain. Respond ONLY with valid JSON: {"title":"short map title","steps":[{"name":"event or step name, under 34 chars","date":"year/date or empty string","desc":"one concrete sentence of real substance under 110 chars — what happened and why it mattered, or what this step does"}]}. Rules: 6 to 12 steps in strict chronological or process order; every step MUST have a meaningful desc; use dates whenever the material is historical.' },
+      { role: "system", content: 'You turn study material into a clean ORDERED sequence — a timeline, process, or step-by-step chain. Respond ONLY with valid JSON: {"title":"short map title","steps":[{"name":"event or step name, under 34 chars","date":"year/date or empty string","desc":"1-2 full sentences of real substance, 100-180 chars — what happened, who was involved, why it mattered (or exactly what this step does)"}]}. Rules: 6 to 12 steps in strict chronological or process order; every step MUST have a rich desc that teaches something, never a fragment; use dates whenever the material is historical.' },
       { role: "user", content: "Build the sequence from this material:\n\n" + material.slice(0, 14000) }
     ], true);
     const g = JSON.parse(raw);
@@ -2658,7 +2658,15 @@ function wbDrawTimeline(title, steps) {
   const ctx = wbCtx();
   const rect = $("wb-canvas").getBoundingClientRect();
   const coral = (getComputedStyle(document.documentElement).getPropertyValue("--coral") || "#1e3a6e").trim();
-  const CW = 252, CH = 100, GX = 76, GY = 42, TOP = 128, LEFT = 46;
+  const CW = 284, GX = 72, GY = 38, TOP = 128, LEFT = 46;
+
+  // measure every description first so ALL cards fit their full text — nothing gets cut off
+  ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
+  const wrapped = steps.map(s => wbWrapText(ctx, s.desc, CW - 24, 6));
+  const maxLines = Math.max(2, ...wrapped.map(w => w.length));
+  const hasDates = steps.some(s => s.date);
+  const CH = 44 + (hasDates ? 20 : 0) + maxLines * 17;
+
   const usable = Math.max(300, (rect.height || 700) - TOP - 110);
   const rows = Math.max(2, Math.min(4, Math.floor((usable + GY) / (CH + GY))));
 
@@ -2683,10 +2691,9 @@ function wbDrawTimeline(title, steps) {
     wb.objs.push({ type: "text", text: name, x: x + 12, y: y + 10, color: "#241d18", size: 15 });
     // date
     if (s.date) wb.objs.push({ type: "text", text: String(s.date), x: x + 12, y: y + 31, color: coral, size: 12 });
-    // description, wrapped to two straight lines
-    ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
-    wbWrapText(ctx, s.desc, CW - 24, 2).forEach((ln, li) => {
-      wb.objs.push({ type: "text", text: ln, x: x + 12, y: y + 50 + li * 17, color: "#5a5148", size: 12 });
+    // full description, wrapped — the card was sized to hold every line
+    wrapped[n].forEach((ln, li) => {
+      wb.objs.push({ type: "text", text: ln, x: x + 12, y: y + (hasDates ? 52 : 34) + li * 17, color: "#5a5148", size: 12 });
     });
   });
 
