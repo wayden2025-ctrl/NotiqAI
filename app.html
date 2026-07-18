@@ -1220,6 +1220,12 @@
           <p>Timer starts, you type everything you remember — then see exactly what you know and what slipped your mind.</p>
           <span class="bento-go">Dump my brain</span>
         </div>
+        <div class="bento-card" onclick="showView('solve')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.8 2.8 0 1 1 4.3 2.4c-.9.6-1.5 1-1.5 2.1"/><path d="M12 17h.01"/></svg></div>
+          <h3>Solve it</h3>
+          <p>Stuck on a question? Paste it or snap a photo — get the answer and every step, explained clean.</p>
+          <span class="bento-go">Show me how</span>
+        </div>
         <div class="bento-card" onclick="openReview()">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v5h-5"/></svg></div>
           <h3>Smart review</h3>
@@ -1368,6 +1374,36 @@
         <p style="margin:10px 0 20px; color:var(--muted); font-size:15px;" id="wr-msg"></p>
         <button class="btn-primary" onclick="wrStart()">Run it again</button>
         <button class="btn-ghost" onclick="wrReset()" style="margin-left:10px;">Different deck</button>
+      </div>
+    </div>
+
+    <!-- SOLVE IT -->
+    <div class="view hidden" id="view-solve">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Stuck on a question?</span>
+      <h1 class="page-title">Solve <em>it.</em></h1>
+      <p class="page-sub">Paste any question — or snap a photo of it — and get the answer with every step laid out clean. Then make sure you could do the next one yourself.</p>
+
+      <div class="surface">
+        <label class="field-label">Your question</label>
+        <textarea class="paste-area" id="qh-text" maxlength="4000" placeholder="Paste or type the full question here — include answer choices if it's multiple choice." style="min-height:140px;"></textarea>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center;">
+          <button class="btn-primary" id="qh-go" onclick="qhSolve()">Solve it</button>
+          <button class="btn-ghost" onclick="$('qh-photo').click()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M9 6l1.2-2h3.6L15 6"/></svg>
+            Photo of the question</button>
+          <input type="file" id="qh-photo" accept="image/*" style="display:none;">
+        </div>
+        <div class="status-line" id="qh-status"></div>
+      </div>
+
+      <div class="surface hidden" id="qh-out">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+          <button class="btn-ghost" onclick="ttsToggle(this, stripMd(qhAnswer))">Listen</button>
+          <button class="btn-ghost" onclick="printMarkdown('Solution', qhAnswer)">Print / PDF</button>
+          <button class="btn-ghost" onclick="qhAnother()">Another question</button>
+        </div>
+        <div class="md-out" id="qh-md"></div>
       </div>
     </div>
 
@@ -2277,6 +2313,51 @@ function wrFinish() {
   logActivity("write");
 }
 $("wr-input").addEventListener("keydown", (e) => { if (e.key === "Enter") wrCheck(); });
+
+// ================= SOLVE IT =================
+let qhAnswer = "";
+async function qhSolve() {
+  const q = $("qh-text").value.trim();
+  if (q.length < 8) { setStatus("qh-status", "Paste the full question first.", true); return; }
+  if (!gateGenerate("qh-status")) return;
+  $("qh-go").disabled = true;
+  setStatus("qh-status", "Working through it...", false, true);
+  try {
+    const raw = await groq([
+      { role: "system", content: "You are Notiq AI, a patient expert tutor. Solve the student's question and TEACH the method. Respond in clean Markdown with EXACTLY this structure: start with '**Answer:** ...' (one line, the final answer), then a '### Steps' section with a numbered list where each step is one clear action with a short explanation of why, then a '### Watch out for' line with the most common mistake on this kind of problem. Show all work. If information is missing or the question is ambiguous, say what you assumed." },
+      { role: "user", content: q }
+    ]);
+    qhAnswer = raw;
+    $("qh-md").innerHTML = marked.parse(raw);
+    $("qh-out").classList.remove("hidden");
+    setStatus("qh-status", "");
+    logActivity("generate");
+    $("qh-out").scrollIntoView({ behavior: "smooth" });
+  } catch (e) {
+    setStatus("qh-status", e.message, true);
+  }
+  $("qh-go").disabled = false;
+}
+function qhAnother() {
+  $("qh-text").value = "";
+  $("qh-out").classList.add("hidden");
+  $("qh-text").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$("qh-photo").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  setStatus("qh-status", "Reading your photo...", false, true);
+  try {
+    const text = await ocrDataUrl(await fileToScaledDataUrl(f));
+    if (!text) throw new Error("Couldn't find text in that photo — try a clearer shot.");
+    $("qh-text").value = text.slice(0, 4000);
+    setStatus("qh-status", "Got it — check the text looks right, then hit Solve it.");
+  } catch (err) {
+    setStatus("qh-status", err.message, true);
+  }
+});
 
 // ================= BLURTING =================
 let blTimer = null, blEndAt = 0, blResId = null, blTotalMs = 0;
