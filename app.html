@@ -291,6 +291,21 @@
     border: 1.5px dashed var(--coral); background: rgba(255,255,255,.96); color: #241d18;
     font-family: inherit; font-size: 15px; padding: 5px 9px; border-radius: 7px; outline: none;
   }
+  /* math equation overlay — one transform mirrors canvas pan/zoom, canvas keeps all pointer events */
+  #wb-math-layer {
+    position: absolute; top: 0; left: 0; width: 0; height: 0;
+    transform-origin: 0 0; pointer-events: none; z-index: 4;
+  }
+  #wb-math-layer .wb-math {
+    position: absolute; color: #241d18; white-space: nowrap; line-height: 1;
+  }
+  .wb-hint {
+    position: absolute; bottom: 10px; left: 12px; z-index: 3; pointer-events: none;
+    font-size: 11.5px; font-weight: 700; color: color-mix(in srgb, var(--coral) 80%, #6a5);
+    background: rgba(255,255,255,.72); padding: 4px 9px; border-radius: 8px;
+    opacity: .85; transition: opacity .4s;
+  }
+  .wb-hint.gone { opacity: 0; }
 
   /* ============ PRO LIMIT POPUP ============ */
   .pro-pop-card {
@@ -1618,7 +1633,10 @@
         <button class="wb-tool" data-tool="arrow" title="Arrow — click start, then click tip"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/><path d="M11 5h8v8"/></svg></button>
         <button class="wb-tool" data-tool="rect" title="Rectangle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg></button>
         <button class="wb-tool" data-tool="ellipse" title="Circle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg></button>
+        <button class="wb-tool" data-tool="diamond" title="Diamond"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 9-9 9-9-9z"/></svg></button>
+        <button class="wb-tool" data-tool="triangle" title="Triangle"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 4l9 16H3z"/></svg></button>
         <button class="wb-tool" data-tool="text" title="Text box — click where you want to write" style="font-weight:800; font-family:'Instrument Serif',serif; font-style:italic; font-size:17px;">T</button>
+        <button class="wb-tool" data-tool="math" title="Math equation — click, then type LaTeX (e.g. x^2 + \frac{a}{b})" style="font-family:'Instrument Serif',serif; font-style:italic; font-size:18px;">&#8730;<span style="font-size:11px;">x</span></button>
         <button class="wb-tool" data-tool="eraser" title="Eraser — click a thing to remove it"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21l-4-4a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l5 5a2 2 0 0 1 0 2.8L12 21z"/><path d="M7 21h14"/></svg></button>
         <span class="wb-sep"></span>
         <span class="wb-swatches" id="wb-swatches"></span>
@@ -1634,6 +1652,10 @@
         <button class="wb-tool" onclick="wbRedo()" title="Redo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
         <button class="wb-tool" onclick="wbClear()" title="Clear the board"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg></button>
         <button class="wb-tool" onclick="wbDownload()" title="Download as PNG"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg></button>
+        <span class="wb-sep"></span>
+        <button class="wb-tool" onclick="wbZoomStep(-1)" title="Zoom out (or Ctrl + scroll)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        <button class="wb-tool" id="wb-zoom-lab" onclick="wbZoomReset()" title="Reset zoom to 100%" style="width:auto; padding:0 10px; font-size:12.5px; font-weight:800;">100%</button>
+        <button class="wb-tool" onclick="wbZoomStep(1)" title="Zoom in (or Ctrl + scroll)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
 
       <div class="wb-bar" id="wb-savebar">
@@ -1649,7 +1671,9 @@
 
       <div class="wb-wrap" id="wb-wrap">
         <canvas id="wb-canvas"></canvas>
+        <div id="wb-math-layer"></div>
         <input class="wb-textin hidden" id="wb-textin" maxlength="200" placeholder="Type, then press Enter">
+        <div class="wb-hint" id="wb-hint">Scroll or Ctrl+scroll to zoom &middot; Space + drag to pan &middot; Ctrl+C / V / D to copy, paste, duplicate</div>
       </div>
     </div>
 
@@ -2875,7 +2899,10 @@ const wb = {
   tool: "pen", color: "#1e3a6e", w: 4, fill: false,
   sel: null, drag: null, draft: null, arrowStart: null, mouse: null,
   inited: false,
+  zoom: 1, panX: 0, panY: 0, spaceDown: false, panning: null,
+  clip: null, uid: 1,
 };
+const WB_ZMIN = 0.4, WB_ZMAX = 2.5;
 const WB_COLORS = ["#1e3a6e", "#241d18", "#c0392b", "#2e7d4f", "#e67e22", "#7d3fc0", "#0e7490", "#d4a017"];
 
 let wbBoards = [];
@@ -2948,7 +2975,7 @@ function wbNewBoard() {
   $("wb-name").value = "";
   setStatus("wb-status", "");
   renderWbBoards();
-  wbDraw();
+  wbZoomReset();
 }
 
 function wbCtx() { return $("wb-canvas").getContext("2d"); }
@@ -2968,12 +2995,19 @@ function wbSnapshot() {
   return JSON.stringify(wb.objs.map(o => o.type === "image" ? { ...o, img: undefined } : o));
 }
 function wbRestore(json) {
+  // clear any leftover math overlay nodes before rebuilding
+  const layer = $("wb-math-layer"); if (layer) layer.innerHTML = "";
   wb.objs = JSON.parse(json).map(o => {
     if (o.type === "image") {
       const img = new Image();
       img.onload = wbDraw;
       img.src = o.src;
       o.img = img;
+    }
+    if (o.type === "math") {
+      const n = parseInt(String(o.id || "").replace(/\D/g, ""), 10);
+      if (n >= wb.uid) wb.uid = n + 1;
+      o._remeasure = true;
     }
     return o;
   });
@@ -3029,6 +3063,17 @@ function wbDrawObj(ctx, o) {
     ctx.beginPath();
     ctx.ellipse(o.x + o.wd / 2, o.y + o.ht / 2, Math.abs(o.wd / 2), Math.abs(o.ht / 2), 0, 0, Math.PI * 2);
     o.fill ? ctx.fill() : ctx.stroke();
+  } else if (o.type === "diamond") {
+    const cx = o.x + o.wd / 2, cy = o.y + o.ht / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, o.y); ctx.lineTo(o.x + o.wd, cy); ctx.lineTo(cx, o.y + o.ht); ctx.lineTo(o.x, cy); ctx.closePath();
+    o.fill ? ctx.fill() : ctx.stroke();
+  } else if (o.type === "triangle") {
+    ctx.beginPath();
+    ctx.moveTo(o.x + o.wd / 2, o.y); ctx.lineTo(o.x + o.wd, o.y + o.ht); ctx.lineTo(o.x, o.y + o.ht); ctx.closePath();
+    o.fill ? ctx.fill() : ctx.stroke();
+  } else if (o.type === "math") {
+    // rendered as a KaTeX overlay node (see wbSyncMath) — nothing to paint here
   } else if (o.type === "card") {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(o.x, o.y, o.wd, o.ht);
@@ -3078,6 +3123,9 @@ function wbDraw() {
   const c = $("wb-canvas"), ctx = wbCtx();
   const dpr = window.devicePixelRatio || 1;
   ctx.clearRect(0, 0, c.width / dpr, c.height / dpr);
+  ctx.save();
+  ctx.translate(wb.panX, wb.panY);
+  ctx.scale(wb.zoom, wb.zoom);
   wb.objs.forEach(o => wbDrawObj(ctx, o));
   if (wb.draft) { ctx.globalAlpha = 0.8; wbDrawObj(ctx, wb.draft); ctx.globalAlpha = 1; }
   if (wb.arrowStart && wb.mouse) {
@@ -3087,11 +3135,44 @@ function wbDraw() {
   }
   if (wb.sel) {
     const [a, b, x, y] = wbBBox(wb.sel);
-    ctx.save();
-    ctx.strokeStyle = "#1e90ff"; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = "#1e90ff"; ctx.lineWidth = 1.5 / wb.zoom; ctx.setLineDash([6 / wb.zoom, 5 / wb.zoom]);
     ctx.strokeRect(a - 7, b - 7, x - a + 14, y - b + 14);
-    ctx.restore();
+    ctx.setLineDash([]);
   }
+  ctx.restore();
+  wbSyncMath();
+}
+
+// keep the KaTeX overlay nodes in lock-step with the math objects + current pan/zoom
+function wbSyncMath() {
+  const layer = $("wb-math-layer");
+  if (!layer) return;
+  layer.style.transform = `translate(${wb.panX}px, ${wb.panY}px) scale(${wb.zoom})`;
+  const live = {};
+  wb.objs.forEach(o => { if (o.type === "math") live[o.id] = o; });
+  // drop nodes for deleted math
+  Array.from(layer.children).forEach(n => { if (!live[n.dataset.id]) n.remove(); });
+  // create / update nodes
+  wb.objs.forEach(o => {
+    if (o.type !== "math") return;
+    let n = layer.querySelector(`[data-id="${o.id}"]`);
+    if (!n) {
+      n = document.createElement("div");
+      n.className = "wb-math";
+      n.dataset.id = o.id;
+      layer.appendChild(n);
+      try { katex.render(o.latex, n, { throwOnError: false, displayMode: false }); }
+      catch (e) { n.textContent = o.latex; }
+    }
+    n.style.left = o.x + "px";
+    n.style.top = o.y + "px";
+    n.style.fontSize = (o.size || 22) + "px";
+    n.style.color = o.color || "#241d18";
+    n.style.outline = (wb.sel === o) ? "2px dashed #1e90ff" : "none";
+    n.style.outlineOffset = "3px";
+    // record measured world-size for hit-testing / selection box
+    if (!o.wd || o._remeasure) { o.wd = n.offsetWidth || 40; o.ht = n.offsetHeight || 24; o._remeasure = false; }
+  });
 }
 function wbSegDist(px, py, x1, y1, x2, y2) {
   const dx = x2 - x1, dy = y2 - y1, len2 = dx * dx + dy * dy;
@@ -3122,8 +3203,28 @@ function wbMove(o, dx, dy) {
 function wbPos(e) {
   const r = $("wb-canvas").getBoundingClientRect();
   const t = e.touches ? e.touches[0] : e;
-  return [t.clientX - r.left, t.clientY - r.top];
+  // screen → world (undo pan + zoom)
+  return [(t.clientX - r.left - wb.panX) / wb.zoom, (t.clientY - r.top - wb.panY) / wb.zoom];
 }
+// world → screen, for placing DOM inputs on top of the canvas
+function wbScreen(wx, wy) { return [wx * wb.zoom + wb.panX, wy * wb.zoom + wb.panY]; }
+
+function wbClampZoom(z) { return Math.max(WB_ZMIN, Math.min(WB_ZMAX, z)); }
+function wbSetZoom(z, cx, cy) {
+  // zoom toward the (cx,cy) screen point so it stays put
+  const nz = wbClampZoom(z);
+  if (cx == null) {
+    const r = $("wb-canvas").getBoundingClientRect();
+    cx = r.width / 2; cy = r.height / 2;
+  }
+  const wx = (cx - wb.panX) / wb.zoom, wy = (cy - wb.panY) / wb.zoom;
+  wb.zoom = nz;
+  wb.panX = cx - wx * nz; wb.panY = cy - wy * nz;
+  const lab = $("wb-zoom-lab"); if (lab) lab.textContent = Math.round(nz * 100) + "%";
+  wbDraw();
+}
+function wbZoomStep(dir) { wbSetZoom(wb.zoom * (dir > 0 ? 1.2 : 1 / 1.2)); }
+function wbZoomReset() { wb.zoom = 1; wb.panX = 0; wb.panY = 0; const lab = $("wb-zoom-lab"); if (lab) lab.textContent = "100%"; wbDraw(); }
 
 function wbInit() {
   // swatches
@@ -3137,7 +3238,8 @@ function wbInit() {
   $("wb-custom").addEventListener("input", () => wbSetColor($("wb-custom").value));
   $("wb-size").addEventListener("input", () => {
     wb.w = +$("wb-size").value;
-    if (wb.sel && wb.sel.w !== undefined && wb.sel.type !== "text") { wb.sel.w = wb.w; wbDraw(); }
+    if (wb.sel && wb.sel.type === "math") { wb.sel.size = 14 + wb.w * 3; wb.sel._remeasure = true; wbDraw(); }
+    else if (wb.sel && wb.sel.w !== undefined && wb.sel.type !== "text") { wb.sel.w = wb.w; wbDraw(); }
     if (wb.sel && wb.sel.type === "text") { wb.sel.size = 10 + wb.w * 3; wbDraw(); }
   });
   $("wb-fill").addEventListener("click", () => {
@@ -3150,7 +3252,7 @@ function wbInit() {
       wb.tool = b.dataset.tool;
       wb.arrowStart = null; wb.sel = null;
       document.querySelectorAll(".wb-tool[data-tool]").forEach(x => x.classList.toggle("on", x === b));
-      $("wb-canvas").style.cursor = wb.tool === "select" ? "default" : wb.tool === "text" ? "text" : "crosshair";
+      $("wb-canvas").style.cursor = wb.tool === "select" ? "default" : (wb.tool === "text" || wb.tool === "math") ? "text" : "crosshair";
       wbDraw();
     }));
 
@@ -3162,6 +3264,15 @@ function wbInit() {
   c.addEventListener("touchmove", (e) => { e.preventDefault(); wbMoveEv(e); }, { passive: false });
   window.addEventListener("touchend", wbUp);
   window.addEventListener("resize", () => { if (!$("view-board").classList.contains("hidden")) wbResize(); });
+
+  // wheel to zoom (toward the cursor), kept modest between 40% and 250%
+  c.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const r = c.getBoundingClientRect();
+    const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+    wbSetZoom(wb.zoom * factor, e.clientX - r.left, e.clientY - r.top);
+    if ($("wb-hint")) $("wb-hint").classList.add("gone");
+  }, { passive: false });
 
   $("wb-img").addEventListener("change", (e) => {
     const f = e.target.files[0];
@@ -3182,15 +3293,19 @@ function wbInit() {
     e.target.value = "";
   });
 
-  // text box commit
+  // text / math box commit
   const ti = $("wb-textin");
   const commit = () => {
     const v = ti.value.trim();
     if (v) {
       wbPushUndo();
-      wb.objs.push({ type: "text", text: v, x: parseFloat(ti.dataset.x), y: parseFloat(ti.dataset.y), color: wb.color, size: 10 + wb.w * 3 });
+      if (ti.dataset.mode === "math") {
+        wb.objs.push({ type: "math", id: "m" + (wb.uid++), latex: v, x: parseFloat(ti.dataset.x), y: parseFloat(ti.dataset.y), color: wb.color, size: 14 + wb.w * 3 });
+      } else {
+        wb.objs.push({ type: "text", text: v, x: parseFloat(ti.dataset.x), y: parseFloat(ti.dataset.y), color: wb.color, size: 10 + wb.w * 3 });
+      }
     }
-    ti.value = ""; ti.classList.add("hidden");
+    ti.value = ""; ti.dataset.mode = ""; ti.classList.add("hidden");
     wbDraw();
   };
   ti.addEventListener("keydown", (e) => {
@@ -3202,14 +3317,52 @@ function wbInit() {
   document.addEventListener("keydown", (e) => {
     if ($("view-board").classList.contains("hidden")) return;
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    const meta = e.ctrlKey || e.metaKey;
+    if (e.code === "Space" && !wb.spaceDown) {
+      wb.spaceDown = true;
+      $("wb-canvas").style.cursor = "grab";
+      e.preventDefault();
+      return;
+    }
     if ((e.key === "Delete" || e.key === "Backspace") && wb.sel) {
+      e.preventDefault();
       wbPushUndo();
       wb.objs = wb.objs.filter(o => o !== wb.sel);
       wb.sel = null; wbDraw();
     }
     if (e.key === "Escape") { wb.arrowStart = null; wb.sel = null; wbDraw(); }
-    if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); wbUndo(); }
+    if (meta && e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); wbUndo(); }
+    if (meta && (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))) { e.preventDefault(); wbRedo(); }
+    if (meta && e.key.toLowerCase() === "c" && wb.sel) { e.preventDefault(); wb.clip = wbClone(wb.sel); }
+    if (meta && e.key.toLowerCase() === "v" && wb.clip) { e.preventDefault(); wbPasteClip(); }
+    if (meta && e.key.toLowerCase() === "d" && wb.sel) { e.preventDefault(); wb.clip = wbClone(wb.sel); wbPasteClip(); }
   });
+  document.addEventListener("keyup", (e) => {
+    if (e.code === "Space") {
+      wb.spaceDown = false; wb.panning = null;
+      const c = $("wb-canvas");
+      c.style.cursor = wb.tool === "select" ? "default" : (wb.tool === "text" || wb.tool === "math") ? "text" : "crosshair";
+    }
+  });
+}
+
+// deep clone an object for copy/paste/duplicate (rebuilds live image + fresh math id)
+function wbClone(o) {
+  const n = JSON.parse(JSON.stringify(o.type === "image" ? { ...o, img: undefined } : o));
+  if (o.type === "image") { const img = new Image(); img.onload = wbDraw; img.src = o.src; n.img = img; }
+  if (o.type === "math") { n.id = "m" + (wb.uid++); n._remeasure = true; delete n.wd; delete n.ht; }
+  return n;
+}
+function wbPasteClip() {
+  if (!wb.clip) return;
+  wbPushUndo();
+  const n = wbClone(wb.clip);   // clone again so repeated pastes don't share a reference
+  wbMove(n, 24, 24);
+  wb.objs.push(n);
+  wb.sel = n; wb.tool = "select";
+  document.querySelectorAll(".wb-tool[data-tool]").forEach(x => x.classList.toggle("on", x.dataset.tool === "select"));
+  $("wb-canvas").style.cursor = "default";
+  wbDraw();
 }
 
 function wbSetColor(col) {
@@ -3219,6 +3372,13 @@ function wbSetColor(col) {
 }
 
 function wbDown(e) {
+  // Space + drag (or middle-button drag) pans the board
+  if (wb.spaceDown || (e.button === 1)) {
+    const t = e.touches ? e.touches[0] : e;
+    wb.panning = { sx: t.clientX, sy: t.clientY, px: wb.panX, py: wb.panY };
+    $("wb-canvas").style.cursor = "grabbing";
+    return;
+  }
   const [x, y] = wbPos(e);
   if (wb.tool === "arrow") {
     if (!wb.arrowStart) { wb.arrowStart = [x, y]; }
@@ -3230,10 +3390,13 @@ function wbDown(e) {
     wbDraw();
     return;
   }
-  if (wb.tool === "text") {
+  if (wb.tool === "text" || wb.tool === "math") {
     const ti = $("wb-textin");
-    ti.style.left = x + "px"; ti.style.top = (y - 4) + "px";
+    const [sx, sy] = wbScreen(x, y);
+    ti.style.left = sx + "px"; ti.style.top = (sy - 4) + "px";
     ti.dataset.x = x; ti.dataset.y = y;
+    ti.dataset.mode = wb.tool === "math" ? "math" : "";
+    ti.placeholder = wb.tool === "math" ? "LaTeX, e.g.  x^2 + \\frac{a}{b}  then Enter" : "Type, then press Enter";
     ti.classList.remove("hidden");
     setTimeout(() => ti.focus(), 10);
     return;
@@ -3254,11 +3417,18 @@ function wbDown(e) {
     wb.draft = { type: "pen", pts: [[x, y]], color: wb.color, w: wb.w };
   } else if (wb.tool === "line") {
     wb.draft = { type: "line", x1: x, y1: y, x2: x, y2: y, color: wb.color, w: wb.w };
-  } else if (wb.tool === "rect" || wb.tool === "ellipse") {
+  } else if (wb.tool === "rect" || wb.tool === "ellipse" || wb.tool === "diamond" || wb.tool === "triangle") {
     wb.draft = { type: wb.tool, x, y, wd: 0, ht: 0, color: wb.color, w: wb.w, fill: wb.fill, _ax: x, _ay: y };
   }
 }
 function wbMoveEv(e) {
+  if (wb.panning) {
+    const t = e.touches ? e.touches[0] : e;
+    wb.panX = wb.panning.px + (t.clientX - wb.panning.sx);
+    wb.panY = wb.panning.py + (t.clientY - wb.panning.sy);
+    wbDraw();
+    return;
+  }
   const [x, y] = wbPos(e);
   wb.mouse = [x, y];
   if (wb.tool === "select" && wb.drag && wb.sel) {
@@ -3283,6 +3453,11 @@ function wbMoveEv(e) {
   if (wb.arrowStart) wbDraw();
 }
 function wbUp() {
+  if (wb.panning) {
+    wb.panning = null;
+    $("wb-canvas").style.cursor = wb.spaceDown ? "grab" : (wb.tool === "select" ? "default" : (wb.tool === "text" || wb.tool === "math") ? "text" : "crosshair");
+    return;
+  }
   if (wb.drag) {
     const clicked = !wb.drag.moved;
     wb.drag = null;
@@ -3294,7 +3469,7 @@ function wbUp() {
   wb.draft = null;
   delete d._ax; delete d._ay;
   const trivial = (d.type === "pen" && d.pts.length < 2) ||
-    ((d.type === "rect" || d.type === "ellipse") && d.wd < 3 && d.ht < 3) ||
+    ((d.type === "rect" || d.type === "ellipse" || d.type === "diamond" || d.type === "triangle") && d.wd < 3 && d.ht < 3) ||
     (d.type === "line" && Math.hypot(d.x2 - d.x1, d.y2 - d.y1) < 3);
   if (!trivial) { wbPushUndo(); wb.objs.push(d); }
   wbDraw();
@@ -3309,6 +3484,13 @@ function wbDownload() {
   ctx.fillRect(0, 0, out.width, out.height);
   ctx.scale(dpr, dpr);
   wb.objs.forEach(o => wbDrawObj(ctx, o));
+  // math is a live KaTeX overlay; render its source text into the export as a fallback
+  wb.objs.filter(o => o.type === "math").forEach(o => {
+    ctx.fillStyle = o.color || "#241d18";
+    ctx.font = `italic ${o.size || 22}px 'Instrument Serif', serif`;
+    ctx.textBaseline = "top";
+    ctx.fillText(o.latex, o.x, o.y);
+  });
   const a = document.createElement("a");
   a.download = "notiq-whiteboard.png";
   a.href = out.toDataURL("image/png");
