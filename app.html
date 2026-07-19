@@ -205,6 +205,8 @@
   .cw-msg.ai code { background: color-mix(in srgb, var(--ink) 7%, transparent); padding: 1px 5px; border-radius: 5px; font-size: 13px; }
   .cw-msg.ai table { border-collapse: collapse; margin: 8px 0; } .cw-msg.ai th, .cw-msg.ai td { border: 1px solid var(--line); padding: 5px 9px; font-size: 13px; }
   .cw-typing { align-self: flex-start; color: var(--muted); font-size: 14px; padding: 4px 6px; }
+  .cw-caret { display: inline-block; width: 8px; height: 15px; background: var(--coral); border-radius: 1px; margin-left: 2px; vertical-align: -2px; animation: cwBlink .8s steps(1) infinite; }
+  @keyframes cwBlink { 50% { opacity: 0; } }
   .cw-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .cw-chip { border: 1.5px solid var(--line); background: var(--card1); border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
   .cw-chip:hover { border-color: var(--coral); color: var(--coral); }
@@ -2740,6 +2742,26 @@ async function cwResourceContext(text) {
     return "\n\nThe student's referenced resources:\n" + mat.slice(0, 9000);
   } catch (e) { return ""; }
 }
+function cwType(text) {
+  return new Promise(resolve => {
+    const b = document.createElement("div");
+    b.className = "cw-msg ai";
+    $("chat-scroll").appendChild(b);
+    const scroll = $("chat-scroll");
+    const step = Math.max(2, Math.round(text.length / 260)); // whole reply in ~4s max, fast
+    let i = 0, near = true;
+    const tick = () => {
+      i = Math.min(text.length, i + step);
+      b.innerHTML = marked.parse(text.slice(0, i)) + (i < text.length ? '<span class="cw-caret"></span>' : "");
+      if (near) scroll.scrollTop = scroll.scrollHeight;
+      near = scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 60;
+      if (i < text.length) { setTimeout(tick, 12); }
+      else { b.innerHTML = marked.parse(text); resolve(); }
+    };
+    tick();
+  });
+}
+
 async function cwSend() {
   const inp = $("chat-input");
   const text = inp.value.trim();
@@ -2761,7 +2783,7 @@ async function cwSend() {
     const reply = await groq(messages);
     typing.remove();
     cwMsgs.push({ role: "assistant", content: reply });
-    cwAddBubble("ai", reply);
+    await cwType(reply);
     logActivity("generate");
   } catch (e) {
     typing.remove();
