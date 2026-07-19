@@ -176,8 +176,26 @@
   .sl-notes b { color: var(--coral); }
 
   /* ============ TALK WITH AI ============ */
-  .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 230px); min-height: 420px; }
+  .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 210px); min-height: 440px; }
+  .chat-mid { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .chat-scroll { flex: 1; overflow-y: auto; padding: 4px 2px 10px; display: flex; flex-direction: column; gap: 14px; }
+  /* centered empty state (ChatGPT-style) */
+  .chat-welcome { display: none; text-align: center; }
+  .chat-wrap.empty .chat-mid { justify-content: center; gap: 22px; }
+  .chat-wrap.empty .chat-welcome { display: block; }
+  .chat-wrap.empty .chat-scroll { display: none; }
+  .chat-wrap.empty .chat-foot-wrap { max-width: 680px; margin: 0 auto; width: 100%; }
+  .chat-wrap.empty .chat-bar { box-shadow: 0 18px 40px -18px rgba(60,40,30,.32); }
+  .chat-wrap:not(.empty) .cw-chips { display: none; }
+  .cw-orb {
+    width: 62px; height: 62px; border-radius: 18px; margin: 0 auto 18px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
+    box-shadow: inset -6px -7px 14px rgba(14,30,60,.5), inset 4px 4px 9px rgba(255,255,255,.5), 0 16px 30px -12px color-mix(in srgb, var(--g2) 55%, transparent);
+  }
+  .cw-orb::before { content: "N"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: #fff; text-shadow: 0 2px 6px rgba(10,24,50,.5); }
+  .cw-title { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -1.5px; color: var(--ink); line-height: 1; }
+  .cw-title em { color: var(--coral); }
+  .cw-hint { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 46ch; margin: 12px auto 0; }
   .cw-msg { max-width: 78%; padding: 13px 16px; border-radius: 16px; font-size: 15px; line-height: 1.6; }
   .cw-msg.me { align-self: flex-end; background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff; border-bottom-right-radius: 5px; }
   .cw-msg.ai { align-self: flex-start; background: var(--card1); border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 5px; }
@@ -330,6 +348,15 @@
     transform: translateY(-2px); filter: brightness(1.09);
     box-shadow: 0 26px 52px -14px color-mix(in srgb, var(--g2) 85%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
   }
+  .hero-cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .learn-cta.ghost {
+    background: var(--card1); color: var(--ink);
+    box-shadow: 0 12px 28px -14px rgba(60,40,30,.3), inset 0 0 0 1.5px color-mix(in srgb, var(--coral) 40%, transparent);
+    animation: none;
+  }
+  .learn-cta.ghost em { color: var(--coral); }
+  .learn-cta.ghost .plus { background: color-mix(in srgb, var(--coral) 12%, transparent); color: var(--coral); }
+  .learn-cta.ghost:hover { box-shadow: 0 16px 34px -14px rgba(60,40,30,.35), inset 0 0 0 1.5px var(--coral); }
   .learn-cta .plus {
     flex: none; width: 34px; height: 34px; border-radius: 50%;
     background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;
@@ -1157,10 +1184,6 @@
       <span class="pro-word">Pro</span>
       <span class="tip">Upgrade to Pro</span>
     </button>
-    <button class="rail-btn" id="rb-chat" onclick="showView('chat')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8 10.5h8"/><path d="M8 14h5"/></svg>
-      <span class="tip">Talk with AI</span>
-    </button>
     <button class="avatar" id="rb-account" onclick="showView('account')">?</button>
   </aside>
 
@@ -1186,7 +1209,10 @@
             <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used today"><b id="stat-gens">0/10</b><span>AI today</span></div>
           </div>
           <div style="margin-top:18px;">
-            <button class="learn-cta" onclick="showView('import')"><span class="plus">+</span>Add material — or learn something <em>new.</em></button>
+            <div class="hero-cta-row">
+              <button class="learn-cta" onclick="showView('import')"><span class="plus">+</span>Add material — or learn something <em>new.</em></button>
+              <button class="learn-cta ghost" onclick="showView('chat')"><span class="plus"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/></svg></span>Talk with <em>AI.</em></button>
+            </div>
           </div>
         </div>
         <div class="hero-orb">
@@ -1304,12 +1330,6 @@
           <h3>Blurting</h3>
           <p>Timer starts, you type everything you remember — then see exactly what you know and what slipped your mind.</p>
           <span class="bento-go">Dump my brain</span>
-        </div>
-        <div class="bento-card" onclick="showView('chat')">
-          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8 10.5h8"/><path d="M8 14h5"/></svg></div>
-          <h3>Talk with AI</h3>
-          <p>Ask anything about your studies — solve a problem, plan an essay, break down a tough concept. It works from your resources.</p>
-          <span class="bento-go">Start chatting</span>
         </div>
         <div class="bento-card" onclick="showView('slides')">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 8.5h6"/><path d="M7 12h4"/></svg></div>
@@ -1514,15 +1534,25 @@
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
       <span class="eyebrow">Your study assistant</span>
       <h1 class="page-title">Talk with <em>AI.</em></h1>
-      <div class="chat-wrap">
-        <div class="chat-scroll" id="chat-scroll"></div>
-        <div class="chat-bar">
-          <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Ask anything about your studies..."></textarea>
-          <button class="chat-send" id="chat-send" onclick="cwSend()" title="Send">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
-          </button>
+      <div class="chat-wrap empty" id="chat-wrap">
+        <div class="chat-mid">
+          <div class="chat-welcome" id="chat-welcome">
+            <div class="cw-orb"></div>
+            <h2 class="cw-title">How can I help you <em>study?</em></h2>
+            <p class="cw-hint">Solve a problem, plan an essay, or break down a tough concept — I work from your resources when you mention them.</p>
+          </div>
+          <div class="chat-scroll" id="chat-scroll"></div>
         </div>
-        <p class="chat-foot">Notiq keeps to studying — it won't help with off-topic requests. Mention a resource by name to have it referenced.</p>
+        <div class="chat-foot-wrap">
+          <div class="chat-bar" id="chat-bar">
+            <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Ask anything about your studies..."></textarea>
+            <button class="chat-send" id="chat-send" onclick="cwSend()" title="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+            </button>
+          </div>
+          <div class="cw-chips" id="cw-chips"></div>
+          <p class="chat-foot">Notiq keeps to studying — it won't help with off-topic requests.</p>
+        </div>
       </div>
     </div>
 
@@ -2676,13 +2706,12 @@ function cwGreeting() {
 }
 function openChat() {
   if (!cwMsgs.length) {
+    $("chat-wrap").classList.add("empty");
     $("chat-scroll").innerHTML = "";
-    cwAddBubble("ai", cwGreeting());
     const chips = ["Explain a concept to me", "Help me start an essay", "Give me a practice problem", "Quiz me on my notes"];
-    const row = document.createElement("div");
-    row.className = "cw-chips";
-    row.innerHTML = chips.map(c => `<span class="cw-chip" onclick="cwChip(this)">${c}</span>`).join("");
-    $("chat-scroll").appendChild(row);
+    $("cw-chips").innerHTML = chips.map(c => `<span class="cw-chip" onclick="cwChip(this)">${c}</span>`).join("");
+  } else {
+    $("chat-wrap").classList.remove("empty");
   }
   setTimeout(() => $("chat-input").focus(), 40);
 }
@@ -2715,7 +2744,7 @@ async function cwSend() {
   const inp = $("chat-input");
   const text = inp.value.trim();
   if (!text) return;
-  document.querySelectorAll(".cw-chips").forEach(c => c.remove());
+  $("chat-wrap").classList.remove("empty");   // switch to conversation layout
   cwAddBubble("me", text);
   cwMsgs.push({ role: "user", content: text });
   inp.value = ""; inp.style.height = "auto";
