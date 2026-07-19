@@ -165,8 +165,9 @@
   .cmp-col ul { list-style: none; margin: 8px 0 0; }
   .cmp-col li { font-size: clamp(12px, 1.4vw, 15px); padding: 4px 0 4px 16px; position: relative; line-height: 1.45; }
   .cmp-col li::before { content: "•"; position: absolute; left: 2px; }
-  .slide.with-img { flex-direction: row; gap: 26px; align-items: stretch; }
-  .slide.with-img .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .slide .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  .slide.with-img { flex-direction: row; gap: 30px; align-items: stretch; }
+  .slide.with-img.img-left { flex-direction: row-reverse; }
   .sl-imgbox { flex: 0 0 40%; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .sl-imgbox img { width: 100%; height: 100%; object-fit: cover; }
   .sl-imgbox.empty { flex-direction: column; gap: 8px; border: 2px dashed; background: rgba(255,255,255,.35); font-size: 13px; }
@@ -2521,7 +2522,8 @@ function slSlideHtml(sl, i, s, wantNotes) {
     body = `<ul class="sl-bullets">${(sl.bullets || []).map(b => `<li style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span>${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
   }
   const slot = slImgSlot(sl, i, s);
-  return `<div class="slide${slot ? " with-img" : ""}" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  const imgLeft = slot && (i % 2 === 1);
+  return `<div class="slide${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slRender() {
   const s = SL_STYLES[slStyle];
@@ -2570,7 +2572,7 @@ async function slExportPptx() {
   if (slDeck.date) t.addText(strip(slDeck.date).toUpperCase(), { x: 0.8, y: 2.1, w: 11.7, h: 0.5, fontSize: 15, color: hex(s.titleFg), charSpacing: 3, fontFace: "Arial" });
   t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.6, w: 11.7, h: 1.7, fontSize: 44, bold: true, color: hex(s.titleFg), fontFace: "Arial" });
   if (slDeck.subtitle) t.addText(slDeck.subtitle, { x: 0.8, y: 4.4, w: 11.7, h: 0.8, fontSize: 20, color: hex(s.titleFg), fontFace: "Arial" });
-  slDeck.slides.forEach(sl => {
+  slDeck.slides.forEach((sl, idx) => {
     const type = sl.type || "bullets";
     const sd = p.addSlide();
     if (type === "section") {
@@ -2581,22 +2583,26 @@ async function slExportPptx() {
     }
     sd.background = { color: hex(s.bg) };
     if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
-    const wide = !!sl.img, W = wide ? 6.6 : 11.7;
+    const wide = !!sl.img;
+    const imgLeft = wide && (idx % 2 === 1);
+    const txX = wide ? (imgLeft ? 6.9 : 0.9) : 0.9;
+    const imgX = imgLeft ? 0.7 : 7.9;
+    const W = wide ? 6.6 : 11.7;
     if (type === "stat") {
       sd.addText(strip(sl.big), { x: 0.7, y: 1.9, w: 12, h: 2, fontSize: 64, bold: true, align: "center", color: hex(s.accent), fontFace: "Arial" });
       if (sl.caption) sd.addText(strip(sl.caption), { x: 1.6, y: 4.1, w: 10.1, h: 2, fontSize: 20, align: "center", color: hex(s.fg), fontFace: "Arial" });
     } else if (type === "timeline") {
-      sd.addText((sl.events || []).map(e => ({ text: strip(e.when) + " — " + strip(e.what), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+      sd.addText((sl.events || []).map(e => ({ text: strip(e.when) + " — " + strip(e.what), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     } else if (type === "steps") {
-      sd.addText((sl.steps || []).map((st, k) => ({ text: (k + 1) + ".  " + strip(st.title) + " — " + strip(st.detail), options: { color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+      sd.addText((sl.steps || []).map((st, k) => ({ text: (k + 1) + ".  " + strip(st.title) + " — " + strip(st.detail), options: { color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     } else if (type === "compare") {
       const colTx = c => [{ text: strip((c && c.title) || ""), options: { bold: true, color: hex(s.accent), fontSize: 20, paraSpaceAfter: 10 } }].concat(((c && c.points) || []).map(pt => ({ text: strip(pt), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 15, paraSpaceAfter: 8 } })));
       sd.addText(colTx(sl.left), { x: 0.7, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
       sd.addText(colTx(sl.right), { x: 6.9, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
     } else {
-      sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+      sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     }
-    if (sl.img) { try { sd.addImage({ data: sl.img, x: 7.9, y: 1.7, w: 4.7, h: 4.7, sizing: { type: "contain", w: 4.7, h: 4.7 } }); } catch (e) {} }
+    if (sl.img) { try { sd.addImage({ data: sl.img, x: imgX, y: 1.7, w: 4.7, h: 4.7, sizing: { type: "contain", w: 4.7, h: 4.7 } }); } catch (e) {} }
     if (sl.notes) sd.addNotes(sl.notes);
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
@@ -2617,7 +2623,7 @@ function slExportPdf() {
   const slidesHtml = [pslide(
       `${slDeck.date ? `<div style="letter-spacing:3px;font-size:14px;opacity:.75;margin-bottom:12px;">${esc(String(slDeck.date).toUpperCase())}</div>` : ""}<h1 style="font-size:44px;">${esc(slDeck.title || "")}</h1>${slDeck.subtitle ? `<p style="opacity:.85;font-size:20px;">${esc(slDeck.subtitle)}</p>` : ""}`,
       s.titleBg, s.titleFg, true)]
-    .concat(slDeck.slides.map(sl => {
+    .concat(slDeck.slides.map((sl, idx) => {
       const type = sl.type || "bullets";
       if (type === "section") return pslide(`<h1 style="font-size:40px;">${esc(sl.heading || "")}</h1>`, s.titleBg, s.titleFg, true);
       if (type === "stat") return pslide(`<div style="font-size:72px;font-weight:800;color:${s.accent};">${esc(sl.big || "")}</div>${sl.heading ? `<h3 style="font-size:22px;">${esc(sl.heading)}</h3>` : ""}${sl.caption ? `<p style="font-size:20px;opacity:.85;">${esc(sl.caption)}</p>` : ""}`, s.bg, s.fg, true);
@@ -2634,7 +2640,8 @@ function slExportPdf() {
         body = `<ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:7px 0 7px 24px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:${s.accent};">&#9656;</span>${bd(b)}</li>`).join("")}</ul>`;
       }
       const img = sl.img ? `<div style="width:40%;display:flex;align-items:center;justify-content:center;"><img src="${sl.img}" style="max-width:100%;max-height:62vh;border-radius:8px;"></div>` : "";
-      return pslide(`${head}<div style="display:flex;gap:5%;flex:1;"><div style="flex:1;">${body}</div>${img}</div>`, s.bg, s.fg, false);
+      const imgLeft = sl.img && (idx % 2 === 1);
+      return pslide(`${head}<div style="display:flex;gap:5%;flex:1;align-items:center;flex-direction:${imgLeft ? "row-reverse" : "row"};"><div style="flex:1;">${body}</div>${img}</div>`, s.bg, s.fg, false);
     })).join("");
   const w = window.open("", "_blank");
   if (!w) { alert("Allow popups to export the PDF."); return; }
