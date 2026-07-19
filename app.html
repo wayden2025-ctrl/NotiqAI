@@ -138,6 +138,33 @@
   .slide li { font-size: clamp(13px, 1.5vw, 17px); line-height: 1.5; padding: 5px 0 5px 22px; position: relative; }
   .slide li::before { content: "•"; position: absolute; left: 2px; font-weight: 800; }
   .slide .sl-num { position: absolute; bottom: 14px; right: 20px; font-size: 12px; opacity: .5; font-weight: 700; }
+  .slide .sl-eyebrow { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: .75; margin-bottom: 12px; font-weight: 700; }
+  .slide .sl-big { font-size: clamp(28px, 4vw, 48px); font-weight: 800; line-height: 1.08; }
+  .slide.section-slide { justify-content: center; align-items: center; text-align: center; }
+  .slide.stat-slide { justify-content: center; align-items: center; text-align: center; }
+  .sl-stat { font-size: clamp(48px, 8vw, 90px); font-weight: 800; line-height: 1; }
+  .sl-stat-h { font-size: 20px; margin-top: 8px; }
+  .sl-cap { font-size: 16px; opacity: .85; margin-top: 8px; max-width: 70%; }
+  .sl-bullets { list-style: none; margin: 0; }
+  .sl-bullets li { display: flex; gap: 10px; font-size: clamp(13px, 1.55vw, 17px); line-height: 1.5; padding: 7px 0; align-items: flex-start; }
+  .sl-bullets .sl-dot { flex: none; font-weight: 800; }
+  .tl { position: relative; }
+  .tl-item { display: flex; gap: 12px; padding: 0 0 12px 0; position: relative; }
+  .tl-item::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: -6px; width: 2px; background: color-mix(in srgb, var(--ln, #888) 40%, transparent); }
+  .tl-item:last-child::before { display: none; }
+  .tl-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 3px; z-index: 1; }
+  .tl-item b { font-size: clamp(13px, 1.5vw, 16px); }
+  .tl-w { font-size: clamp(12px, 1.4vw, 15px); opacity: .9; line-height: 1.45; }
+  .st-grid { display: flex; flex-direction: column; gap: 12px; }
+  .st-item { display: flex; gap: 12px; align-items: flex-start; }
+  .st-num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+  .st-item b { font-size: clamp(13px, 1.5vw, 16px); }
+  .st-d { font-size: clamp(12px, 1.4vw, 15px); opacity: .9; line-height: 1.45; }
+  .cmp { display: flex; gap: 16px; }
+  .cmp-col { flex: 1; border: 1.5px solid; border-radius: 12px; padding: 14px 16px; }
+  .cmp-col ul { list-style: none; margin: 8px 0 0; }
+  .cmp-col li { font-size: clamp(12px, 1.4vw, 15px); padding: 4px 0 4px 16px; position: relative; line-height: 1.45; }
+  .cmp-col li::before { content: "•"; position: absolute; left: 2px; }
   .slide.with-img { flex-direction: row; gap: 26px; align-items: stretch; }
   .slide.with-img .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
   .sl-imgbox { flex: 0 0 40%; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -2434,7 +2461,16 @@ async function slGenerate() {
   setStatus("sl-status", `Building a ${n}-slide deck...`, false, true);
   try {
     const raw = await groq([
-      { role: "system", content: `You are Notiq AI, an expert at turning study material into clean, uncluttered presentation slides. Respond ONLY with valid JSON: {"title":"deck title","subtitle":"one-line subtitle","slides":[{"heading":"slide title","bullets":["short punchy point","..."],"notes":"speaker notes${wantNotes ? "" : " (leave empty string)"}","image":true or false}]}. Rules: make EXACTLY ${n} content slides (the title slide is separate, do not count it). 3-5 bullets per slide, each under 90 characters, no full paragraphs. Group the material into logical sections. Bullets are highlights, not sentences from the notes. Set "image": true on slides where a photo, chart or diagram would genuinely help (roughly a third of slides); false otherwise.${wantNotes ? " Write 1-2 sentences of speaker notes per slide." : " Leave every notes field as an empty string."}` },
+      { role: "system", content: `You are Notiq AI, an expert presentation designer. Build a rich, varied slide deck from the student's material. Respond ONLY with valid JSON:
+{"title":"deck title","subtitle":"one-line subtitle","date":"a short context line for the title slide — the era/topic/subject or a date, or empty string","slides":[ ...slide objects... ]}
+Choose each slide's "type" to FIT its content — do NOT make every slide the same:
+- {"type":"bullets","heading":"...","bullets":["**Lead term** — a full, genuinely informative sentence of 15-30 words that actually teaches the point"],"image":false,"notes":"..."}  (default; use for most slides)
+- {"type":"timeline","heading":"...","events":[{"when":"year or label","what":"1-2 sentence description of what happened and why it mattered"}]}  (use when the content is chronological)
+- {"type":"steps","heading":"...","steps":[{"title":"step name","detail":"what happens and why, 1-2 sentences"}]}  (use for a process or sequence)
+- {"type":"compare","heading":"...","left":{"title":"...","points":["detailed point"]},"right":{"title":"...","points":["detailed point"]}}  (use to contrast two things)
+- {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"1-2 sentences explaining it"}  (use to spotlight one striking fact)
+- {"type":"section","heading":"section title"}  (a divider slide before each major new topic)
+Rules: make EXACTLY ${n} content slides total (title slide is separate). Bullets must be DETAILED and high-quality — a bold **lead term** then a real explanatory sentence — never 3-word fragments. Timeline/steps entries must have real substance. Put a "section" divider before each major new topic. Use at least 2 non-bullet slide types if the material supports it. Set "image":true only where a visual genuinely helps.${wantNotes ? " Write 1-2 sentences of speaker notes per slide." : " Leave every notes field an empty string."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
@@ -2453,29 +2489,50 @@ async function slGenerate() {
   $("sl-go").disabled = false;
 }
 
+function slBold(t, accent) { return esc(String(t || "")).replace(/\*\*(.+?)\*\*/g, '<b style="color:' + accent + '">$1</b>'); }
+function slNotesHtml(sl, wantNotes) { return (wantNotes && sl.notes) ? `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes)}</div>` : ""; }
+function slImgSlot(sl, i, s) {
+  if (sl.img) return `<div class="sl-imgbox" onclick="slAddImage(${i})" title="Click to change"><img src="${sl.img}"><span class="sl-imgx" onclick="event.stopPropagation(); slRemoveImage(${i})">&#10005;</span></div>`;
+  if (sl.image) return `<div class="sl-imgbox empty" onclick="slAddImage(${i})" style="border-color:${s.accent}; color:${s.accent};"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l6-6 4 4 3-3 3 3"/></svg><b>Add an image</b></div>`;
+  return "";
+}
+function slSlideHtml(sl, i, s, wantNotes) {
+  const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
+  const type = sl.type || "bullets";
+  if (type === "section")
+    return `<div class="slide section-slide" style="background:${s.titleBg}; color:${s.titleFg};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
+  if (type === "stat")
+    return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg};">
+        <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
+        ${sl.heading ? `<h3 class="sl-stat-h">${esc(sl.heading)}</h3>` : ""}
+        ${sl.caption ? `<p class="sl-cap">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
+  const heading = `<h2 style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
+  let body = "";
+  if (type === "timeline") {
+    body = `<div class="tl" style="--ln:${s.accent};">` + (sl.events || []).map(e =>
+      `<div class="tl-item"><span class="tl-dot" style="background:${s.accent};"></span><div><b style="color:${s.accent};">${esc(e.when || "")}</b><div class="tl-w">${esc(e.what || "")}</div></div></div>`).join("") + `</div>`;
+  } else if (type === "steps") {
+    body = `<div class="st-grid">` + (sl.steps || []).map((st, k) =>
+      `<div class="st-item"><span class="st-num" style="background:${s.accent}; color:${s.bg};">${k + 1}</span><div><b>${esc(st.title || "")}</b><div class="st-d">${esc(st.detail || "")}</div></div></div>`).join("") + `</div>`;
+  } else if (type === "compare") {
+    const col = c => `<div class="cmp-col" style="border-color:${s.accent}55;"><b style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map(p => `<li>${slBold(p, s.accent)}</li>`).join("")}</ul></div>`;
+    body = `<div class="cmp">${col(sl.left)}${col(sl.right)}</div>`;
+  } else {
+    body = `<ul class="sl-bullets">${(sl.bullets || []).map(b => `<li style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span>${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
+  }
+  const slot = slImgSlot(sl, i, s);
+  return `<div class="slide${slot ? " with-img" : ""}" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+}
 function slRender() {
   const s = SL_STYLES[slStyle];
   const wantNotes = $("sl-notes").value === "yes";
   $("sl-count").textContent = `${slDeck.slides.length + 1} slides · ${SL_STYLES[slStyle].name} style`;
   let html = `<div class="slide title-slide" style="background:${s.titleBg}; color:${s.titleFg};">
-      <h2>${esc(slDeck.title || "Untitled")}</h2>
+      ${slDeck.date ? `<div class="sl-eyebrow">${esc(slDeck.date)}</div>` : ""}
+      <h2 class="sl-big">${esc(slDeck.title || "Untitled")}</h2>
       ${slDeck.subtitle ? `<div class="sub">${esc(slDeck.subtitle)}</div>` : ""}
     </div>`;
-  slDeck.slides.forEach((sl, i) => {
-    const hasSlot = sl.image || sl.img;
-    const bullets = `<ul>${(sl.bullets || []).map(b => `<li style="color:${s.fg}">${esc(b)}</li>`).join("")}</ul>`;
-    const slot = hasSlot ? (sl.img
-        ? `<div class="sl-imgbox" onclick="slAddImage(${i})" title="Click to change"><img src="${sl.img}"><span class="sl-imgx" onclick="event.stopPropagation(); slRemoveImage(${i})">&#10005;</span></div>`
-        : `<div class="sl-imgbox empty" onclick="slAddImage(${i})" style="border-color:${s.accent}; color:${s.accent};">
-             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l6-6 4 4 3-3 3 3"/></svg>
-             <b>Add an image</b></div>`) : "";
-    html += `<div class="slide${hasSlot ? " with-img" : ""}" style="background:${s.bg}; color:${s.fg};">
-        <div class="sl-body"><h2 style="color:${s.accent};">${esc(sl.heading)}</h2>${bullets}</div>
-        ${slot}
-        <span class="sl-num" style="color:${s.fg};">${i + 2}</span>
-      </div>`;
-    if (wantNotes && sl.notes) html += `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes)}</div>`;
-  });
+  slDeck.slides.forEach((sl, i) => { html += slSlideHtml(sl, i, s, wantNotes); });
   $("sl-deck").innerHTML = html;
 }
 
@@ -2507,16 +2564,38 @@ async function slExportPptx() {
   const p = new PptxGenJS();
   p.defineLayout({ name: "N", width: 13.33, height: 7.5 });
   p.layout = "N";
+  const strip = v => String(v || "").replace(/\*\*/g, "");
   // title slide
   let t = p.addSlide(); t.background = { color: hex(s.titleBg) };
-  t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.7, w: 11.7, h: 1.6, fontSize: 40, bold: true, color: hex(s.titleFg), fontFace: "Arial" });
-  if (slDeck.subtitle) t.addText(slDeck.subtitle, { x: 0.8, y: 4.3, w: 11.7, h: 0.8, fontSize: 20, color: hex(s.titleFg), fontFace: "Arial" });
+  if (slDeck.date) t.addText(strip(slDeck.date).toUpperCase(), { x: 0.8, y: 2.1, w: 11.7, h: 0.5, fontSize: 15, color: hex(s.titleFg), charSpacing: 3, fontFace: "Arial" });
+  t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.6, w: 11.7, h: 1.7, fontSize: 44, bold: true, color: hex(s.titleFg), fontFace: "Arial" });
+  if (slDeck.subtitle) t.addText(slDeck.subtitle, { x: 0.8, y: 4.4, w: 11.7, h: 0.8, fontSize: 20, color: hex(s.titleFg), fontFace: "Arial" });
   slDeck.slides.forEach(sl => {
-    const sd = p.addSlide(); sd.background = { color: hex(s.bg) };
-    sd.addText(sl.heading, { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
-    const wide = !!(sl.img);
-    sd.addText((sl.bullets || []).map(b => ({ text: b, options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 18, paraSpaceAfter: 8 } })),
-      { x: 0.9, y: 1.7, w: wide ? 6.6 : 11.5, h: 5, fontFace: "Arial", valign: "top" });
+    const type = sl.type || "bullets";
+    const sd = p.addSlide();
+    if (type === "section") {
+      sd.background = { color: hex(s.titleBg) };
+      sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 38, bold: true, align: "center", color: hex(s.titleFg), fontFace: "Arial" });
+      if (sl.notes) sd.addNotes(sl.notes);
+      return;
+    }
+    sd.background = { color: hex(s.bg) };
+    if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
+    const wide = !!sl.img, W = wide ? 6.6 : 11.7;
+    if (type === "stat") {
+      sd.addText(strip(sl.big), { x: 0.7, y: 1.9, w: 12, h: 2, fontSize: 64, bold: true, align: "center", color: hex(s.accent), fontFace: "Arial" });
+      if (sl.caption) sd.addText(strip(sl.caption), { x: 1.6, y: 4.1, w: 10.1, h: 2, fontSize: 20, align: "center", color: hex(s.fg), fontFace: "Arial" });
+    } else if (type === "timeline") {
+      sd.addText((sl.events || []).map(e => ({ text: strip(e.when) + " — " + strip(e.what), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+    } else if (type === "steps") {
+      sd.addText((sl.steps || []).map((st, k) => ({ text: (k + 1) + ".  " + strip(st.title) + " — " + strip(st.detail), options: { color: hex(s.fg), fontSize: 16, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+    } else if (type === "compare") {
+      const colTx = c => [{ text: strip((c && c.title) || ""), options: { bold: true, color: hex(s.accent), fontSize: 20, paraSpaceAfter: 10 } }].concat(((c && c.points) || []).map(pt => ({ text: strip(pt), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 15, paraSpaceAfter: 8 } })));
+      sd.addText(colTx(sl.left), { x: 0.7, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
+      sd.addText(colTx(sl.right), { x: 6.9, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
+    } else {
+      sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: 0.9, y: 1.7, w: W, h: 5, valign: "top", fontFace: "Arial" });
+    }
     if (sl.img) { try { sd.addImage({ data: sl.img, x: 7.9, y: 1.7, w: 4.7, h: 4.7, sizing: { type: "contain", w: 4.7, h: 4.7 } }); } catch (e) {} }
     if (sl.notes) sd.addNotes(sl.notes);
   });
@@ -2533,15 +2612,30 @@ async function slExportGoogle() {
 function slExportPdf() {
   if (!slDeck) return;
   const s = SL_STYLES[slStyle];
-  const slidesHtml = [`<div class="pslide" style="background:${s.titleBg};color:${s.titleFg};justify-content:center;">
-      <h1 style="font-size:40px;">${esc(slDeck.title || "")}</h1>${slDeck.subtitle ? `<p style="opacity:.85;font-size:20px;">${esc(slDeck.subtitle)}</p>` : ""}</div>`]
-    .concat(slDeck.slides.map(sl => `<div class="pslide" style="background:${s.bg};color:${s.fg};">
-        <h2 style="color:${s.accent};font-size:28px;margin-bottom:14px;">${esc(sl.heading)}</h2>
-        <div style="display:flex; gap:5%; flex:1;">
-          <ul style="list-style:none; flex:1;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:6px 0 6px 22px;position:relative;"><span style="position:absolute;left:0;color:${s.accent};">&bull;</span>${esc(b)}</li>`).join("")}</ul>
-          ${sl.img ? `<div style="width:42%; display:flex; align-items:center; justify-content:center;"><img src="${sl.img}" style="max-width:100%; max-height:60vh; border-radius:8px;"></div>` : ""}
-        </div>
-      </div>`)).join("");
+  const bd = (t) => esc(String(t || "")).replace(/\*\*(.+?)\*\*/g, "<b style=\"color:" + s.accent + "\">$1</b>");
+  const pslide = (inner, bg, fg, center) => `<div class="pslide" style="background:${bg};color:${fg};${center ? "justify-content:center;text-align:center;" : ""}">${inner}</div>`;
+  const slidesHtml = [pslide(
+      `${slDeck.date ? `<div style="letter-spacing:3px;font-size:14px;opacity:.75;margin-bottom:12px;">${esc(String(slDeck.date).toUpperCase())}</div>` : ""}<h1 style="font-size:44px;">${esc(slDeck.title || "")}</h1>${slDeck.subtitle ? `<p style="opacity:.85;font-size:20px;">${esc(slDeck.subtitle)}</p>` : ""}`,
+      s.titleBg, s.titleFg, true)]
+    .concat(slDeck.slides.map(sl => {
+      const type = sl.type || "bullets";
+      if (type === "section") return pslide(`<h1 style="font-size:40px;">${esc(sl.heading || "")}</h1>`, s.titleBg, s.titleFg, true);
+      if (type === "stat") return pslide(`<div style="font-size:72px;font-weight:800;color:${s.accent};">${esc(sl.big || "")}</div>${sl.heading ? `<h3 style="font-size:22px;">${esc(sl.heading)}</h3>` : ""}${sl.caption ? `<p style="font-size:20px;opacity:.85;">${esc(sl.caption)}</p>` : ""}`, s.bg, s.fg, true);
+      const head = `<h2 style="color:${s.accent};font-size:28px;margin-bottom:16px;">${esc(sl.heading || "")}</h2>`;
+      let body = "";
+      if (type === "timeline") {
+        body = (sl.events || []).map(e => `<div style="border-left:3px solid ${s.accent};padding:0 0 14px 16px;margin-left:6px;"><b style="color:${s.accent};font-size:17px;">${esc(e.when || "")}</b><div style="font-size:16px;">${esc(e.what || "")}</div></div>`).join("");
+      } else if (type === "steps") {
+        body = (sl.steps || []).map((st, k) => `<div style="display:flex;gap:12px;margin-bottom:12px;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:${s.accent};color:${s.bg};display:flex;align-items:center;justify-content:center;font-weight:800;">${k + 1}</span><div><b style="font-size:17px;">${esc(st.title || "")}</b><div style="font-size:15px;opacity:.9;">${esc(st.detail || "")}</div></div></div>`).join("");
+      } else if (type === "compare") {
+        const col = c => `<div style="flex:1;border:1.5px solid ${s.accent}55;border-radius:10px;padding:16px;"><b style="color:${s.accent};font-size:18px;">${esc((c && c.title) || "")}</b><ul style="list-style:none;padding:0;margin:8px 0 0;">${((c && c.points) || []).map(p => `<li style="font-size:15px;padding:5px 0 5px 16px;position:relative;"><span style="position:absolute;left:0;color:${s.accent};">&bull;</span>${bd(p)}</li>`).join("")}</ul></div>`;
+        body = `<div style="display:flex;gap:20px;">${col(sl.left)}${col(sl.right)}</div>`;
+      } else {
+        body = `<ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:7px 0 7px 24px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:${s.accent};">&#9656;</span>${bd(b)}</li>`).join("")}</ul>`;
+      }
+      const img = sl.img ? `<div style="width:40%;display:flex;align-items:center;justify-content:center;"><img src="${sl.img}" style="max-width:100%;max-height:62vh;border-radius:8px;"></div>` : "";
+      return pslide(`${head}<div style="display:flex;gap:5%;flex:1;"><div style="flex:1;">${body}</div>${img}</div>`, s.bg, s.fg, false);
+    })).join("");
   const w = window.open("", "_blank");
   if (!w) { alert("Allow popups to export the PDF."); return; }
   w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(slDeck.title || "Deck")}</title><style>
