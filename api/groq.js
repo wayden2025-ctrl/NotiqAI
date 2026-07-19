@@ -147,19 +147,25 @@ module.exports = async (req, res) => {
       if (r.status === 429) {
         r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant" });
       }
-      // second engine: Google Gemini (free tier, separate allowance from Groq)
-      if (r.status === 429 && process.env.GEMINI_API_KEY) {
+      // Extra free engines, each with its own separate quota. Tried only when Groq is
+      // maxed, and only if the matching env var is set — so adding a key is all it takes.
+      // OpenAI-compatible endpoints, so the same request body just works.
+      const backups = [
+        { on: process.env.GEMINI_API_KEY, url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", key: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || "gemini-2.0-flash" },
+        { on: process.env.CEREBRAS_API_KEY, url: "https://api.cerebras.ai/v1/chat/completions", key: process.env.CEREBRAS_API_KEY, model: process.env.CEREBRAS_MODEL || "llama-3.3-70b" },
+        { on: process.env.OPENROUTER_API_KEY, url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free" },
+      ];
+      for (const b of backups) {
+        if (r.status !== 429 || !b.on) continue;
         try {
-          const g = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+          const alt = await fetch(b.url, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " + process.env.GEMINI_API_KEY,
-            },
-            body: JSON.stringify({ ...body, model: process.env.GEMINI_MODEL || "gemini-2.0-flash" }),
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + b.key },
+            body: JSON.stringify({ ...body, model: b.model }),
           });
-          if (g.ok) { res.status(200).json(await g.json()); return; }
-        } catch (e) { /* fall through to the friendly message */ }
+          if (alt.ok) { res.status(200).json(await alt.json()); return; }
+          r = alt;   // carry the status so we keep trying the next backup
+        } catch (e) { /* try the next engine */ }
       }
       if (r.status === 429) {
         res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
