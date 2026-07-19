@@ -5,6 +5,8 @@
 
 const WEB_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const ANDROID_UA = "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip";
+// NOTE: this is YouTube's OWN PUBLIC InnerTube web key (baked into youtube.com
+// for every visitor) — NOT a private credential. Safe to be here.
 const KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
 
 const CLIENTS = [

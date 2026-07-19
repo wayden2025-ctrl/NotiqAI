@@ -175,6 +175,9 @@
     <p style="text-align:center; margin-top:18px; font-size:13.5px;">
       Just want a look first? <a href="try.html" style="color:#1e3a6e; font-weight:800; text-decoration:none;">Try it once — no account needed &rarr;</a>
     </p>
+    <p style="text-align:center; margin-top:16px; font-size:11.5px; color:var(--muted); line-height:1.5;">
+      By continuing you agree to our <a href="terms.html" style="color:var(--coral); font-weight:700;">Terms</a> and <a href="privacy.html" style="color:var(--coral); font-weight:700;">Privacy Policy</a>.
+    </p>
     <a class="back" href="index.html">&larr; Back to home</a>
   </div>
 
@@ -231,8 +234,12 @@
     else showMsg('Reset link sent to ' + email + ' — check your inbox (and spam folder).', 'ok');
   }
 
+  // gentle client-side throttle: slows a human hammering the button.
+  // (Real brute-force protection is Supabase's server-side auth rate limiting + CAPTCHA.)
+  let loginTries = 0, lockUntil = 0;
   document.getElementById('auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (Date.now() < lockUntil) { showMsg('Too many attempts — wait a moment and try again.', 'error'); return; }
     const btn = document.getElementById('submit-btn');
     const email = document.getElementById('f-email').value.trim();
     const password = document.getElementById('f-password').value;
@@ -255,11 +262,14 @@
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) {
+          loginTries++;
+          if (loginTries >= 5) { lockUntil = Date.now() + 20000; loginTries = 0; }
           // No account yet? Nudge them to create one.
           if (/invalid/i.test(error.message)) {
-            showMsg("We couldn't find that account. Switch to 'Create account' to start free.", 'error');
+            showMsg("Wrong email or password. Or switch to 'Create account' to start free.", 'error');
           } else throw error;
         } else {
+          loginTries = 0;
           location.href = 'support.html';   // shows the "no funding, students helping students" note once, then goes to the app
         }
       }
