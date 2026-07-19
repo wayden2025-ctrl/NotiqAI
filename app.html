@@ -1449,6 +1449,7 @@
           <span style="flex:1;"></span>
           <button class="btn-primary" onclick="slExportPptx()" style="padding:11px 22px; font-size:14px;">Export PowerPoint</button>
           <button class="btn-ghost" onclick="slExportPdf()">Export PDF</button>
+          <button class="btn-ghost" onclick="slExportGoogle()">Google Slides</button>
           <button class="btn-ghost" onclick="showView('slides'); $('sl-out').classList.add('hidden'); $('sl-setup').classList.remove('hidden');">New deck</button>
         </div>
         <div id="sl-deck"></div>
@@ -2521,6 +2522,12 @@ async function slExportPptx() {
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
   p.writeFile({ fileName: name + ".pptx" });
+}
+
+async function slExportGoogle() {
+  await slExportPptx();   // Google Slides opens .pptx natively — download it, then import
+  showLimitToast('<b>Deck downloaded.</b> In the Google Slides tab that just opened: <b>File &rarr; Import slides &rarr; Upload</b> and pick the file that just downloaded.');
+  setTimeout(() => window.open("https://slides.google.com/create", "_blank"), 400);
 }
 
 function slExportPdf() {
