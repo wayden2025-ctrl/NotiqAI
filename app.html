@@ -138,6 +138,12 @@
   .slide li { font-size: clamp(13px, 1.5vw, 17px); line-height: 1.5; padding: 5px 0 5px 22px; position: relative; }
   .slide li::before { content: "•"; position: absolute; left: 2px; font-weight: 800; }
   .slide .sl-num { position: absolute; bottom: 14px; right: 20px; font-size: 12px; opacity: .5; font-weight: 700; }
+  .slide.with-img { flex-direction: row; gap: 26px; align-items: stretch; }
+  .slide.with-img .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .sl-imgbox { flex: 0 0 40%; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .sl-imgbox img { width: 100%; height: 100%; object-fit: cover; }
+  .sl-imgbox.empty { flex-direction: column; gap: 8px; border: 2px dashed; background: rgba(255,255,255,.35); font-size: 13px; }
+  .sl-imgx { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
   .sl-notes { font-size: 13px; color: var(--muted); background: color-mix(in srgb, var(--coral) 5%, transparent); border-radius: 0 0 12px 12px; padding: 10px 16px; margin: -14px 0 16px; line-height: 1.55; }
   .sl-notes b { color: var(--coral); }
 
@@ -2427,7 +2433,7 @@ async function slGenerate() {
   setStatus("sl-status", `Building a ${n}-slide deck...`, false, true);
   try {
     const raw = await groq([
-      { role: "system", content: `You are Notiq AI, an expert at turning study material into clean, uncluttered presentation slides. Respond ONLY with valid JSON: {"title":"deck title","subtitle":"one-line subtitle","slides":[{"heading":"slide title","bullets":["short punchy point","..."],"notes":"speaker notes${wantNotes ? "" : " (leave empty string)"}"}]}. Rules: make EXACTLY ${n} content slides (the title slide is separate, do not count it). 3-5 bullets per slide, each under 90 characters, no full paragraphs. Group the material into logical sections. Bullets are highlights, not sentences from the notes.${wantNotes ? " Write 1-2 sentences of speaker notes per slide." : " Leave every notes field as an empty string."}` },
+      { role: "system", content: `You are Notiq AI, an expert at turning study material into clean, uncluttered presentation slides. Respond ONLY with valid JSON: {"title":"deck title","subtitle":"one-line subtitle","slides":[{"heading":"slide title","bullets":["short punchy point","..."],"notes":"speaker notes${wantNotes ? "" : " (leave empty string)"}","image":true or false}]}. Rules: make EXACTLY ${n} content slides (the title slide is separate, do not count it). 3-5 bullets per slide, each under 90 characters, no full paragraphs. Group the material into logical sections. Bullets are highlights, not sentences from the notes. Set "image": true on slides where a photo, chart or diagram would genuinely help (roughly a third of slides); false otherwise.${wantNotes ? " Write 1-2 sentences of speaker notes per slide." : " Leave every notes field as an empty string."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
@@ -2455,19 +2461,35 @@ function slRender() {
       ${slDeck.subtitle ? `<div class="sub">${esc(slDeck.subtitle)}</div>` : ""}
     </div>`;
   slDeck.slides.forEach((sl, i) => {
-    html += `<div class="slide" style="background:${s.bg}; color:${s.fg};">
-        <h2 style="color:${s.accent};">${esc(sl.heading)}</h2>
-        <ul style="--b:${s.accent};">${(sl.bullets || []).map(b => `<li style="--b:${s.accent}">${esc(b)}</li>`).join("")}</ul>
+    const hasSlot = sl.image || sl.img;
+    const bullets = `<ul>${(sl.bullets || []).map(b => `<li style="color:${s.fg}">${esc(b)}</li>`).join("")}</ul>`;
+    const slot = hasSlot ? (sl.img
+        ? `<div class="sl-imgbox" onclick="slAddImage(${i})" title="Click to change"><img src="${sl.img}"><span class="sl-imgx" onclick="event.stopPropagation(); slRemoveImage(${i})">&#10005;</span></div>`
+        : `<div class="sl-imgbox empty" onclick="slAddImage(${i})" style="border-color:${s.accent}; color:${s.accent};">
+             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l6-6 4 4 3-3 3 3"/></svg>
+             <b>Add an image</b></div>`) : "";
+    html += `<div class="slide${hasSlot ? " with-img" : ""}" style="background:${s.bg}; color:${s.fg};">
+        <div class="sl-body"><h2 style="color:${s.accent};">${esc(sl.heading)}</h2>${bullets}</div>
+        ${slot}
         <span class="sl-num" style="color:${s.fg};">${i + 2}</span>
       </div>`;
     if (wantNotes && sl.notes) html += `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes)}</div>`;
   });
-  // recolor bullet dots per style
-  html = html.replace(/<li style="--b:([^"]+)"/g, '<li style="color:$1"');
   $("sl-deck").innerHTML = html;
-  // bullets inherit text color, dots use accent — fix via inline
-  document.querySelectorAll("#sl-deck .slide li").forEach(li => { li.style.color = SL_STYLES[slStyle].fg; });
 }
+
+function slAddImage(i) {
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "image/*";
+  inp.onchange = async () => {
+    const f = inp.files[0];
+    if (!f) return;
+    try { slDeck.slides[i].img = await fileToScaledDataUrl(f, 1200); slDeck.slides[i].image = true; slRender(); }
+    catch (e) { alert("Couldn't load that image."); }
+  };
+  inp.click();
+}
+function slRemoveImage(i) { slDeck.slides[i].img = null; slRender(); }
 
 async function slExportPptx() {
   if (!slDeck) return;
@@ -2491,8 +2513,10 @@ async function slExportPptx() {
   slDeck.slides.forEach(sl => {
     const sd = p.addSlide(); sd.background = { color: hex(s.bg) };
     sd.addText(sl.heading, { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
+    const wide = !!(sl.img);
     sd.addText((sl.bullets || []).map(b => ({ text: b, options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 18, paraSpaceAfter: 8 } })),
-      { x: 0.9, y: 1.7, w: 11.5, h: 5, fontFace: "Arial", valign: "top" });
+      { x: 0.9, y: 1.7, w: wide ? 6.6 : 11.5, h: 5, fontFace: "Arial", valign: "top" });
+    if (sl.img) { try { sd.addImage({ data: sl.img, x: 7.9, y: 1.7, w: 4.7, h: 4.7, sizing: { type: "contain", w: 4.7, h: 4.7 } }); } catch (e) {} }
     if (sl.notes) sd.addNotes(sl.notes);
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
@@ -2506,7 +2530,10 @@ function slExportPdf() {
       <h1 style="font-size:40px;">${esc(slDeck.title || "")}</h1>${slDeck.subtitle ? `<p style="opacity:.85;font-size:20px;">${esc(slDeck.subtitle)}</p>` : ""}</div>`]
     .concat(slDeck.slides.map(sl => `<div class="pslide" style="background:${s.bg};color:${s.fg};">
         <h2 style="color:${s.accent};font-size:28px;margin-bottom:14px;">${esc(sl.heading)}</h2>
-        <ul style="list-style:none;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:6px 0 6px 22px;position:relative;"><span style="position:absolute;left:0;color:${s.accent};">&bull;</span>${esc(b)}</li>`).join("")}</ul>
+        <div style="display:flex; gap:5%; flex:1;">
+          <ul style="list-style:none; flex:1;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:6px 0 6px 22px;position:relative;"><span style="position:absolute;left:0;color:${s.accent};">&bull;</span>${esc(b)}</li>`).join("")}</ul>
+          ${sl.img ? `<div style="width:42%; display:flex; align-items:center; justify-content:center;"><img src="${sl.img}" style="max-width:100%; max-height:60vh; border-radius:8px;"></div>` : ""}
+        </div>
       </div>`)).join("");
   const w = window.open("", "_blank");
   if (!w) { alert("Allow popups to export the PDF."); return; }
