@@ -145,11 +145,23 @@
     background: radial-gradient(circle, color-mix(in srgb, currentColor 15%, transparent), transparent 66%); }
   .title-slide::after { left: -70px; bottom: -90px; width: 320px; height: 200px; transform: rotate(-12deg); border-radius: 44px;
     background: color-mix(in srgb, currentColor 9%, transparent); }
-  /* section divider: large offset ring + small tilted tile */
-  .section-slide::before { left: 5%; top: 50%; width: 360px; height: 360px; margin-top: -180px; border-radius: 50%;
+  /* section dividers cycle through several looks so consecutive ones differ */
+  .sl-sec0::before { left: 5%; top: 50%; width: 360px; height: 360px; margin-top: -180px; border-radius: 50%;
     border: 2px solid color-mix(in srgb, currentColor 18%, transparent); }
-  .section-slide::after { right: 8%; bottom: 13%; width: 130px; height: 130px; border-radius: 28px; transform: rotate(18deg);
+  .sl-sec0::after { right: 8%; bottom: 13%; width: 130px; height: 130px; border-radius: 28px; transform: rotate(18deg);
     background: color-mix(in srgb, currentColor 11%, transparent); }
+  .sl-sec1::before { right: -90px; bottom: -110px; width: 380px; height: 380px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, currentColor 13%, transparent), transparent 70%); }
+  .sl-sec1::after { left: 7%; top: 16%; width: 72px; height: 72px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .sl-sec2::before { left: -70px; top: -70px; width: 300px; height: 300px; border-radius: 42px; transform: rotate(-14deg);
+    background: color-mix(in srgb, currentColor 9%, transparent); }
+  .sl-sec2::after { right: 9%; top: 50%; width: 14px; height: 200px; margin-top: -100px; border-radius: 8px;
+    background: color-mix(in srgb, currentColor 20%, transparent); }
+  .sl-sec3::before { right: 8%; top: 14%; width: 150px; height: 150px; border-radius: 34px; transform: rotate(16deg);
+    border: 2px solid color-mix(in srgb, currentColor 20%, transparent); }
+  .sl-sec3::after { left: -80px; bottom: -80px; width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, currentColor 13%, transparent), transparent 72%); }
   /* stat slide: concentric rings behind the number */
   .stat-slide::before { left: 50%; top: 50%; width: 440px; height: 440px; margin: -220px 0 0 -220px; border-radius: 50%;
     border: 2px solid color-mix(in srgb, var(--acc) 16%, transparent);
@@ -2648,7 +2660,7 @@ function slSlideHtml(sl, i, s, wantNotes) {
   const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
   const type = sl.type || "bullets";
   if (type === "section")
-    return `<div class="slide section-slide" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
+    return `<div class="slide section-slide sl-sec${i % 4}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "stat")
     return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
         <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
