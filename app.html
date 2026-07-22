@@ -126,17 +126,36 @@
   .sl-swatch { height: 40px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; padding: 0 10px; font-weight: 800; font-size: 13px; }
   .sl-style b { font-size: 13px; }
   .slide {
-    aspect-ratio: 16 / 9; border-radius: 12px; padding: 34px 40px; margin-bottom: 16px;
+    aspect-ratio: 16 / 9; border-radius: 12px; padding: 42px 54px; margin-bottom: 16px;
     box-shadow: 0 16px 34px -20px rgba(60,40,30,.4); overflow: hidden; position: relative;
     display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,.06);
   }
   .slide.title-slide { justify-content: center; }
-  .slide h2 { font-size: clamp(20px, 2.4vw, 30px); font-weight: 800; margin-bottom: 14px; line-height: 1.15; }
-  .slide.title-slide h2 { font-size: clamp(28px, 3.6vw, 46px); }
-  .slide .sub { font-size: 15px; opacity: .8; margin-top: 4px; }
+  .slide h2 { font-size: clamp(23px, 2.9vw, 36px); font-weight: 800; margin-bottom: 20px; line-height: 1.12; }
+  .slide.title-slide h2 { font-size: clamp(30px, 3.8vw, 50px); }
+  .slide .sub { font-size: 16px; opacity: .8; margin-top: 6px; }
   .slide ul { list-style: none; margin: 0; }
-  .slide li { font-size: clamp(13px, 1.5vw, 17px); line-height: 1.5; padding: 5px 0 5px 22px; position: relative; }
+  .slide li { font-size: clamp(14px, 1.6vw, 18px); line-height: 1.45; padding: 6px 0 6px 22px; position: relative; }
   .slide li::before { content: "•"; position: absolute; left: 2px; font-weight: 800; }
+  /* takeaways summary slide */
+  .tk-slide .sl-body { justify-content: center; }
+  .tk-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .tk-item { display: flex; gap: 14px; align-items: center; padding: 11px 0; font-size: clamp(15px, 1.9vw, 22px); font-weight: 700; line-height: 1.35; }
+  .tk-check { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; }
+  /* present mode */
+  #sl-present { position: fixed; inset: 0; z-index: 6000; background: #0a0c10; display: flex; align-items: center; justify-content: center; }
+  #sl-present .sl-stage { width: 1280px; height: 720px; transform-origin: center; }
+  #sl-present .slide { width: 1280px; height: 720px; aspect-ratio: auto; margin: 0; border-radius: 0; box-shadow: none; }
+  #sl-present [data-reveal] { opacity: 0; transform: translateY(8px); transition: opacity .34s ease, transform .34s ease; }
+  #sl-present [data-reveal].shown { opacity: 1; transform: none; }
+  .sl-pbar { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 6010; display: flex; gap: 10px; align-items: center;
+    background: rgba(20,22,30,.86); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: 8px 10px; }
+  .sl-pbar button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .sl-pbar button:hover { background: rgba(255,255,255,.24); }
+  .sl-pbar .sl-pnum { color: #cfd3dc; font-size: 13px; font-weight: 700; min-width: 54px; text-align: center; }
+  .sl-pnote { position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%); z-index: 6010; max-width: 62vw;
+    background: rgba(20,22,30,.9); color: #e8eaf0; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 10px 16px; font-size: 14px; line-height: 1.5; display: none; }
+  .sl-pnote.on { display: block; }
   .slide .sl-num { position: absolute; bottom: 14px; right: 20px; font-size: 12px; opacity: .5; font-weight: 700; }
   .slide .sl-eyebrow { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: .75; margin-bottom: 12px; font-weight: 700; }
   .slide .sl-big { font-size: clamp(28px, 4vw, 48px); font-weight: 800; line-height: 1.08; }
@@ -146,7 +165,7 @@
   .sl-stat-h { font-size: 20px; margin-top: 8px; }
   .sl-cap { font-size: 16px; opacity: .85; margin-top: 8px; max-width: 70%; }
   .sl-bullets { list-style: none; margin: 0; }
-  .sl-bullets li { display: flex; gap: 10px; font-size: clamp(13px, 1.55vw, 17px); line-height: 1.5; padding: 7px 0; align-items: flex-start; }
+  .sl-bullets li { display: flex; gap: 11px; font-size: clamp(15px, 1.85vw, 21px); line-height: 1.4; padding: 9px 0; align-items: flex-start; }
   .sl-bullets .sl-dot { flex: none; font-weight: 800; }
   .tl { position: relative; }
   .tl-item { display: flex; gap: 12px; padding: 0 0 12px 0; position: relative; }
@@ -1518,7 +1537,7 @@
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
       <span class="eyebrow">From notes to deck</span>
       <h1 class="page-title">Slide <em>deck.</em> <span class="wip-tag">Beta &middot; work in progress</span></h1>
-      <p class="page-sub">Pick your material, a style, and how long you'll present — the AI builds a clean deck with speaker notes, ready to export to PowerPoint. This one's still improving, so give the draft a quick once-over before you present.</p>
+      <p class="page-sub">Pick your material, a style, and how long you'll present — the AI builds a clean deck: short keyword slides, timelines, comparisons and a Key Takeaways summary, with the detail tucked into speaker notes. Hit <b>Present</b> for a full-screen, click-to-reveal show, or export to PowerPoint, PDF or Google Slides. Still improving, so skim the draft first.</p>
 
       <div class="surface" id="sl-setup">
         <label class="field-label">Build from</label>
@@ -1545,12 +1564,25 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
           <b id="sl-count" style="font-size:14px; color:var(--muted);"></b>
           <span style="flex:1;"></span>
-          <button class="btn-primary" onclick="slExportPptx()" style="padding:11px 22px; font-size:14px;">Export PowerPoint</button>
+          <button class="btn-primary" onclick="slPresentStart()" style="padding:11px 22px; font-size:14px;">&#9654; Present</button>
+          <button class="btn-ghost" onclick="slExportPptx()">Export PowerPoint</button>
           <button class="btn-ghost" onclick="slExportPdf()">Export PDF</button>
           <button class="btn-ghost" onclick="slExportGoogle()">Google Slides</button>
           <button class="btn-ghost" onclick="showView('slides'); $('sl-out').classList.add('hidden'); $('sl-setup').classList.remove('hidden');">New deck</button>
         </div>
         <div id="sl-deck"></div>
+      </div>
+
+      <div id="sl-present" class="hidden" onclick="slPresentAdvance(1)">
+        <div class="sl-stage" id="sl-stage"></div>
+        <div class="sl-pnote" id="sl-pnote"></div>
+        <div class="sl-pbar" onclick="event.stopPropagation()">
+          <button onclick="slPresentAdvance(-1)" title="Back (&larr;)">&#8249;</button>
+          <span class="sl-pnum" id="sl-pnum">1 / 1</span>
+          <button onclick="slPresentAdvance(1)" title="Next (&rarr; / click)">&#8250;</button>
+          <button onclick="slPresentToggleNotes()" title="Speaker notes (N)">&#9776;</button>
+          <button onclick="slPresentEnd()" title="Exit (Esc)">&#10005;</button>
+        </div>
       </div>
     </div>
 
@@ -2538,16 +2570,27 @@ async function slGenerate() {
   setStatus("sl-status", `Building a ${n}-slide deck...`, false, true);
   try {
     const raw = await groq([
-      { role: "system", content: `You are Notiq AI, an expert presentation designer. Build a rich, varied slide deck from the student's material. Respond ONLY with valid JSON:
+      { role: "system", content: `You are Notiq AI, an expert presentation designer who follows the golden rule of slide design: THE SLIDE IS NOT THE SCRIPT. Slides carry only the key words; the speaker explains the rest. Respond ONLY with valid JSON:
 {"title":"deck title","subtitle":"one-line subtitle","date":"a short context line for the title slide — the era/topic/subject or a date, or empty string","slides":[ ...slide objects... ]}
-Choose each slide's "type" to FIT its content — do NOT make every slide the same:
-- {"type":"bullets","heading":"...","bullets":["**Lead term** — a full, genuinely informative sentence of 15-30 words that actually teaches the point"],"image":false,"notes":"..."}  (default; use for most slides)
-- {"type":"timeline","heading":"...","events":[{"when":"year or label","what":"1-2 sentence description of what happened and why it mattered"}]}  (use when the content is chronological)
-- {"type":"steps","heading":"...","steps":[{"title":"step name","detail":"what happens and why, 1-2 sentences"}]}  (use for a process or sequence)
-- {"type":"compare","heading":"...","left":{"title":"...","points":["detailed point"]},"right":{"title":"...","points":["detailed point"]}}  (use to contrast two things)
-- {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"1-2 sentences explaining it"}  (use to spotlight one striking fact)
-- {"type":"section","heading":"section title"}  (a divider slide before each major new topic)
-Rules: make EXACTLY ${n} content slides total (title slide is separate). Bullets must be DETAILED and high-quality — a bold **lead term** then a real explanatory sentence — never 3-word fragments. Timeline/steps entries must have real substance. Put a "section" divider before each major new topic. Use at least 2 non-bullet slide types if the material supports it. Set "image":true only where a visual genuinely helps.${wantNotes ? " Write 1-2 sentences of speaker notes per slide." : " Leave every notes field an empty string."}` },
+
+DESIGN LAWS (follow all):
+1. ONE idea per slide. One clear message, one takeaway. Never mix multiple topics on a slide.
+2. MINIMAL text. Slide text is telegraphic keywords, NOT sentences. A bullet is 1-4 words (e.g. "July 1863", "Union victory", "Turning point") — never a full sentence. Max 4 bullets per slide.
+3. The real explanation goes in "notes" (the speaker's script), never on the slide face.
+4. SHOW RELATIONSHIPS, don't just list. Prefer timeline / steps / compare / stat layouts over plain bullets whenever the content fits — that is what makes a deck feel designed.
+5. Use section dividers before each major new topic.
+6. The VERY LAST slide must be a "takeaways" slide summarizing the 3 most important points.
+
+Slide types — choose each to FIT its content, do NOT make them all the same:
+- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":false,"notes":"the full spoken explanation"}  (use sparingly; 2-4 telegraphic bullets only)
+- {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"3-6 word phrase"}],"image":false,"notes":"..."}  (chronological content)
+- {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"short phrase"}],"notes":"..."}  (a process/sequence)
+- {"type":"compare","heading":"...","left":{"title":"...","points":["short phrase"]},"right":{"title":"...","points":["short phrase"]},"notes":"..."}  (contrast two things)
+- {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"a short phrase","notes":"..."}  (spotlight one striking fact)
+- {"type":"section","heading":"section title"}  (divider before a major new topic)
+- {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
+
+Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes. Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. Set "image":true generously on slides where a visual (timeline, map, diagram, concept, process) genuinely helps — aim for a visual on 30-50% of content slides. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
@@ -2583,35 +2626,103 @@ function slSlideHtml(sl, i, s, wantNotes) {
         <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
         ${sl.heading ? `<h3 class="sl-stat-h">${esc(sl.heading)}</h3>` : ""}
         ${sl.caption ? `<p class="sl-cap">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
+  if (type === "takeaways") {
+    const items = (sl.bullets || []).map(b =>
+      `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span>${slBold(b, s.accent)}</span></li>`).join("");
+    return `<div class="slide tk-slide" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">
+        <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
+        <h2 style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
+        <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
+  }
   const heading = `<h2 style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
   let body = "";
   if (type === "timeline") {
     body = `<div class="tl" style="--ln:${s.accent};">` + (sl.events || []).map(e =>
-      `<div class="tl-item"><span class="tl-dot" style="background:${s.accent};"></span><div><b style="color:${s.accent};">${esc(e.when || "")}</b><div class="tl-w">${esc(e.what || "")}</div></div></div>`).join("") + `</div>`;
+      `<div class="tl-item" data-reveal><span class="tl-dot" style="background:${s.accent};"></span><div><b style="color:${s.accent};">${esc(e.when || "")}</b><div class="tl-w">${esc(e.what || "")}</div></div></div>`).join("") + `</div>`;
   } else if (type === "steps") {
     body = `<div class="st-grid">` + (sl.steps || []).map((st, k) =>
-      `<div class="st-item"><span class="st-num" style="background:${s.accent}; color:${s.bg};">${k + 1}</span><div><b>${esc(st.title || "")}</b><div class="st-d">${esc(st.detail || "")}</div></div></div>`).join("") + `</div>`;
+      `<div class="st-item" data-reveal><span class="st-num" style="background:${s.accent}; color:${s.bg};">${k + 1}</span><div><b>${esc(st.title || "")}</b><div class="st-d">${esc(st.detail || "")}</div></div></div>`).join("") + `</div>`;
   } else if (type === "compare") {
-    const col = c => `<div class="cmp-col" style="border-color:${s.accent}55;"><b style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map(p => `<li>${slBold(p, s.accent)}</li>`).join("")}</ul></div>`;
+    const col = c => `<div class="cmp-col" data-reveal style="border-color:${s.accent}55;"><b style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map(p => `<li>${slBold(p, s.accent)}</li>`).join("")}</ul></div>`;
     body = `<div class="cmp">${col(sl.left)}${col(sl.right)}</div>`;
   } else {
-    body = `<ul class="sl-bullets">${(sl.bullets || []).map(b => `<li style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span>${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
+    body = `<ul class="sl-bullets">${(sl.bullets || []).map(b => `<li data-reveal style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span>${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
   }
   const slot = slImgSlot(sl, i, s);
   const imgLeft = slot && (i % 2 === 1);
   return `<div class="slide${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
-function slRender() {
-  const s = SL_STYLES[slStyle];
-  const wantNotes = $("sl-notes").value === "yes";
-  $("sl-count").textContent = `${slDeck.slides.length + 1} slides · ${SL_STYLES[slStyle].name} style`;
-  let html = `<div class="slide title-slide" style="background:${s.titleBg}; color:${s.titleFg};">
+function slTitleHtml(s) {
+  return `<div class="slide title-slide" style="background:${s.titleBg}; color:${s.titleFg};">
       ${slDeck.date ? `<div class="sl-eyebrow">${esc(slDeck.date)}</div>` : ""}
       <h2 class="sl-big">${esc(slDeck.title || "Untitled")}</h2>
       ${slDeck.subtitle ? `<div class="sub">${esc(slDeck.subtitle)}</div>` : ""}
     </div>`;
+}
+function slRender() {
+  const s = SL_STYLES[slStyle];
+  const wantNotes = $("sl-notes").value === "yes";
+  $("sl-count").textContent = `${slDeck.slides.length + 1} slides · ${SL_STYLES[slStyle].name} style`;
+  let html = slTitleHtml(s);
   slDeck.slides.forEach((sl, i) => { html += slSlideHtml(sl, i, s, wantNotes); });
   $("sl-deck").innerHTML = html;
+}
+
+// ---- Present mode: one slide at a time, click / arrow to reveal then advance ----
+let slPres = { idx: 0, total: 0, reveal: [], step: 0, notes: false };
+function slPresentStart() {
+  if (!slDeck) return;
+  slPres = { idx: 0, total: slDeck.slides.length + 1, reveal: [], step: 0, notes: slPres.notes };
+  $("sl-present").classList.remove("hidden");
+  window.addEventListener("keydown", slPresentKey);
+  window.addEventListener("resize", slPresentFit);
+  slPresentShow(0);
+}
+function slPresentEnd() {
+  $("sl-present").classList.add("hidden");
+  window.removeEventListener("keydown", slPresentKey);
+  window.removeEventListener("resize", slPresentFit);
+}
+function slPresentFit() {
+  const sc = Math.min(window.innerWidth / 1280, window.innerHeight / 720) * 0.96;
+  $("sl-stage").style.transform = `scale(${sc})`;
+}
+function slPresentShow(idx) {
+  const s = SL_STYLES[slStyle];
+  idx = Math.max(0, Math.min(slPres.total - 1, idx));
+  slPres.idx = idx;
+  $("sl-stage").innerHTML = idx === 0 ? slTitleHtml(s) : slSlideHtml(slDeck.slides[idx - 1], idx - 1, s, false);
+  // no interactive "add image" placeholders while presenting
+  $("sl-stage").querySelectorAll(".sl-imgbox.empty").forEach(el => el.remove());
+  slPresentFit();
+  slPres.reveal = Array.from($("sl-stage").querySelectorAll("[data-reveal]"));
+  slPres.step = 0;
+  $("sl-pnum").textContent = (idx + 1) + " / " + slPres.total;
+  const note = idx === 0 ? "" : (slDeck.slides[idx - 1].notes || "");
+  $("sl-pnote").textContent = note;
+  $("sl-pnote").classList.toggle("on", slPres.notes && !!note);
+}
+function slPresentAdvance(dir) {
+  if (dir > 0) {
+    if (slPres.step < slPres.reveal.length) { slPres.reveal[slPres.step].classList.add("shown"); slPres.step++; return; }
+    if (slPres.idx < slPres.total - 1) slPresentShow(slPres.idx + 1);
+  } else {
+    if (slPres.idx > 0) {
+      slPresentShow(slPres.idx - 1);
+      slPres.reveal.forEach(el => el.classList.add("shown")); slPres.step = slPres.reveal.length;   // previous slide shown in full
+    }
+  }
+}
+function slPresentToggleNotes() {
+  slPres.notes = !slPres.notes;
+  const note = slPres.idx === 0 ? "" : (slDeck.slides[slPres.idx - 1].notes || "");
+  $("sl-pnote").classList.toggle("on", slPres.notes && !!note);
+}
+function slPresentKey(e) {
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); slPresentAdvance(1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); slPresentAdvance(-1); }
+  else if (e.key === "Escape") slPresentEnd();
+  else if (e.key.toLowerCase() === "n") slPresentToggleNotes();
 }
 
 function slAddImage(i) {
@@ -2675,6 +2786,8 @@ async function slExportPptx() {
       const colTx = c => [{ text: strip((c && c.title) || ""), options: { bold: true, color: hex(s.accent), fontSize: 20, paraSpaceAfter: 10 } }].concat(((c && c.points) || []).map(pt => ({ text: strip(pt), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 15, paraSpaceAfter: 8 } })));
       sd.addText(colTx(sl.left), { x: 0.7, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
       sd.addText(colTx(sl.right), { x: 6.9, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
+    } else if (type === "takeaways") {
+      sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2713" }, color: hex(s.fg), fontSize: 22, bold: true, paraSpaceAfter: 18 } })), { x: 1.1, y: 1.9, w: 11.1, h: 4.6, valign: "middle", fontFace: "Arial" });
     } else {
       sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     }
@@ -2703,6 +2816,7 @@ function slExportPdf() {
       const type = sl.type || "bullets";
       if (type === "section") return pslide(`<h1 style="font-size:40px;">${esc(sl.heading || "")}</h1>`, s.titleBg, s.titleFg, true);
       if (type === "stat") return pslide(`<div style="font-size:72px;font-weight:800;color:${s.accent};">${esc(sl.big || "")}</div>${sl.heading ? `<h3 style="font-size:22px;">${esc(sl.heading)}</h3>` : ""}${sl.caption ? `<p style="font-size:20px;opacity:.85;">${esc(sl.caption)}</p>` : ""}`, s.bg, s.fg, true);
+      if (type === "takeaways") return pslide(`<div style="letter-spacing:3px;font-size:14px;opacity:.75;color:${s.accent};margin-bottom:10px;">SUMMARY</div><h2 style="color:${s.accent};font-size:30px;margin-bottom:20px;">${esc(sl.heading || "Key Takeaways")}</h2><ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="display:flex;gap:14px;align-items:flex-start;font-size:22px;font-weight:700;padding:11px 0;line-height:1.4;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:${s.accent};color:${s.bg};display:flex;align-items:center;justify-content:center;font-size:16px;">&#10003;</span><span>${bd(b)}</span></li>`).join("")}</ul>`, s.bg, s.fg, false);
       const head = `<h2 style="color:${s.accent};font-size:28px;margin-bottom:16px;">${esc(sl.heading || "")}</h2>`;
       let body = "";
       if (type === "timeline") {
