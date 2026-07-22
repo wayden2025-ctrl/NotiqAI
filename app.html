@@ -2590,7 +2590,7 @@ Slide types — choose each to FIT its content, do NOT make them all the same:
 - {"type":"section","heading":"section title"}  (divider before a major new topic)
 - {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
 
-Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes. Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. Set "image":true generously on slides where a visual (timeline, map, diagram, concept, process) genuinely helps — aim for a visual on 30-50% of content slides. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
+Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes. Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. Set "image":true generously on slides where a visual (timeline, map, diagram, concept, process) genuinely helps — aim for a visual on 30-50% of content slides. For EVERY slide where "image":true, also add "imgquery":"a 2-4 word concrete, literal search term for a stock photo that fits the slide (e.g. roman colosseum, dna double helix, stock market trading floor, rainforest canopy)". The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
@@ -2603,6 +2603,7 @@ Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count).
     $("sl-out").classList.remove("hidden");
     setStatus("sl-status", "");
     $("sl-out").scrollIntoView({ behavior: "smooth" });
+    slAutoImages();   // fill image slots from free stock photos (if a key is set), re-renders as they arrive
   } catch (e) {
     setStatus("sl-status", /JSON|Unexpected/.test(e.message) ? "The deck came out messy — hit Build again." : e.message, true);
   }
@@ -2736,7 +2737,26 @@ function slAddImage(i) {
   };
   inp.click();
 }
-function slRemoveImage(i) { slDeck.slides[i].img = null; slRender(); }
+function slRemoveImage(i) { slDeck.slides[i].img = null; slDeck.slides[i].image = false; slRender(); }
+
+// Auto-fill image slots from free stock photos (Pexels/Pixabay via /api/image).
+// No-ops gracefully if no key is configured — slots just stay as manual "Add an image".
+async function slAutoImages() {
+  const deck = slDeck;
+  const targets = deck.slides.filter(sl => sl.image && !sl.img);
+  if (!targets.length) return;
+  let any = false;
+  await Promise.all(targets.map(async (sl) => {
+    const q = String(sl.imgquery || sl.heading || deck.title || "").replace(/\*\*/g, "").replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
+    if (!q) return;
+    try {
+      const r = await fetch("/api/image?q=" + encodeURIComponent(q));
+      const j = await r.json();
+      if (j && j.url && slDeck === deck) { sl.img = j.url; any = true; }
+    } catch (e) { /* leave the slot manual */ }
+  }));
+  if (any && slDeck === deck) slRender();
+}
 
 // Load PptxGenJS (the bundle build, which includes JSZip so writeFile works).
 // Tries several CDNs in order so one blocked/al­tered host doesn't break exports.
