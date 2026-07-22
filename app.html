@@ -2738,16 +2738,33 @@ function slAddImage(i) {
 }
 function slRemoveImage(i) { slDeck.slides[i].img = null; slRender(); }
 
+// Load PptxGenJS (the bundle build, which includes JSZip so writeFile works).
+// Tries several CDNs in order so one blocked/al­tered host doesn't break exports.
+function loadScriptOnce(src) {
+  return new Promise((ok, bad) => {
+    const t = document.createElement("script");
+    t.src = src; t.async = true;
+    t.onload = ok;
+    t.onerror = () => { t.remove(); bad(new Error("load fail")); };
+    document.head.appendChild(t);
+  });
+}
+async function loadPptxGen() {
+  if (window.PptxGenJS) return;
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+    "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js",
+  ];
+  for (const src of urls) {
+    try { await loadScriptOnce(src); if (window.PptxGenJS) return; } catch (e) { /* next CDN */ }
+  }
+  throw new Error("Couldn't load the PowerPoint exporter — check your connection (or an ad-blocker) and try again.");
+}
 async function slExportPptx() {
   if (!slDeck) return;
-  if (!window.PptxGenJS) {
-    await new Promise((ok, bad) => {
-      const t = document.createElement("script");
-      t.src = "https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js";
-      t.onload = ok; t.onerror = () => bad(new Error("Couldn't load the PowerPoint exporter — try again."));
-      document.head.appendChild(t);
-    }).catch(e => { alert(e.message); throw e; });
-  }
+  try { await loadPptxGen(); }
+  catch (e) { alert(e.message); throw e; }
   const s = SL_STYLES[slStyle];
   const hex = c => c.replace("#", "");
   const p = new PptxGenJS();
@@ -2799,7 +2816,8 @@ async function slExportPptx() {
 }
 
 async function slExportGoogle() {
-  await slExportPptx();   // Google Slides opens .pptx natively — download it, then import
+  try { await slExportPptx(); }   // Google Slides opens .pptx natively — download it, then import
+  catch (e) { return; }           // export failed (alert already shown) — don't open Google Slides
   showLimitToast('<b>Deck downloaded.</b> In the Google Slides tab that just opened: <b>File &rarr; Import slides &rarr; Upload</b> and pick the file that just downloaded.');
   setTimeout(() => window.open("https://slides.google.com/create", "_blank"), 400);
 }
