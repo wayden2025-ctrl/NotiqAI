@@ -2293,18 +2293,21 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   const heartbeat = () => sb.from("presence").upsert({ user_id: user.id, last_seen: new Date().toISOString() }).then(() => {}, () => {});
   heartbeat();
   setInterval(() => { if (!document.hidden) heartbeat(); }, 60000);
-  renderAll();
-  buildCalendar();
-  pickQuote();
-  renderTip();
-  loadExamCountdown();
-  renderStreak();
-  loadReviewDecks();
-  renderSubjects();
-  if (!resources.length) showView("import");   // brand-new library -> start by adding material
-  renderThemes();
-  renderFolderColors();
-  logActivity("visit");   // today counts toward your streak
+  // run each boot step independently — one failing step must never skip the rest
+  // (e.g. the color-palette panel or folder colors)
+  const boot = (fn) => { try { fn(); } catch (e) { console.error("init step failed:", e); } };
+  boot(renderAll);
+  boot(buildCalendar);
+  boot(pickQuote);
+  boot(renderTip);
+  boot(loadExamCountdown);
+  boot(renderStreak);
+  boot(loadReviewDecks);
+  boot(renderSubjects);
+  boot(() => { if (!resources.length) showView("import"); });   // brand-new library -> start by adding material
+  boot(renderThemes);
+  boot(renderFolderColors);
+  boot(() => logActivity("visit"));   // today counts toward your streak
 })();
 
 // ================= ACTIVITY, STREAK & CHART =================
@@ -3960,6 +3963,9 @@ function showView(name) {
 }
 function openPanel(name) {
   closePanels(true);
+  // (re)build the palette grid on open so it's never empty, even if the
+  // one-time render during startup was skipped by an earlier hiccup
+  if (name === "themes") { try { renderThemes(); } catch (e) {} }
   $("panel-" + name).classList.add("open");
   $("scrim").classList.add("open");
 }
