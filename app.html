@@ -131,6 +131,34 @@
     display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,.06);
   }
   .slide.title-slide { justify-content: center; }
+  /* ---- decorative slide backgrounds (screen preview, Present mode & PDF) ---- */
+  .slide > * { position: relative; z-index: 1; }
+  .slide::before, .slide::after { content: ""; position: absolute; z-index: 0; pointer-events: none; }
+  /* content slides: soft accent corner glow + a slim heading accent bar */
+  .sl-content::after { right: -90px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--acc) 16%, transparent), transparent 70%); }
+  .sl-content::before { left: 0; top: 40px; width: 6px; height: 42px; border-radius: 0 4px 4px 0;
+    background: color-mix(in srgb, var(--acc) 90%, transparent); }
+  .sl-content.with-img::after { right: -120px; bottom: -120px; }
+  /* title slide: big soft glow + a tilted rounded shard */
+  .title-slide::before { right: -130px; top: -130px; width: 430px; height: 430px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, currentColor 15%, transparent), transparent 66%); }
+  .title-slide::after { left: -70px; bottom: -90px; width: 320px; height: 200px; transform: rotate(-12deg); border-radius: 44px;
+    background: color-mix(in srgb, currentColor 9%, transparent); }
+  /* section divider: large offset ring + small tilted tile */
+  .section-slide::before { left: 5%; top: 50%; width: 360px; height: 360px; margin-top: -180px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, currentColor 18%, transparent); }
+  .section-slide::after { right: 8%; bottom: 13%; width: 130px; height: 130px; border-radius: 28px; transform: rotate(18deg);
+    background: color-mix(in srgb, currentColor 11%, transparent); }
+  /* stat slide: concentric rings behind the number */
+  .stat-slide::before { left: 50%; top: 50%; width: 440px; height: 440px; margin: -220px 0 0 -220px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--acc) 16%, transparent);
+    box-shadow: inset 0 0 0 44px color-mix(in srgb, var(--acc) 6%, transparent); }
+  /* takeaways: corner glow + soft diagonal */
+  .tk-slide::after { right: -80px; top: -80px; width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--acc) 17%, transparent), transparent 70%); }
+  .tk-slide::before { left: -60px; bottom: -70px; width: 260px; height: 150px; transform: rotate(-10deg); border-radius: 40px;
+    background: color-mix(in srgb, var(--acc) 7%, transparent); }
   .slide h2 { font-size: clamp(23px, 2.9vw, 36px); font-weight: 800; margin-bottom: 20px; line-height: 1.12; }
   .slide.title-slide h2 { font-size: clamp(30px, 3.8vw, 50px); }
   .slide .sub { font-size: 16px; opacity: .8; margin-top: 6px; }
@@ -2621,16 +2649,16 @@ function slSlideHtml(sl, i, s, wantNotes) {
   const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
   const type = sl.type || "bullets";
   if (type === "section")
-    return `<div class="slide section-slide" style="background:${s.titleBg}; color:${s.titleFg};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
+    return `<div class="slide section-slide" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "stat")
-    return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg};">
+    return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
         <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
         ${sl.heading ? `<h3 class="sl-stat-h">${esc(sl.heading)}</h3>` : ""}
         ${sl.caption ? `<p class="sl-cap">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "takeaways") {
     const items = (sl.bullets || []).map(b =>
       `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span>${slBold(b, s.accent)}</span></li>`).join("");
-    return `<div class="slide tk-slide" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">
+    return `<div class="slide tk-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
         <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
         <h2 style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
@@ -2651,10 +2679,10 @@ function slSlideHtml(sl, i, s, wantNotes) {
   }
   const slot = slImgSlot(sl, i, s);
   const imgLeft = slot && (i % 2 === 1);
-  return `<div class="slide${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" style="background:${s.bg}; color:${s.fg};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slTitleHtml(s) {
-  return `<div class="slide title-slide" style="background:${s.titleBg}; color:${s.titleFg};">
+  return `<div class="slide title-slide" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">
       ${slDeck.date ? `<div class="sl-eyebrow">${esc(slDeck.date)}</div>` : ""}
       <h2 class="sl-big">${esc(slDeck.title || "Untitled")}</h2>
       ${slDeck.subtitle ? `<div class="sub">${esc(slDeck.subtitle)}</div>` : ""}
@@ -2793,6 +2821,7 @@ async function slExportPptx() {
   const strip = v => String(v || "").replace(/\*\*/g, "");
   // title slide
   let t = p.addSlide(); t.background = { color: hex(s.titleBg) };
+  try { t.addShape(p.ShapeType.rect, { x: 0.8, y: 4.28, w: 2.5, h: 0.09, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
   if (slDeck.date) t.addText(strip(slDeck.date).toUpperCase(), { x: 0.8, y: 2.1, w: 11.7, h: 0.5, fontSize: 15, color: hex(s.titleFg), charSpacing: 3, fontFace: "Arial" });
   t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.6, w: 11.7, h: 1.7, fontSize: 44, bold: true, color: hex(s.titleFg), fontFace: "Arial" });
   if (slDeck.subtitle) t.addText(slDeck.subtitle, { x: 0.8, y: 4.4, w: 11.7, h: 0.8, fontSize: 20, color: hex(s.titleFg), fontFace: "Arial" });
@@ -2806,6 +2835,7 @@ async function slExportPptx() {
       return;
     }
     sd.background = { color: hex(s.bg) };
+    try { sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 0.16, h: 7.5, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
     if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
     const wide = !!sl.img;
     const imgLeft = wide && (idx % 2 === 1);
