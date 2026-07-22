@@ -1601,6 +1601,10 @@
             <select id="sl-len"><option value="3">3 minutes</option><option value="5" selected>5 minutes</option><option value="10">10 minutes</option><option value="20">20 minutes</option></select>
           </div>
           <div>
+            <label class="field-label" style="margin-top:0;">Bullet detail</label>
+            <select id="sl-detail"><option value="detailed" selected>More detail</option><option value="brief">Short &amp; punchy</option></select>
+          </div>
+          <div>
             <label class="field-label" style="margin-top:0;">Speaker notes</label>
             <select id="sl-notes"><option value="yes" selected>Include them</option><option value="no">No notes</option></select>
           </div>
@@ -2614,6 +2618,16 @@ async function slGenerate() {
   if (!gateGenerate("sl-status")) return;
   const n = SL_SLIDES[$("sl-len").value] || 8;
   const wantNotes = $("sl-notes").value === "yes";
+  const detailed = ($("sl-detail") && $("sl-detail").value || "detailed") === "detailed";
+  const law2 = detailed
+    ? '2. TEACH on the slide, but stay in bullet form. Each bullet is a bold **lead term** then a concise explanatory clause of about 8-16 words — enough real substance to learn from, but still ONE bullet line, never a paragraph. Use 3-5 bullets per content slide.'
+    : '2. MINIMAL text. Slide text is telegraphic keywords, NOT sentences. A bullet is 1-4 words (e.g. "July 1863", "Union victory", "Turning point") — never a full sentence. Max 4 bullets per slide.';
+  const bulletsType = detailed
+    ? '- {"type":"bullets","heading":"short heading","bullets":["**Lead term** — a concise 8-16 word explanation that actually teaches this point"],"image":true,"imgquery":"...","notes":"..."}  (3-5 informative bullets, still one line each)'
+    : '- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":false,"notes":"the full spoken explanation"}  (2-4 telegraphic bullets only)';
+  const detailNote = detailed
+    ? 'Bullets, timeline entries and step details should carry REAL substance (roughly 8-16 words each) so the slide teaches on its own — but keep each to a SINGLE line, never a paragraph.'
+    : "Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes.";
   $("sl-go").disabled = true;
   setStatus("sl-status", `Building a ${n}-slide deck...`, false, true);
   try {
@@ -2623,22 +2637,22 @@ async function slGenerate() {
 
 DESIGN LAWS (follow all):
 1. ONE idea per slide. One clear message, one takeaway. Never mix multiple topics on a slide.
-2. MINIMAL text. Slide text is telegraphic keywords, NOT sentences. A bullet is 1-4 words (e.g. "July 1863", "Union victory", "Turning point") — never a full sentence. Max 4 bullets per slide.
-3. The real explanation goes in "notes" (the speaker's script), never on the slide face.
+${law2}
+3. Deeper explanation and anything extra goes in "notes" (the speaker's script).
 4. SHOW RELATIONSHIPS, don't just list. Prefer timeline / steps / compare / stat layouts over plain bullets whenever the content fits — that is what makes a deck feel designed.
 5. Use section dividers before each major new topic.
 6. The VERY LAST slide must be a "takeaways" slide summarizing the 3 most important points.
 
 Slide types — choose each to FIT its content, do NOT make them all the same:
-- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":false,"notes":"the full spoken explanation"}  (use sparingly; 2-4 telegraphic bullets only)
-- {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"3-6 word phrase"}],"image":false,"notes":"..."}  (chronological content)
-- {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"short phrase"}],"notes":"..."}  (a process/sequence)
-- {"type":"compare","heading":"...","left":{"title":"...","points":["short phrase"]},"right":{"title":"...","points":["short phrase"]},"notes":"..."}  (contrast two things)
+${bulletsType}
+- {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"short phrase or brief clause"}],"image":false,"notes":"..."}  (chronological content)
+- {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"brief point or short clause"}],"notes":"..."}  (a process/sequence)
+- {"type":"compare","heading":"...","left":{"title":"...","points":["brief point"]},"right":{"title":"...","points":["brief point"]},"notes":"..."}  (contrast two things)
 - {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"a short phrase","notes":"..."}  (spotlight one striking fact)
 - {"type":"section","heading":"section title"}  (divider before a major new topic)
 - {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
 
-Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes. Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — fill empty space: a slide with only a few short bullets leaves a lot of blank space, which looks bare. So set "image":true on EVERY "bullets", "timeline", and "steps" slide (the image sits beside the text and fills the space). Only OMIT images on "compare" slides (already two columns), "stat", "section", and "takeaways" slides. For EVERY slide where "image":true, you MUST also add "imgquery":"a 2-4 word concrete, literal search term for a real stock photo that clearly matches THIS slide's topic (e.g. roman colosseum, dna double helix, stock market trading floor, rainforest canopy, photosynthesis leaf)". Make each imgquery specific to that slide so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
+Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — fill empty space: a slide with only a few short bullets leaves a lot of blank space, which looks bare. So set "image":true on EVERY "bullets", "timeline", and "steps" slide (the image sits beside the text and fills the space). Only OMIT images on "compare" slides (already two columns), "stat", "section", and "takeaways" slides. For EVERY slide where "image":true, you MUST also add "imgquery":"a 2-4 word concrete, literal search term for a real stock photo that clearly matches THIS slide's topic (e.g. roman colosseum, dna double helix, stock market trading floor, rainforest canopy, photosynthesis leaf)". Make each imgquery specific to that slide so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
