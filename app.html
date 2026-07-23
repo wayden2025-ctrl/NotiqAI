@@ -3147,10 +3147,11 @@ function slExportPdf() {
     <style>${appCss}</style>
     <style>
       @page { size: 1280px 720px; margin: 0; }
-      html, body { margin: 0; padding: 0; background: #fff; }
-      #pd { width: 1280px; }
-      /* each real slide becomes one full page, no screen chrome */
-      #pd .slide { width: 1280px; height: 720px; aspect-ratio: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0 !important; padding: 0 !important; width: 100%; background: #fff; overflow-x: hidden; }
+      #pd { width: 100%; margin: 0; }
+      /* each real slide fills its page edge-to-edge (no white bars) */
+      #pd .slide { width: 100%; height: 100vh; aspect-ratio: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; break-inside: avoid; }
       #pd .slide:last-child { page-break-after: auto; }
       /* remove editing affordances + speaker notes from the print */
       #pd [data-e] { box-shadow: none !important; background-color: transparent !important; cursor: auto; }
