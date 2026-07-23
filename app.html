@@ -962,23 +962,23 @@
   .focus-float b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 32px; color: var(--amber); line-height: 1; }
   .focus-float .flabel { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
   /* iOS-style scroll wheel time picker */
-  .fwheel { position: relative; width: 116px; height: 150px; flex: none; }
+  .fwheel { position: relative; width: 138px; height: 188px; flex: none; }
   .fwheel-scroll {
     height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
-    padding: 55px 0; scrollbar-width: none; -ms-overflow-style: none;
+    padding: 70px 0; scrollbar-width: none; -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch; position: relative; z-index: 1;
     -webkit-mask-image: linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
             mask-image: linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
   }
   .fwheel-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
   .fwheel-scroll .fw-item {
-    height: 40px; scroll-snap-align: center; display: flex; align-items: center; justify-content: center;
-    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 30px; color: var(--muted);
+    height: 48px; scroll-snap-align: center; display: flex; align-items: center; justify-content: center;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 37px; color: var(--muted);
     transition: color .18s ease; will-change: transform, opacity; backface-visibility: hidden;
   }
   .fwheel-scroll .fw-item.on { color: var(--amber); }
   .fwheel-band {
-    position: absolute; left: -6px; right: 28px; top: 50%; height: 44px; transform: translateY(-50%);
+    position: absolute; left: -6px; right: 32px; top: 50%; height: 52px; transform: translateY(-50%);
     border-radius: 11px; background: color-mix(in srgb, var(--amber) 9%, transparent);
     box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amber) 32%, transparent);
     pointer-events: none; z-index: 0;
@@ -5025,7 +5025,7 @@ let focusEndAt = null, focusTick = null, focusHiddenAt = null;
 
 // ---- iOS-style scroll wheel time picker ----
 const FW_VALUES = [5, 10, 15, 20, 25, 30, 40, 45, 50, 60, 75, 90];
-const FW_ITEM = 40;   // px per row (matches CSS)
+const FW_ITEM = 48;   // px per row (matches CSS)
 let focusMins = 25;
 function buildFocusWheel() {
   const sc = $("fwheel-scroll"); if (!sc) return;
