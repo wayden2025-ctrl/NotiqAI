@@ -961,6 +961,33 @@
   }
   .focus-float b { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 32px; color: var(--amber); line-height: 1; }
   .focus-float .flabel { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+  /* iOS-style scroll wheel time picker */
+  .fwheel { position: relative; width: 116px; height: 150px; flex: none; }
+  .fwheel-scroll {
+    height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
+    padding: 55px 0; scrollbar-width: none; -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch; position: relative; z-index: 1;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
+            mask-image: linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
+  }
+  .fwheel-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .fwheel-scroll .fw-item {
+    height: 40px; scroll-snap-align: center; display: flex; align-items: center; justify-content: center;
+    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 30px; color: var(--muted);
+    transition: color .18s ease; will-change: transform, opacity; backface-visibility: hidden;
+  }
+  .fwheel-scroll .fw-item.on { color: var(--amber); }
+  .fwheel-band {
+    position: absolute; left: -6px; right: 28px; top: 50%; height: 44px; transform: translateY(-50%);
+    border-radius: 11px; background: color-mix(in srgb, var(--amber) 9%, transparent);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amber) 32%, transparent);
+    pointer-events: none; z-index: 0;
+  }
+  .fwheel-unit {
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none;
+    font-size: 13px; font-weight: 800; letter-spacing: .06em; color: var(--muted);
+  }
+  .fwheel.locked .fwheel-scroll { pointer-events: none; overflow: hidden; opacity: .55; }
   .focus-msg { font-size: 13.5px; color: var(--muted); margin-top: 10px; max-width: 52ch; line-height: 1.5; }
   .focus-msg.fail { color: #a33520; font-weight: 700; }
   .focus-msg.win { color: #2e7d4f; font-weight: 700; }
@@ -1507,8 +1534,12 @@
           <div class="focus-time" id="focus-time">25:00</div>
           <p class="focus-msg" id="focus-msg">Pick a length and lock in. Leave this tab for more than 30 seconds and the session fails.</p>
         </div>
-        <div style="margin-left:auto; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <select id="focus-len"><option value="15">15 min</option><option value="25" selected>25 min</option><option value="45">45 min</option></select>
+        <div style="margin-left:auto; display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+          <div class="fwheel" id="focus-wheel" title="Scroll to set your focus length">
+            <div class="fwheel-scroll" id="fwheel-scroll"></div>
+            <div class="fwheel-band"></div>
+            <span class="fwheel-unit">min</span>
+          </div>
           <button class="btn-primary" id="focus-btn" onclick="focusToggle()">Start focus</button>
         </div>
       </div>
@@ -2361,6 +2392,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"
   boot(renderSubjects);
   boot(() => { if (!resources.length) showView("import"); });   // brand-new library -> start by adding material
   boot(renderThemes);
+  boot(buildFocusWheel);
   boot(renderFolderColors);
   boot(() => logActivity("visit"));   // today counts toward your streak
 })();
@@ -4164,6 +4196,7 @@ function showView(name) {
   ttsStop();
   if (name === "slides") setTimeout(openSlides, 0);
   if (name === "chat") setTimeout(openChat, 0);
+  if (name === "dashboard") setTimeout(fwRecenter, 0);   // re-center the focus wheel (scrollTop can reset while hidden)
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   $("view-" + name).classList.remove("hidden");
   $("rb-home").classList.toggle("active", name === "dashboard");
@@ -4989,11 +5022,57 @@ $("nt-save").addEventListener("click", () =>
 
 // ================= FOCUS TIMER =================
 let focusEndAt = null, focusTick = null, focusHiddenAt = null;
+
+// ---- iOS-style scroll wheel time picker ----
+const FW_VALUES = [5, 10, 15, 20, 25, 30, 40, 45, 50, 60, 75, 90];
+const FW_ITEM = 40;   // px per row (matches CSS)
+let focusMins = 25;
+function buildFocusWheel() {
+  const sc = $("fwheel-scroll"); if (!sc) return;
+  sc.innerHTML = FW_VALUES.map(v => `<div class="fw-item" data-v="${v}">${v}</div>`).join("");
+  const idx = Math.max(0, FW_VALUES.indexOf(focusMins));
+  let rafId = null, endT = null;
+  const onScroll = () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(fwUpdate);
+    clearTimeout(endT);
+    endT = setTimeout(fwCommit, 110);   // stop scrolling -> snap & commit
+  };
+  sc.addEventListener("scroll", onScroll, { passive: true });
+  // start centered on the default value
+  requestAnimationFrame(() => { sc.scrollTop = idx * FW_ITEM; fwUpdate(); });
+}
+function fwUpdate() {
+  const sc = $("fwheel-scroll"); if (!sc) return;
+  const center = sc.scrollTop / FW_ITEM;   // fractional index at the selection band
+  Array.from(sc.children).forEach((li, i) => {
+    const r = i - center;                  // signed distance in rows
+    const ang = Math.max(-72, Math.min(72, -r * 24));
+    li.style.transform = `perspective(560px) rotateX(${ang}deg) scale(${Math.max(0.72, 1 - Math.abs(r) * 0.12)})`;
+    li.style.opacity = Math.max(0.18, 1 - Math.abs(r) * 0.34);
+    li.classList.toggle("on", Math.abs(r) < 0.5);
+  });
+  const i = Math.max(0, Math.min(FW_VALUES.length - 1, Math.round(center)));
+  const v = FW_VALUES[i];
+  if (v && !focusEndAt) { focusMins = v; $("focus-time").textContent = v + ":00"; $("focus-float-time").textContent = v + ":00"; }
+}
+function fwCommit() {
+  const sc = $("fwheel-scroll"); if (!sc) return;
+  const i = Math.max(0, Math.min(FW_VALUES.length - 1, Math.round(sc.scrollTop / FW_ITEM)));
+  sc.scrollTo({ top: i * FW_ITEM, behavior: "smooth" });   // gentle snap to exact row
+  focusMins = FW_VALUES[i];
+}
+function fwRecenter() {
+  const sc = $("fwheel-scroll"); if (!sc || focusEndAt) return;
+  const i = Math.max(0, FW_VALUES.indexOf(focusMins));
+  requestAnimationFrame(() => { sc.scrollTop = i * FW_ITEM; fwUpdate(); });
+}
+
 function focusToggle() {
   if (focusEndAt) { focusReset("Session ended early. No shame — try a shorter one."); return; }
-  const mins = +$("focus-len").value;
+  const mins = focusMins;
   focusEndAt = Date.now() + mins * 60000;
-  $("focus-len").disabled = true;
+  $("focus-wheel").classList.add("locked");
   $("focus-btn").textContent = "Give up";
   focusMsg("Locked in. Leave this tab for more than 30 seconds and the session fails.", "");
   focusTick = setInterval(() => {
@@ -5016,9 +5095,9 @@ function focusToggle() {
 }
 function focusReset(msg) {
   clearInterval(focusTick); focusTick = null; focusEndAt = null; focusHiddenAt = null;
-  $("focus-len").disabled = false;
+  $("focus-wheel").classList.remove("locked");
   $("focus-btn").textContent = "Start focus";
-  $("focus-time").textContent = $("focus-len").value + ":00";
+  $("focus-time").textContent = focusMins + ":00";
   if (msg) focusMsg(msg, "");
   updateFocusFloat();
 }
@@ -5045,7 +5124,6 @@ document.addEventListener("visibilitychange", () => {
     focusHiddenAt = null;
   }
 });
-$("focus-len").addEventListener("change", () => { if (!focusEndAt) $("focus-time").textContent = $("focus-len").value + ":00"; });
 
 // ================= READ IT TO ME (TTS) =================
 let ttsBtnActive = null;
