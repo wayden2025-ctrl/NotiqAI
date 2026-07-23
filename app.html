@@ -1656,6 +1656,12 @@
       </div>
 
       <div class="hidden" id="sl-out">
+        <div class="save-bar" style="margin-bottom:14px;">
+          <input class="txt-input" id="sl-title2" maxlength="80" placeholder="Deck name (e.g. Cell cycle overview)">
+          <select class="save-folder" id="sl-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="sl-save" onclick="slSave()">Save to folder</button>
+          <span class="save-note" id="sl-save-note"></span>
+        </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
           <b id="sl-count" style="font-size:14px; color:var(--muted);"></b>
           <span style="flex:1;"></span>
@@ -2668,6 +2674,40 @@ function slPickStyle(id) { slStyle = id; renderSlStyles(); }
 function openSlides() {
   renderResPicker("sl");
   renderSlStyles();
+  renderFolderSelect("sl");
+}
+
+// Save the current deck into a folder (images are stripped to keep it light —
+// they refill from each slide's imgquery when the deck is reopened).
+async function slSave() {
+  if (!slDeck) { setStatus("sl-save-note", "Build a deck first.", true); return; }
+  const title = ($("sl-title2").value.trim()) || slDeck.title || "Slide deck";
+  const lean = JSON.parse(JSON.stringify(slDeck, (k, v) => (k === "img" || k === "imgs" || k === "cover" || k === "savedId") ? undefined : v));
+  lean.style = slStyle;
+  if (slDeck.savedId) {
+    // update in place if this deck was opened from (or already saved to) a folder
+    $("sl-save-note").textContent = "Saving...";
+    const { error } = await sb.from("saved_items").update({ title, content: lean }).eq("id", slDeck.savedId);
+    $("sl-save-note").textContent = error ? error.message : "Saved ✓";
+    return;
+  }
+  const newId = await saveItem("slides", title, lean, $("sl-folder").value, "sl-save-note");
+  if (newId) slDeck.savedId = newId;   // subsequent saves update this deck instead of duplicating
+}
+// Reopen a saved deck into the slides view
+function slOpenSaved(item) {
+  const c = item.content || {};
+  slDeck = c;
+  slDeck.savedId = item.id;
+  slStyle = (c.style && SL_STYLES[c.style]) ? c.style : "school";
+  showView("slides");
+  renderSlStyles();
+  renderFolderSelect("sl");
+  $("sl-title2").value = item.title || "";
+  $("sl-setup").classList.add("hidden");
+  $("sl-out").classList.remove("hidden");
+  slRender();
+  slAutoImages();   // refill images from the stored search terms
 }
 
 async function slGenerate() {
@@ -2719,6 +2759,8 @@ Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count).
     d.slides = (d.slides || []).filter(s => s.heading);
     if (!d.slides.length) throw new Error("Couldn't build slides from that — try more material.");
     slDeck = d;
+    slDeck.savedId = null;                       // fresh deck — not tied to a saved item yet
+    $("sl-title2").value = d.title || "";         // prefill the save name
     slRender();
     logActivity("generate");
     $("sl-setup").classList.add("hidden");
@@ -4665,13 +4707,14 @@ async function saveItem(type, title, content, folderId, noteId) {
   }
   if (!title) { $(noteId).textContent = "Give it a name first."; return; }
   $(noteId).textContent = "Saving...";
-  const { error } = await sb.from("saved_items").insert({ user_id: user.id, folder_id: folderId, type, title, content });
+  const { data: ins, error } = await sb.from("saved_items").insert({ user_id: user.id, folder_id: folderId, type, title, content }).select("id").single();
   if (error) { $(noteId).textContent = error.message; return; }
   $(noteId).textContent = "Saved ✓";
   await loadCounts();
   renderFoldersRow(); renderPanelFolders(); updateDashStats();
   if (type === "flashcards") loadReviewDecks();   // so games & Smart review see the new deck immediately
   logActivity("save");
+  return ins ? ins.id : null;
 }
 
 // ================= FLASHCARDS =================
@@ -5728,7 +5771,7 @@ function spFinish() {
 }
 
 // ================= FOLDER VIEW & ITEM VIEWER =================
-const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet", test: "Test" };
+const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet", test: "Test", slides: "Slide deck" };
 
 let curFolder = null;
 
@@ -5834,6 +5877,7 @@ let curItem = null;
 async function openItem(id) {
   const { data, error } = await sb.from("saved_items").select("*").eq("id", id).single();
   if (error) return;
+  if (data.type === "slides") { closeItemModal(); slOpenSaved(data); return; }
   curItem = data;
   $("im-type").textContent = TYPE_LABEL[data.type] || data.type;
   $("im-title").textContent = data.title;
