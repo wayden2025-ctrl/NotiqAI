@@ -2964,13 +2964,13 @@ async function slExportPptx() {
         sd.addImage({ data: sl.img, x: 0, y: 0, w: 13.33, h: 7.5, sizing: { type: "cover", w: 13.33, h: 7.5 } });
         sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 7.5, fill: { color: hex(s.titleBg), transparency: 26 }, line: { type: "none" } });
       } catch (e) {} }
-      sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 44, bold: true, align: "center", color: hex(s.titleFg), fontFace: "Georgia" });
+      sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 44, bold: true, italic: true, align: "center", color: hex(s.titleFg), fontFace: "Georgia" });
       if (sl.notes) sd.addNotes(sl.notes);
       return;
     }
     sd.background = { color: hex(s.bg) };
     try { sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 0.16, h: 7.5, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
-    if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.5, w: 12, h: 1, fontSize: 28, bold: true, color: hex(s.accent), fontFace: "Arial" });
+    if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.45, w: 12, h: 1.1, fontSize: 34, bold: true, italic: true, color: hex(s.accent), fontFace: "Georgia" });
     const wide = !!sl.img;
     const imgLeft = wide && (idx % 2 === 1);
     const txX = wide ? (imgLeft ? 6.9 : 0.9) : 0.9;
@@ -2992,11 +2992,10 @@ async function slExportPptx() {
     } else {
       sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     }
-    { const pics = (sl.imgs && sl.imgs.length) ? sl.imgs.slice(0, 3) : (sl.img ? [sl.img] : []);
-      if (pics.length) { try {
-        const gap = 0.18, tot = 5.0, ph = (tot - gap * (pics.length - 1)) / pics.length;
-        pics.forEach((u, k) => sd.addImage({ data: u, x: imgX, y: 1.4 + k * (ph + gap), w: 4.7, h: ph, sizing: { type: "cover", w: 4.7, h: ph } }));
-      } catch (e) {} } }
+    // ONE image, sized with "contain" so PowerPoint AND Google Slides keep the aspect
+    // ratio (Google ignores crop-based "cover" and stretches — this avoids that).
+    { const pic = (sl.imgs && sl.imgs.length) ? sl.imgs[0] : sl.img;
+      if (pic) { try { sd.addImage({ data: pic, x: imgX, y: 1.9, w: 4.7, h: 3.6, sizing: { type: "contain", w: 4.7, h: 3.6 } }); } catch (e) {} } }
     if (sl.notes) sd.addNotes(sl.notes);
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
@@ -3006,7 +3005,7 @@ async function slExportPptx() {
 async function slExportGoogle() {
   try { await slExportPptx(); }   // Google Slides opens .pptx natively — download it, then import
   catch (e) { return; }           // export failed (alert already shown) — don't open Google Slides
-  showLimitToast('<b>Deck downloaded.</b> In the Google Slides tab that just opened: <b>File &rarr; Import slides &rarr; Upload</b> and pick the file that just downloaded.');
+  showLimitToast('<b>Deck downloaded.</b> In the Google Slides tab: <b>File &rarr; Import slides &rarr; Upload</b> and pick the file. Note: Google Slides rebuilds it with its own fonts and drops the decorative effects, so it looks simpler than the preview. For a <b>pixel-perfect</b> copy of the design, use <b>Export PDF</b> instead.');
   setTimeout(() => window.open("https://slides.google.com/create", "_blank"), 400);
 }
 
