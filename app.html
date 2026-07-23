@@ -176,6 +176,9 @@
   .slide.sl-content .sl-body > h2 { position: relative; padding-bottom: 12px; margin-bottom: 22px; }
   .slide.sl-content .sl-body > h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 54px; height: 4px; border-radius: 3px;
     background: linear-gradient(90deg, var(--acc), color-mix(in srgb, var(--acc) 20%, transparent)); }
+  /* small sans kicker (running section) above the serif heading — adds font + colour contrast */
+  .sl-kicker { font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 800; font-size: clamp(11px, 1.3vw, 14px);
+    letter-spacing: 3px; text-transform: uppercase; opacity: .55; margin-bottom: 7px; line-height: 1; }
   .slide.title-slide h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(46px, 7vw, 92px); line-height: .98; letter-spacing: -1.5px; margin-bottom: 4px; }
   .slide .sub { font-size: clamp(18px, 2.4vw, 30px); font-weight: 600; opacity: .9; margin-top: 16px; line-height: 1.3; max-width: 24ch; }
   /* title slide cover photo + readable veil */
@@ -2712,7 +2715,7 @@ function slImgSlot(sl, i, s) {
   if (sl.image) return `<div class="sl-imgbox empty" onclick="slAddImage(${i})" style="border-color:${s.accent}; color:${s.accent};"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l6-6 4 4 3-3 3 3"/></svg><b>Add an image</b></div>`;
   return "";
 }
-function slSlideHtml(sl, i, s, wantNotes) {
+function slSlideHtml(sl, i, s, wantNotes, section) {
   const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
   const type = sl.type || "bullets";
   if (type === "section")
@@ -2733,7 +2736,8 @@ function slSlideHtml(sl, i, s, wantNotes) {
         <h2 style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
   }
-  const heading = `<h2 style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
+  const kick = section ? `<div class="sl-kicker">${esc(section)}</div>` : "";
+  const heading = `${kick}<h2 style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
   let body = "";
   if (type === "timeline") {
     body = `<div class="tl" style="--ln:${s.accent};">` + (sl.events || []).map(e =>
@@ -2769,8 +2773,20 @@ function slRender() {
   const wantNotes = $("sl-notes").value === "yes";
   $("sl-count").textContent = `${slDeck.slides.length + 1} slides · ${SL_STYLES[slStyle].name} style`;
   let html = slTitleHtml(s);
-  slDeck.slides.forEach((sl, i) => { html += slSlideHtml(sl, i, s, wantNotes); });
+  let section = slDeck.topic || "";
+  slDeck.slides.forEach((sl, i) => {
+    if (sl.type === "section") section = sl.heading || section;
+    html += slSlideHtml(sl, i, s, wantNotes, section);
+  });
   $("sl-deck").innerHTML = html;
+}
+// the running section label for a given slide index (used by Present mode)
+function slSectionFor(idx) {
+  let section = slDeck.topic || "";
+  for (let k = 0; k <= idx && k < slDeck.slides.length; k++) {
+    if (slDeck.slides[k].type === "section") section = slDeck.slides[k].heading || section;
+  }
+  return section;
 }
 
 // ---- Present mode: one slide at a time, click / arrow to reveal then advance ----
@@ -2796,7 +2812,7 @@ function slPresentShow(idx) {
   const s = SL_STYLES[slStyle];
   idx = Math.max(0, Math.min(slPres.total - 1, idx));
   slPres.idx = idx;
-  $("sl-stage").innerHTML = idx === 0 ? slTitleHtml(s) : slSlideHtml(slDeck.slides[idx - 1], idx - 1, s, false);
+  $("sl-stage").innerHTML = idx === 0 ? slTitleHtml(s) : slSlideHtml(slDeck.slides[idx - 1], idx - 1, s, false, slSectionFor(idx - 1));
   // no interactive "add image" placeholders while presenting
   $("sl-stage").querySelectorAll(".sl-imgbox.empty").forEach(el => el.remove());
   slPresentFit();
