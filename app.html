@@ -171,7 +171,11 @@
     background: radial-gradient(circle, color-mix(in srgb, var(--acc) 17%, transparent), transparent 70%); }
   .tk-slide::before { left: -60px; bottom: -70px; width: 260px; height: 150px; transform: rotate(-10deg); border-radius: 40px;
     background: color-mix(in srgb, var(--acc) 7%, transparent); }
-  .slide h2 { font-size: clamp(23px, 2.9vw, 36px); font-weight: 800; margin-bottom: 20px; line-height: 1.12; }
+  .slide h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: clamp(27px, 3.5vw, 44px); margin-bottom: 20px; line-height: 1.06; letter-spacing: -.5px; }
+  /* cool accent underline under every content heading */
+  .slide.sl-content .sl-body > h2 { position: relative; padding-bottom: 12px; margin-bottom: 22px; }
+  .slide.sl-content .sl-body > h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 54px; height: 4px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--acc), color-mix(in srgb, var(--acc) 20%, transparent)); }
   .slide.title-slide h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(46px, 7vw, 92px); line-height: .98; letter-spacing: -1.5px; margin-bottom: 4px; }
   .slide .sub { font-size: clamp(18px, 2.4vw, 30px); font-weight: 600; opacity: .9; margin-top: 16px; line-height: 1.3; max-width: 24ch; }
   /* title slide cover photo + readable veil */
@@ -205,10 +209,20 @@
   .sl-pnote { position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%); z-index: 6010; max-width: 62vw;
     background: rgba(20,22,30,.9); color: #e8eaf0; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 10px 16px; font-size: 14px; line-height: 1.5; display: none; }
   .sl-pnote.on { display: block; }
-  .slide .sl-num { position: absolute; bottom: 14px; right: 20px; font-size: 12px; opacity: .5; font-weight: 700; }
+  .slide .sl-num { position: absolute; bottom: 14px; right: 18px; z-index: 2; font-size: 11px; font-weight: 800; letter-spacing: .5px;
+    padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--acc) 14%, transparent);
+    color: var(--acc); border: 1px solid color-mix(in srgb, var(--acc) 30%, transparent); }
+  .slide.section-slide .sl-num, .slide.title-slide .sl-num { background: rgba(255,255,255,.14); color: currentColor; border-color: rgba(255,255,255,.22); }
   .slide .sl-eyebrow { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: .75; margin-bottom: 12px; font-weight: 700; }
-  .slide .sl-big { font-size: clamp(28px, 4vw, 48px); font-weight: 800; line-height: 1.08; }
+  .slide .sl-big { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; letter-spacing: -1px; }
   .slide.section-slide { justify-content: center; align-items: center; text-align: center; }
+  /* transition / section slides: big elegant heading with a kicker + accent rule */
+  .slide.section-slide h2 { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
+    font-size: clamp(40px, 7.2vw, 82px); line-height: .98; letter-spacing: -1.5px; position: relative; z-index: 1; }
+  .sec-kicker { font-size: clamp(12px, 1.5vw, 16px); letter-spacing: 5px; text-transform: uppercase; font-weight: 800;
+    color: var(--acc); margin-bottom: 18px; position: relative; z-index: 1; opacity: .95; }
+  .sec-rule { width: 74px; height: 5px; border-radius: 3px; margin: 22px auto 0; position: relative; z-index: 1;
+    background: linear-gradient(90deg, transparent, var(--acc), transparent); }
   .slide.stat-slide { justify-content: center; align-items: center; text-align: center; }
   .sl-stat { font-size: clamp(48px, 8vw, 90px); font-weight: 800; line-height: 1; }
   .sl-stat-h { font-size: 20px; margin-top: 8px; }
@@ -2688,7 +2702,7 @@ function slSlideHtml(sl, i, s, wantNotes) {
   const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
   const type = sl.type || "bullets";
   if (type === "section")
-    return `<div class="slide section-slide sl-sec${i % 4}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};"><h2 class="sl-big">${esc(sl.heading || "")}</h2>${num}</div>` + slNotesHtml(sl, wantNotes);
+    return `<div class="slide section-slide sl-sec${i % 4}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};"><div class="sec-kicker">Section</div><h2 class="sl-big">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "stat")
     return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
         <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
