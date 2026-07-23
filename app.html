@@ -125,6 +125,15 @@
   .sl-style.sel { border-color: var(--coral); box-shadow: 0 0 0 3px color-mix(in srgb, var(--coral) 18%, transparent); }
   .sl-swatch { height: 40px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; padding: 0 10px; font-weight: 800; font-size: 13px; }
   .sl-style b { font-size: 13px; }
+  .sl-newdeck {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; padding: 11px 22px; border-radius: 999px;
+    font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; color: var(--coral);
+    background: color-mix(in srgb, var(--coral) 11%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--coral) 45%, transparent);
+    box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--coral) 55%, transparent);
+    transition: transform .14s ease, background .14s ease;
+  }
+  .sl-newdeck:hover { background: color-mix(in srgb, var(--coral) 18%, transparent); transform: translateY(-1px); }
   .slide {
     aspect-ratio: 16 / 9; border-radius: 12px; padding: 42px 54px; margin-bottom: 16px;
     box-shadow: 0 16px 34px -20px rgba(60,40,30,.4); overflow: hidden; position: relative;
@@ -1656,6 +1665,10 @@
       </div>
 
       <div class="hidden" id="sl-out">
+        <button class="sl-newdeck" onclick="slNewDeck()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Start a new deck
+        </button>
         <div class="save-bar" style="margin-bottom:14px;">
           <input class="txt-input" id="sl-title2" maxlength="80" placeholder="Deck name (e.g. Cell cycle overview)">
           <select class="save-folder" id="sl-folder" title="Folder to save into"></select>
@@ -1668,7 +1681,6 @@
           <button class="btn-primary" onclick="slExportPptx()" style="padding:11px 22px; font-size:14px;">Export PowerPoint</button>
           <button class="btn-ghost" onclick="slExportPdf()">Export PDF</button>
           <button class="btn-ghost" onclick="slExportGoogle()">Google Slides</button>
-          <button class="btn-ghost" onclick="showView('slides'); $('sl-out').classList.add('hidden'); $('sl-setup').classList.remove('hidden');">New deck</button>
         </div>
         <div id="sl-deck"></div>
       </div>
@@ -2675,6 +2687,11 @@ function openSlides() {
   renderResPicker("sl");
   renderSlStyles();
   renderFolderSelect("sl");
+}
+function slNewDeck() {
+  $("sl-out").classList.add("hidden");
+  $("sl-setup").classList.remove("hidden");
+  $("sl-setup").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // Save the current deck into a folder (images are stripped to keep it light —
