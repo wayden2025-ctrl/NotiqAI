@@ -256,6 +256,9 @@
   .slide .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
   .slide.with-img { flex-direction: row; gap: 30px; align-items: stretch; }
   .slide.with-img.img-left { flex-direction: row-reverse; }
+  .sl-imgstack { flex: 0 0 40%; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .sl-imgstack .sl-imgcell { flex: 1; min-height: 0; border-radius: 10px; background-size: cover; background-position: center;
+    box-shadow: 0 12px 26px -16px rgba(10,20,40,.55); }
   .sl-imgbox { flex: 0 0 40%; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .sl-imgbox img { width: 100%; height: 100%; object-fit: cover; }
   .sl-imgbox.empty { flex-direction: column; gap: 8px; border: 2px dashed; background: rgba(255,255,255,.35); font-size: 13px; }
@@ -2648,8 +2651,8 @@ async function slGenerate() {
     ? '2. TEACH on the slide, but stay in bullet form. Each bullet is a bold **lead term** then a concise explanatory clause of about 8-16 words — enough real substance to learn from, but still ONE bullet line, never a paragraph. Use 3-5 bullets per content slide.'
     : '2. MINIMAL text. Slide text is telegraphic keywords, NOT sentences. A bullet is 1-4 words (e.g. "July 1863", "Union victory", "Turning point") — never a full sentence. Max 4 bullets per slide.';
   const bulletsType = detailed
-    ? '- {"type":"bullets","heading":"short heading","bullets":["**Lead term** — a concise 8-16 word explanation that actually teaches this point"],"image":true,"imgquery":"...","notes":"..."}  (3-5 informative bullets, still one line each)'
-    : '- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":false,"notes":"the full spoken explanation"}  (2-4 telegraphic bullets only)';
+    ? '- {"type":"bullets","heading":"short heading","bullets":["**Lead term** — a concise 8-16 word explanation that actually teaches this point"],"image":true,"imgqueries":["subject1","subject2","subject3"],"notes":"..."}  (3-5 informative bullets, still one line each)'
+    : '- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":true,"imgqueries":["subject1","subject2"],"notes":"the full spoken explanation"}  (2-4 telegraphic bullets)';
   const detailNote = detailed
     ? 'Bullets, timeline entries and step details should carry REAL substance (roughly 8-16 words each) so the slide teaches on its own — but keep each to a SINGLE line, never a paragraph.'
     : "Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes.";
@@ -2670,14 +2673,14 @@ ${law2}
 
 Slide types — choose each to FIT its content, do NOT make them all the same:
 ${bulletsType}
-- {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"short phrase or brief clause"}],"image":false,"notes":"..."}  (chronological content)
-- {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"brief point or short clause"}],"notes":"..."}  (a process/sequence)
+- {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"short phrase or brief clause"}],"image":true,"imgqueries":["subject1","subject2"],"notes":"..."}  (chronological content)
+- {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"brief point or short clause"}],"image":true,"imgqueries":["subject1","subject2"],"notes":"..."}  (a process/sequence)
 - {"type":"compare","heading":"...","left":{"title":"...","points":["brief point"]},"right":{"title":"...","points":["brief point"]},"notes":"..."}  (contrast two things)
 - {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"a short phrase","notes":"..."}  (spotlight one striking fact)
 - {"type":"section","heading":"section title","imgquery":"a specific photo subject for this section's topic"}  (divider before a major new topic; the image becomes a dimmed background)
 - {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
 
-Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — every slide gets a RELEVANT picture. Set "image":true on EVERY "bullets", "timeline", and "steps" slide, and give every "section" slide an imgquery too (only "compare", "stat" and "takeaways" go without). The imgquery is the most important field for a good-looking deck, so make it EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that THIS slide is actually about — a real place, object, person-type, scene, or thing tied to the slide's content, 2-5 words, and include enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "supply demand price chart", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Each slide's imgquery must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
+Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" slide a single "imgquery". (Only "compare", "stat" and "takeaways" go without images.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
     ], true);
     const d = JSON.parse(raw);
@@ -2700,7 +2703,12 @@ Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count).
 function slBold(t, accent) { return esc(String(t || "")).replace(/\*\*(.+?)\*\*/g, '<b style="color:' + accent + '">$1</b>'); }
 function slNotesHtml(sl, wantNotes) { return (wantNotes && sl.notes) ? `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes)}</div>` : ""; }
 function slImgSlot(sl, i, s) {
-  if (sl.img) return `<div class="sl-imgbox" onclick="slAddImage(${i})" title="Click to change"><img src="${sl.img}"><span class="sl-imgx" onclick="event.stopPropagation(); slRemoveImage(${i})">&#10005;</span></div>`;
+  const imgs = (sl.imgs && sl.imgs.length) ? sl.imgs : (sl.img ? [sl.img] : []);
+  if (imgs.length > 1) {
+    const cells = imgs.slice(0, 3).map(u => `<div class="sl-imgcell" style="background-image:url('${u}')"></div>`).join("");
+    return `<div class="sl-imgstack">${cells}</div>`;
+  }
+  if (imgs.length === 1) return `<div class="sl-imgbox" onclick="slAddImage(${i})" title="Click to change"><img src="${imgs[0]}"><span class="sl-imgx" onclick="event.stopPropagation(); slRemoveImage(${i})">&#10005;</span></div>`;
   if (sl.image) return `<div class="sl-imgbox empty" onclick="slAddImage(${i})" style="border-color:${s.accent}; color:${s.accent};"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M4 18l6-6 4 4 3-3 3 3"/></svg><b>Add an image</b></div>`;
   return "";
 }
@@ -2828,12 +2836,12 @@ function slAddImage(i) {
   inp.onchange = async () => {
     const f = inp.files[0];
     if (!f) return;
-    try { slDeck.slides[i].img = await fileToScaledDataUrl(f, 1200); slDeck.slides[i].image = true; slRender(); }
+    try { slDeck.slides[i].img = await fileToScaledDataUrl(f, 1200); slDeck.slides[i].imgs = null; slDeck.slides[i].image = true; slRender(); }
     catch (e) { alert("Couldn't load that image."); }
   };
   inp.click();
 }
-function slRemoveImage(i) { slDeck.slides[i].img = null; slDeck.slides[i].image = false; slRender(); }
+function slRemoveImage(i) { slDeck.slides[i].img = null; slDeck.slides[i].imgs = null; slDeck.slides[i].image = false; slRender(); }
 
 // Auto-fill image slots from free stock photos (Pexels/Pixabay via /api/image).
 // No-ops gracefully if no key is configured — slots just stay as manual "Add an image".
@@ -2859,15 +2867,29 @@ async function slAutoImages() {
     const url = await grabFirst(deck.coverquery, deck.title, topic);
     if (url && slDeck === deck) { deck.cover = url; any = true; }
   })());
-  // per-slide images — content slides (image:true) and section dividers (imgquery)
-  deck.slides.filter(sl => !sl.img && (sl.image || (sl.type === "section" && sl.imgquery)) && (sl.imgquery || sl.heading))
-    .forEach(sl => jobs.push((async () => {
-      const iq = sl.imgquery || "";
-      const twoWords = iq.split(" ").slice(0, 2).join(" ");
-      // specific query -> topic-qualified heading -> first words -> deck topic
-      const url = await grabFirst(iq, (sl.heading ? clean(sl.heading) + " " + topic : ""), twoWords, topic);
-      if (url && slDeck === deck) { sl.img = url; any = true; }
-    })()));
+  deck.slides.forEach(sl => {
+    if (sl.img || (sl.imgs && sl.imgs.length)) return;
+    const isSection = sl.type === "section";
+    const wants = sl.image || (isSection && (sl.imgquery || (sl.imgqueries && sl.imgqueries.length)));
+    if (!wants) return;
+    // collect the slide's image search terms (2-3 for content slides -> a small collage)
+    let qs = Array.isArray(sl.imgqueries) ? sl.imgqueries.filter(Boolean) : [];
+    if (sl.imgquery) qs.unshift(sl.imgquery);
+    if (!qs.length && sl.heading) qs = [clean(sl.heading) + " " + topic];
+    qs = qs.slice(0, isSection ? 1 : 3);
+    jobs.push((async () => {
+      const results = await Promise.all(qs.map((q, idx) =>
+        grabFirst(q, idx === 0 && sl.heading ? clean(sl.heading) + " " + topic : "", topic)));
+      let imgs = [];
+      for (const u of results) if (u && !imgs.includes(u)) imgs.push(u);   // de-dup
+      if (!imgs.length) { const u = await grabFirst((sl.heading || "") + " " + topic, topic); if (u) imgs = [u]; }
+      if (imgs.length && slDeck === deck) {
+        if (isSection) sl.img = imgs[0];
+        else { sl.imgs = imgs; sl.img = imgs[0]; }
+        any = true;
+      }
+    })());
+  });
   await Promise.all(jobs);
   if (any && slDeck === deck) slRender();
 }
@@ -2954,7 +2976,11 @@ async function slExportPptx() {
     } else {
       sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 17, paraSpaceAfter: 12 } })), { x: txX, y: 1.7, w: W, h: 5, valign: "middle", fontFace: "Arial" });
     }
-    if (sl.img) { try { sd.addImage({ data: sl.img, x: imgX, y: 1.7, w: 4.7, h: 4.7, sizing: { type: "contain", w: 4.7, h: 4.7 } }); } catch (e) {} }
+    { const pics = (sl.imgs && sl.imgs.length) ? sl.imgs.slice(0, 3) : (sl.img ? [sl.img] : []);
+      if (pics.length) { try {
+        const gap = 0.18, tot = 5.0, ph = (tot - gap * (pics.length - 1)) / pics.length;
+        pics.forEach((u, k) => sd.addImage({ data: u, x: imgX, y: 1.4 + k * (ph + gap), w: 4.7, h: ph, sizing: { type: "cover", w: 4.7, h: ph } }));
+      } catch (e) {} } }
     if (sl.notes) sd.addNotes(sl.notes);
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
@@ -2992,7 +3018,10 @@ function slExportPdf() {
       } else {
         body = `<ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:7px 0 7px 24px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:${s.accent};">&#9656;</span>${bd(b)}</li>`).join("")}</ul>`;
       }
-      const img = sl.img ? `<div style="width:40%;display:flex;align-items:center;justify-content:center;"><img src="${sl.img}" style="max-width:100%;max-height:62vh;border-radius:8px;"></div>` : "";
+      const pics = (sl.imgs && sl.imgs.length) ? sl.imgs.slice(0, 3) : (sl.img ? [sl.img] : []);
+      const img = pics.length
+        ? `<div style="width:38%;height:66vh;display:flex;flex-direction:column;gap:10px;">${pics.map(u => `<div style="flex:1;background:url('${u}') center/cover;border-radius:8px;min-height:0;"></div>`).join("")}</div>`
+        : "";
       const imgLeft = sl.img && (idx % 2 === 1);
       return pslide(`${head}<div style="display:flex;gap:5%;flex:1;align-items:center;flex-direction:${imgLeft ? "row-reverse" : "row"};"><div style="flex:1;">${body}</div>${img}</div>`, s.bg, s.fg, false);
     })).join("");
