@@ -179,6 +179,10 @@
   /* small sans kicker (running section) above the serif heading — adds font + colour contrast */
   .sl-kicker { font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 800; font-size: clamp(11px, 1.3vw, 14px);
     letter-spacing: 3px; text-transform: uppercase; opacity: .55; margin-bottom: 7px; line-height: 1; }
+  /* click-to-edit the wording (font & size stay locked) */
+  #sl-deck [data-e] { outline: none; cursor: text; border-radius: 5px; transition: box-shadow .12s ease, background .12s ease; }
+  #sl-deck [data-e]:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 22%, transparent); }
+  #sl-deck [data-e]:focus { box-shadow: 0 0 0 2px var(--acc); background: color-mix(in srgb, var(--acc) 9%, transparent); }
   .slide.title-slide h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(46px, 7vw, 92px); line-height: .98; letter-spacing: -1.5px; margin-bottom: 4px; }
   .slide .sub { font-size: clamp(18px, 2.4vw, 30px); font-weight: 600; opacity: .9; margin-top: 16px; line-height: 1.3; max-width: 24ch; }
   /* title slide cover photo + readable veil */
@@ -2625,6 +2629,7 @@ const SL_STYLES = {
   educational: { emoji:"\ud83d\udcda", name:"Educational",  bg:"#fffaf2", fg:"#3a2e20", accent:"#e0761a", titleBg:"#e0761a", titleFg:"#ffffff" },
 };
 let slStyle = "school", slDeck = null;
+const CE = 'contenteditable="true" spellcheck="false"';   // editable words, locked styling
 const SL_SLIDES = { "3": 5, "5": 8, "10": 14, "20": 22 };
 
 function renderSlStyles() {
@@ -2722,56 +2727,102 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
     { const cov = sl.img
         ? `<div class="sl-cover" style="background-image:url('${sl.img}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
         : "";
-      return `<div class="slide section-slide sl-sec${i % 4}${sl.img ? " has-cover" : ""}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
+      return `<div class="slide section-slide sl-sec${i % 4}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
   if (type === "stat")
-    return `<div class="slide stat-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
-        <div class="sl-stat" style="color:${s.accent};">${esc(sl.big || "")}</div>
-        ${sl.heading ? `<h3 class="sl-stat-h">${esc(sl.heading)}</h3>` : ""}
-        ${sl.caption ? `<p class="sl-cap">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
+    return `<div class="slide stat-slide" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
+        <div class="sl-stat" ${CE} data-e="stat-big" style="color:${s.accent};">${esc(sl.big || "")}</div>
+        ${sl.heading ? `<h3 class="sl-stat-h" ${CE} data-e="stat-heading">${esc(sl.heading)}</h3>` : ""}
+        ${sl.caption ? `<p class="sl-cap" ${CE} data-e="stat-caption">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "takeaways") {
-    const items = (sl.bullets || []).map(b =>
-      `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span>${slBold(b, s.accent)}</span></li>`).join("");
-    return `<div class="slide tk-slide" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
+    const items = (sl.bullets || []).map((b, k) =>
+      `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span ${CE} data-e="tk" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("");
+    return `<div class="slide tk-slide" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
         <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
-        <h2 style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
+        <h2 ${CE} data-e="heading" style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
   }
   const kick = section ? `<div class="sl-kicker">${esc(section)}</div>` : "";
-  const heading = `${kick}<h2 style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
+  const heading = `${kick}<h2 ${CE} data-e="heading" style="color:${s.accent};">${esc(sl.heading || "")}</h2>`;
   let body = "";
   if (type === "timeline") {
-    body = `<div class="tl" style="--ln:${s.accent};">` + (sl.events || []).map(e =>
-      `<div class="tl-item" data-reveal><span class="tl-dot" style="background:${s.accent};"></span><div><b style="color:${s.accent};">${esc(e.when || "")}</b><div class="tl-w">${esc(e.what || "")}</div></div></div>`).join("") + `</div>`;
+    body = `<div class="tl" style="--ln:${s.accent};">` + (sl.events || []).map((e, k) =>
+      `<div class="tl-item" data-reveal><span class="tl-dot" style="background:${s.accent};"></span><div><b ${CE} data-e="tl-when" data-i="${k}" style="color:${s.accent};">${esc(e.when || "")}</b><div class="tl-w" ${CE} data-e="tl-what" data-i="${k}">${esc(e.what || "")}</div></div></div>`).join("") + `</div>`;
   } else if (type === "steps") {
     body = `<div class="st-grid">` + (sl.steps || []).map((st, k) =>
-      `<div class="st-item" data-reveal><span class="st-num" style="background:${s.accent}; color:${s.bg};">${k + 1}</span><div><b>${esc(st.title || "")}</b><div class="st-d">${esc(st.detail || "")}</div></div></div>`).join("") + `</div>`;
+      `<div class="st-item" data-reveal><span class="st-num" style="background:${s.accent}; color:${s.bg};">${k + 1}</span><div><b ${CE} data-e="st-title" data-i="${k}">${esc(st.title || "")}</b><div class="st-d" ${CE} data-e="st-detail" data-i="${k}">${esc(st.detail || "")}</div></div></div>`).join("") + `</div>`;
   } else if (type === "compare") {
-    const col = c => `<div class="cmp-col" data-reveal style="border-color:${s.accent}55;"><b style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map(p => `<li>${slBold(p, s.accent)}</li>`).join("")}</ul></div>`;
-    body = `<div class="cmp">${col(sl.left)}${col(sl.right)}</div>`;
+    const col = (c, side) => `<div class="cmp-col" data-reveal style="border-color:${s.accent}55;"><b ${CE} data-e="cmp-title" data-side="${side}" style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map((p, k) => `<li><span ${CE} data-e="cmp-point" data-side="${side}" data-i="${k}">${slBold(p, s.accent)}</span></li>`).join("")}</ul></div>`;
+    body = `<div class="cmp">${col(sl.left, "left")}${col(sl.right, "right")}</div>`;
   } else {
-    body = `<ul class="sl-bullets">${(sl.bullets || []).map(b => `<li data-reveal style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span>${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
+    body = `<ul class="sl-bullets">${(sl.bullets || []).map((b, k) => `<li data-reveal style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span ${CE} data-e="bullet" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
   }
   const slot = slImgSlot(sl, i, s);
   const imgLeft = slot && (i % 2 === 1);
-  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slTitleHtml(s) {
   const hasCover = !!slDeck.cover;
   const cover = hasCover
     ? `<div class="sl-cover" style="background-image:url('${slDeck.cover}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
     : "";
-  return `<div class="slide title-slide${hasCover ? " has-cover" : ""}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cover}
+  return `<div class="slide title-slide${hasCover ? " has-cover" : ""}" data-si="-1" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cover}
       <div class="sl-title-body">
-        ${slDeck.date ? `<div class="sl-eyebrow">${esc(slDeck.date)}</div>` : ""}
-        <h2 class="sl-big">${esc(slDeck.title || "Untitled")}</h2>
-        ${slDeck.subtitle ? `<div class="sub">${esc(slDeck.subtitle)}</div>` : ""}
+        ${slDeck.date ? `<div class="sl-eyebrow" ${CE} data-e="deck-date">${esc(slDeck.date)}</div>` : ""}
+        <h2 class="sl-big" ${CE} data-e="deck-title">${esc(slDeck.title || "Untitled")}</h2>
+        ${slDeck.subtitle ? `<div class="sub" ${CE} data-e="deck-subtitle">${esc(slDeck.subtitle)}</div>` : ""}
       </div>
     </div>`;
+}
+// ---- inline editing: rewrite the words, keep the font & size ----
+function slBindEdit() {
+  const deck = $("sl-deck");
+  if (!deck || deck._editBound) return;
+  deck._editBound = true;
+  deck.addEventListener("input", (e) => { const el = e.target.closest("[data-e]"); if (el) slEditSync(el); });
+  // Enter finishes editing instead of adding a line break
+  deck.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.closest("[data-e]")) { e.preventDefault(); e.target.blur(); }
+  });
+  // paste as PLAIN text so pasted formatting/fonts can't sneak in
+  deck.addEventListener("paste", (e) => {
+    if (!e.target.closest("[data-e]")) return;
+    e.preventDefault();
+    const t = ((e.clipboardData || window.clipboardData).getData("text/plain") || "").replace(/\r?\n/g, " ");
+    document.execCommand("insertText", false, t);
+  });
+}
+function slEditSync(el) {
+  if (!slDeck) return;
+  const slideEl = el.closest("[data-si]");
+  const si = slideEl ? parseInt(slideEl.dataset.si, 10) : -1;
+  const f = el.dataset.e, k = el.dataset.i != null ? parseInt(el.dataset.i, 10) : null, side = el.dataset.side;
+  const plain = () => el.textContent.replace(/ /g, " ");
+  // keep the bold **lead term** marker for bullet-style fields
+  const withBold = () => el.innerHTML.replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, "**$1**").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+  if (si < 0) {
+    if (f === "deck-title") slDeck.title = plain();
+    else if (f === "deck-subtitle") slDeck.subtitle = plain();
+    else if (f === "deck-date") slDeck.date = plain();
+    return;
+  }
+  const sl = slDeck.slides[si]; if (!sl) return;
+  const col = () => (side === "right" ? sl.right : sl.left);
+  if (f === "heading" || f === "sec-heading" || f === "stat-heading") sl.heading = plain();
+  else if (f === "bullet" || f === "tk") { if (sl.bullets) sl.bullets[k] = withBold(); }
+  else if (f === "tl-when") { if (sl.events && sl.events[k]) sl.events[k].when = plain(); }
+  else if (f === "tl-what") { if (sl.events && sl.events[k]) sl.events[k].what = plain(); }
+  else if (f === "st-title") { if (sl.steps && sl.steps[k]) sl.steps[k].title = plain(); }
+  else if (f === "st-detail") { if (sl.steps && sl.steps[k]) sl.steps[k].detail = plain(); }
+  else if (f === "cmp-title") { const c = col(); if (c) c.title = plain(); }
+  else if (f === "cmp-point") { const c = col(); if (c && c.points) c.points[k] = withBold(); }
+  else if (f === "stat-big") sl.big = plain();
+  else if (f === "stat-caption") sl.caption = plain();
 }
 function slRender() {
   const s = SL_STYLES[slStyle];
   const wantNotes = $("sl-notes").value === "yes";
-  $("sl-count").textContent = `${slDeck.slides.length + 1} slides · ${SL_STYLES[slStyle].name} style`;
+  slBindEdit();
+  $("sl-count").innerHTML = `${slDeck.slides.length + 1} slides · ${esc(SL_STYLES[slStyle].name)} style <span style="opacity:.7; font-weight:600;">· click any text to rewrite it</span>`;
   let html = slTitleHtml(s);
   let section = slDeck.topic || "";
   slDeck.slides.forEach((sl, i) => {
