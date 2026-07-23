@@ -260,7 +260,7 @@
     background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
     box-shadow: inset -6px -7px 14px rgba(14,30,60,.5), inset 4px 4px 9px rgba(255,255,255,.5), 0 16px 30px -12px color-mix(in srgb, var(--g2) 55%, transparent);
   }
-  .cw-orb::before { content: "N"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: #fff; text-shadow: 0 2px 6px rgba(10,24,50,.5); }
+  .cw-orb::before { content: ""; background: url(logo-glyph.svg) center/66% no-repeat; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: #fff; text-shadow: 0 2px 6px rgba(10,24,50,.5); }
   .cw-title { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -1.5px; color: var(--ink); line-height: 1; }
   .cw-title em { color: var(--coral); }
   .cw-hint { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 46ch; margin: 12px auto 0; }
@@ -564,7 +564,7 @@
   .rail .orb::after { content:""; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%;
     background: radial-gradient(circle,#fff,transparent 70%); }
   .rail .orb::before {
-    content: "N"; position: absolute; inset: 0; z-index: 1;
+    content: ""; background: url(logo-glyph.svg) center/66% no-repeat; position: absolute; inset: 0; z-index: 1;
     display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px;
     font-family: 'Instrument Serif', serif; font-style: italic; font-size: 19px;
     color: #fff; text-shadow: 0 1px 3px rgba(10,24,50,.55);
