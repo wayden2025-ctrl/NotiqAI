@@ -129,14 +129,24 @@
     aspect-ratio: 16 / 9; border-radius: 12px; padding: 42px 54px; margin-bottom: 16px;
     box-shadow: 0 16px 34px -20px rgba(60,40,30,.4); overflow: hidden; position: relative;
     display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,.06);
+    /* faint dot-grid texture so no slide reads as blank white */
+    background-image: radial-gradient(circle, color-mix(in srgb, var(--acc) 8%, transparent) 1.5px, transparent 1.6px);
+    background-size: 26px 26px; background-position: 3px 3px;
   }
+  /* title & section covers sit above the dots; keep dots on plain content slides */
+  .slide.title-slide.has-cover, .slide.section-slide.has-cover { background-image: none; }
   .slide.title-slide { justify-content: center; }
   /* ---- decorative slide backgrounds (screen preview, Present mode & PDF) ---- */
   .slide > * { position: relative; z-index: 1; }
   .slide::before, .slide::after { content: ""; position: absolute; z-index: 0; pointer-events: none; }
   /* content slides: soft accent corner glow + a slim heading accent bar */
-  .sl-content::after { right: -90px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%;
-    background: radial-gradient(circle at center, color-mix(in srgb, var(--acc) 16%, transparent), transparent 70%); }
+  .sl-content::after { right: -110px; bottom: -110px; width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--acc) 20%, transparent), transparent 68%); }
+  /* extra flourish: a big soft outline ring high on the slide fills empty space */
+  .sl-content .sl-body { position: relative; }
+  .sl-content .sl-body::after { content: ""; position: absolute; right: -60px; top: -70px; width: 190px; height: 190px;
+    border-radius: 50%; border: 2px solid color-mix(in srgb, var(--acc) 13%, transparent); z-index: -1; pointer-events: none; }
+  .sl-content.with-img .sl-body::after { display: none; }
   .sl-content::before { left: 0; top: 40px; width: 6px; height: 42px; border-radius: 0 4px 4px 0;
     background: color-mix(in srgb, var(--acc) 90%, transparent); }
   .sl-content.with-img::after { right: -120px; bottom: -120px; }
@@ -2635,7 +2645,7 @@ const SL_SLIDES = { "3": 5, "5": 8, "10": 14, "20": 22 };
 function renderSlStyles() {
   $("sl-styles").innerHTML = Object.entries(SL_STYLES).map(([id, s]) =>
     `<div class="sl-style${id === slStyle ? " sel" : ""}" onclick="slPickStyle('${id}')">
-       <div class="sl-swatch" style="background:${s.titleBg}; color:${s.titleFg};">Aa</div>
+       <div class="sl-swatch" style="background-color:${s.titleBg}; color:${s.titleFg};">Aa</div>
        <b>${s.emoji} ${s.name}</b>
      </div>`).join("");
 }
@@ -2727,16 +2737,16 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
     { const cov = sl.img
         ? `<div class="sl-cover" style="background-image:url('${sl.img}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
         : "";
-      return `<div class="slide section-slide sl-sec${i % 4}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
+      return `<div class="slide section-slide sl-sec${i % 4}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
   if (type === "stat")
-    return `<div class="slide stat-slide" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};">
+    return `<div class="slide stat-slide" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};">
         <div class="sl-stat" ${CE} data-e="stat-big" style="color:${s.accent};">${esc(sl.big || "")}</div>
         ${sl.heading ? `<h3 class="sl-stat-h" ${CE} data-e="stat-heading">${esc(sl.heading)}</h3>` : ""}
         ${sl.caption ? `<p class="sl-cap" ${CE} data-e="stat-caption">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "takeaways") {
     const items = (sl.bullets || []).map((b, k) =>
       `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span ${CE} data-e="tk" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("");
-    return `<div class="slide tk-slide" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
+    return `<div class="slide tk-slide" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
         <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
         <h2 ${CE} data-e="heading" style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
@@ -2758,14 +2768,14 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
   }
   const slot = slImgSlot(sl, i, s);
   const imgLeft = slot && (i % 2 === 1);
-  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slTitleHtml(s) {
   const hasCover = !!slDeck.cover;
   const cover = hasCover
     ? `<div class="sl-cover" style="background-image:url('${slDeck.cover}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
     : "";
-  return `<div class="slide title-slide${hasCover ? " has-cover" : ""}" data-si="-1" style="background:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cover}
+  return `<div class="slide title-slide${hasCover ? " has-cover" : ""}" data-si="-1" style="background-color:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cover}
       <div class="sl-title-body">
         ${slDeck.date ? `<div class="sl-eyebrow" ${CE} data-e="deck-date">${esc(slDeck.date)}</div>` : ""}
         <h2 class="sl-big" ${CE} data-e="deck-title">${esc(slDeck.title || "Untitled")}</h2>
@@ -3069,7 +3079,7 @@ function slExportPdf() {
   const slidesHtml = [pslide(titleInner, s.titleBg, s.titleFg, !slDeck.cover)]
     .concat(slDeck.slides.map((sl, idx) => {
       const type = sl.type || "bullets";
-      if (type === "section") return pslide(`${sl.img ? `<div style="position:absolute;inset:0;background:url('${sl.img}') center/cover;"></div><div style="position:absolute;inset:0;background:${s.titleBg}c2;"></div>` : ""}<div style="position:relative;z-index:1;${sl.img ? "text-shadow:0 2px 18px rgba(0,0,0,.5);" : ""}"><h1 style="font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-style:italic;font-size:52px;">${esc(sl.heading || "")}</h1></div>`, s.titleBg, s.titleFg, true);
+      if (type === "section") return pslide(`${sl.img ? `<div style="position:absolute;inset:0;background:url('${sl.img}') center/cover;"></div><div style="position:absolute;inset:0;background-color:${s.titleBg}c2;"></div>` : ""}<div style="position:relative;z-index:1;${sl.img ? "text-shadow:0 2px 18px rgba(0,0,0,.5);" : ""}"><h1 style="font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-style:italic;font-size:52px;">${esc(sl.heading || "")}</h1></div>`, s.titleBg, s.titleFg, true);
       if (type === "stat") return pslide(`<div style="font-size:72px;font-weight:800;color:${s.accent};">${esc(sl.big || "")}</div>${sl.heading ? `<h3 style="font-size:22px;">${esc(sl.heading)}</h3>` : ""}${sl.caption ? `<p style="font-size:20px;opacity:.85;">${esc(sl.caption)}</p>` : ""}`, s.bg, s.fg, true);
       if (type === "takeaways") return pslide(`<div style="letter-spacing:3px;font-size:14px;opacity:.75;color:${s.accent};margin-bottom:10px;">SUMMARY</div><h2 style="color:${s.accent};font-size:30px;margin-bottom:20px;">${esc(sl.heading || "Key Takeaways")}</h2><ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="display:flex;gap:14px;align-items:flex-start;font-size:22px;font-weight:700;padding:11px 0;line-height:1.4;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:${s.accent};color:${s.bg};display:flex;align-items:center;justify-content:center;font-size:16px;">&#10003;</span><span>${bd(b)}</span></li>`).join("")}</ul>`, s.bg, s.fg, false);
       const head = `<h2 style="color:${s.accent};font-size:28px;margin-bottom:16px;">${esc(sl.heading || "")}</h2>`;
