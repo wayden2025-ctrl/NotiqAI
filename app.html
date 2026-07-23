@@ -3087,44 +3087,39 @@ async function slExportGoogle() {
 function slExportPdf() {
   if (!slDeck) return;
   const s = SL_STYLES[slStyle];
-  const bd = (t) => esc(String(t || "")).replace(/\*\*(.+?)\*\*/g, "<b style=\"color:" + s.accent + "\">$1</b>");
-  const pslide = (inner, bg, fg, center) => `<div class="pslide" style="background:${bg};color:${fg};${center ? "justify-content:center;text-align:center;" : ""}">${inner}</div>`;
-  const titleInner = `${slDeck.cover ? `<div style="position:absolute;inset:0;background:url('${slDeck.cover}') center/cover;"></div><div style="position:absolute;inset:0;background:linear-gradient(102deg, ${s.titleBg} 0%, ${s.titleBg}c8 44%, ${s.titleBg}55 100%);"></div>` : ""}<div style="position:relative;z-index:1;${slDeck.cover ? "margin-top:auto;text-shadow:0 2px 24px rgba(0,0,0,.45);" : ""}">${slDeck.date ? `<div style="letter-spacing:4px;font-size:16px;opacity:.8;margin-bottom:14px;">${esc(String(slDeck.date).toUpperCase())}</div>` : ""}<h1 style="font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:72px;line-height:1;letter-spacing:-1px;margin:0;">${esc(slDeck.title || "")}</h1>${slDeck.subtitle ? `<p style="opacity:.9;font-size:26px;font-weight:600;margin-top:12px;">${esc(slDeck.subtitle)}</p>` : ""}</div>`;
-  const slidesHtml = [pslide(titleInner, s.titleBg, s.titleFg, !slDeck.cover)]
-    .concat(slDeck.slides.map((sl, idx) => {
-      const type = sl.type || "bullets";
-      if (type === "section") return pslide(`${sl.img ? `<div style="position:absolute;inset:0;background:url('${sl.img}') center/cover;"></div><div style="position:absolute;inset:0;background-color:${s.titleBg}c2;"></div>` : ""}<div style="position:relative;z-index:1;${sl.img ? "text-shadow:0 2px 18px rgba(0,0,0,.5);" : ""}"><h1 style="font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-style:italic;font-size:52px;">${esc(sl.heading || "")}</h1></div>`, s.titleBg, s.titleFg, true);
-      if (type === "stat") return pslide(`<div style="font-size:72px;font-weight:800;color:${s.accent};">${esc(sl.big || "")}</div>${sl.heading ? `<h3 style="font-size:22px;">${esc(sl.heading)}</h3>` : ""}${sl.caption ? `<p style="font-size:20px;opacity:.85;">${esc(sl.caption)}</p>` : ""}`, s.bg, s.fg, true);
-      if (type === "takeaways") return pslide(`<div style="letter-spacing:3px;font-size:14px;opacity:.75;color:${s.accent};margin-bottom:10px;">SUMMARY</div><h2 style="color:${s.accent};font-size:30px;margin-bottom:20px;">${esc(sl.heading || "Key Takeaways")}</h2><ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="display:flex;gap:14px;align-items:flex-start;font-size:22px;font-weight:700;padding:11px 0;line-height:1.4;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:${s.accent};color:${s.bg};display:flex;align-items:center;justify-content:center;font-size:16px;">&#10003;</span><span>${bd(b)}</span></li>`).join("")}</ul>`, s.bg, s.fg, false);
-      const head = `<h2 style="color:${s.accent};font-size:28px;margin-bottom:16px;">${esc(sl.heading || "")}</h2>`;
-      let body = "";
-      if (type === "timeline") {
-        body = (sl.events || []).map(e => `<div style="border-left:3px solid ${s.accent};padding:0 0 14px 16px;margin-left:6px;"><b style="color:${s.accent};font-size:17px;">${esc(e.when || "")}</b><div style="font-size:16px;">${esc(e.what || "")}</div></div>`).join("");
-      } else if (type === "steps") {
-        body = (sl.steps || []).map((st, k) => `<div style="display:flex;gap:12px;margin-bottom:12px;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:${s.accent};color:${s.bg};display:flex;align-items:center;justify-content:center;font-weight:800;">${k + 1}</span><div><b style="font-size:17px;">${esc(st.title || "")}</b><div style="font-size:15px;opacity:.9;">${esc(st.detail || "")}</div></div></div>`).join("");
-      } else if (type === "compare") {
-        const col = c => `<div style="flex:1;border:1.5px solid ${s.accent}55;border-radius:10px;padding:16px;"><b style="color:${s.accent};font-size:18px;">${esc((c && c.title) || "")}</b><ul style="list-style:none;padding:0;margin:8px 0 0;">${((c && c.points) || []).map(p => `<li style="font-size:15px;padding:5px 0 5px 16px;position:relative;"><span style="position:absolute;left:0;color:${s.accent};">&bull;</span>${bd(p)}</li>`).join("")}</ul></div>`;
-        body = `<div style="display:flex;gap:20px;">${col(sl.left)}${col(sl.right)}</div>`;
-      } else {
-        body = `<ul style="list-style:none;padding:0;margin:0;">${(sl.bullets || []).map(b => `<li style="font-size:18px;padding:7px 0 7px 24px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:${s.accent};">&#9656;</span>${bd(b)}</li>`).join("")}</ul>`;
-      }
-      const pics = (sl.imgs && sl.imgs.length) ? sl.imgs.slice(0, 3) : (sl.img ? [sl.img] : []);
-      const img = pics.length
-        ? `<div style="width:38%;height:66vh;display:flex;flex-direction:column;gap:10px;">${pics.map(u => `<div style="flex:1;background:url('${u}') center/cover;border-radius:8px;min-height:0;"></div>`).join("")}</div>`
-        : "";
-      const imgLeft = sl.img && (idx % 2 === 1);
-      return pslide(`${head}<div style="display:flex;gap:5%;flex:1;align-items:center;flex-direction:${imgLeft ? "row-reverse" : "row"};"><div style="flex:1;">${body}</div>${img}</div>`, s.bg, s.fg, false);
-    })).join("");
+  // Build the deck with the SAME renderer the preview uses, so the PDF is pixel-identical
+  // (real fonts, colours, decorations, image collages — nothing hand-rebuilt).
+  let html = slTitleHtml(s);
+  let section = slDeck.topic || "";
+  slDeck.slides.forEach((sl, i) => {
+    if (sl.type === "section") section = sl.heading || section;
+    html += slSlideHtml(sl, i, s, false, section);
+  });
+  // Copy the app's own stylesheet so every .slide / decoration / typography rule applies
+  const appCss = Array.from(document.querySelectorAll("style")).map(st => st.textContent).join("\n");
+  const fonts = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">';
   const w = window.open("", "_blank");
   if (!w) { alert("Allow popups to export the PDF."); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(slDeck.title || "Deck")}</title><style>
-    @page { size: landscape; margin: 0; }
-    body { margin: 0; font-family: Arial, sans-serif; }
-    .pslide { position: relative; overflow: hidden; width: 100vw; height: 100vh; padding: 6vh 7vw; display: flex; flex-direction: column; page-break-after: always; box-sizing: border-box; }
-    h1,h2 { margin: 0 0 10px; } ul { margin: 0; padding: 0; }
-  </style></head><body>${slidesHtml}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(slDeck.title || "Deck")}</title>${fonts}
+    <style>${appCss}</style>
+    <style>
+      @page { size: 1280px 720px; margin: 0; }
+      html, body { margin: 0; padding: 0; background: #fff; }
+      #pd { width: 1280px; }
+      /* each real slide becomes one full page, no screen chrome */
+      #pd .slide { width: 1280px; height: 720px; aspect-ratio: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; }
+      #pd .slide:last-child { page-break-after: auto; }
+      /* remove editing affordances + speaker notes from the print */
+      #pd [data-e] { box-shadow: none !important; background-color: transparent !important; cursor: auto; }
+      #pd .sl-notes { display: none; }
+      /* force backgrounds & colours to actually print */
+      #pd, #pd * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    </style></head><body><div id="pd">${html}</div></body></html>`);
   w.document.close();
-  setTimeout(() => { w.focus(); w.print(); }, 400);
+  const go = () => { try { w.focus(); w.print(); } catch (e) {} };
+  // wait for the web fonts (and layout) before printing so nothing falls back to Arial
+  try { w.document.fonts.ready.then(() => setTimeout(go, 250)); } catch (e) { setTimeout(go, 1000); }
 }
 
 // ================= TALK WITH AI =================
