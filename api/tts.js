@@ -40,40 +40,57 @@ module.exports = async (req, res) => {
   const ovoice = String((body && body.ovoice) || "alloy").trim();
   if (!text) { res.status(400).json({ error: "Missing text" }); return; }
 
+  // Remember WHY Gemini failed so we can surface a real reason instead of the
+  // misleading "set GEMINI_API_KEY" message when the key is actually present.
+  let geminiFail = null;
+
   // ---- 1) Gemini TTS (free tier, uses your existing key) ----
+  // Some keys/projects don't have access to a given preview TTS model, so try a
+  // couple of known model names before giving up.
   if (process.env.GEMINI_API_KEY) {
-    try {
-      const model = process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts";
-      const r = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" +
-          encodeURIComponent(process.env.GEMINI_API_KEY),
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text }] }],
-            generationConfig: {
-              responseModalities: ["AUDIO"],
-              speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
-            },
-          }),
+    const models = [process.env.GEMINI_TTS_MODEL, "gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts"]
+      .filter(Boolean).filter((m, i, a) => a.indexOf(m) === i);   // de-dupe, keep order
+    for (const model of models) {
+      try {
+        const r = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" +
+            encodeURIComponent(process.env.GEMINI_API_KEY),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text }] }],
+              generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
+              },
+            }),
+          }
+        );
+        if (r.ok) {
+          const j = await r.json();
+          const part = j && j.candidates && j.candidates[0] && j.candidates[0].content &&
+            j.candidates[0].content.parts && j.candidates[0].content.parts[0];
+          const data = part && part.inlineData && part.inlineData.data;
+          if (data) {
+            const mime = (part.inlineData.mimeType || "").toLowerCase();
+            const m = mime.match(/rate=(\d+)/);
+            const rate = m ? parseInt(m[1], 10) : 24000;
+            res.status(200).json({ audio: pcmToWavDataUri(data, rate), provider: "gemini" });
+            return;
+          }
+          geminiFail = { model, status: r.status, detail: "Gemini returned no audio for this request." };
+        } else {
+          // capture the real API error (403 no access, 404 bad model, 429 quota, 400 bad request)
+          let detail = "";
+          try { const eb = await r.json(); detail = (eb && eb.error && eb.error.message) || ""; }
+          catch (e2) { try { detail = (await r.text()).slice(0, 300); } catch (e3) { /* ignore */ } }
+          geminiFail = { model, status: r.status, detail: detail || ("HTTP " + r.status) };
+          // 404/400 usually = this model name isn't available to the key; try the next one.
+          if (r.status !== 404 && r.status !== 400) break;   // 403/429/5xx won't be fixed by another model
         }
-      );
-      if (r.ok) {
-        const j = await r.json();
-        const part = j && j.candidates && j.candidates[0] && j.candidates[0].content &&
-          j.candidates[0].content.parts && j.candidates[0].content.parts[0];
-        const data = part && part.inlineData && part.inlineData.data;
-        if (data) {
-          const mime = (part.inlineData.mimeType || "").toLowerCase();
-          const m = mime.match(/rate=(\d+)/);
-          const rate = m ? parseInt(m[1], 10) : 24000;
-          res.status(200).json({ audio: pcmToWavDataUri(data, rate), provider: "gemini" });
-          return;
-        }
-      }
-      // fall through to OpenAI on any Gemini failure
-    } catch (e) { /* fall through */ }
+      } catch (e) { geminiFail = { model, status: 0, detail: String(e && e.message || e) }; }
+    }
   }
 
   // ---- 2) OpenAI TTS fallback (only if a key is set) ----
@@ -92,5 +109,16 @@ module.exports = async (req, res) => {
     } catch (e) { /* fall through */ }
   }
 
+  // Report the real cause. If a key WAS present but the provider rejected the
+  // request, show that — "set GEMINI_API_KEY" is wrong and confusing then.
+  if (geminiFail) {
+    const s = geminiFail.status;
+    let hint = geminiFail.detail || "the request was rejected";
+    if (s === 429) hint = "Gemini TTS free-tier quota reached — wait a bit and try again (or raise the limit in Google AI Studio). Details: " + geminiFail.detail;
+    else if (s === 403) hint = "This Gemini key/project doesn't have access to the TTS model (" + geminiFail.model + "). Enable it in Google AI Studio or set GEMINI_TTS_MODEL. Details: " + geminiFail.detail;
+    else if (s === 404 || s === 400) hint = "TTS model '" + geminiFail.model + "' isn't available to this key. Set GEMINI_TTS_MODEL to a TTS model you have access to. Details: " + geminiFail.detail;
+    res.status(502).json({ error: "Narration failed: " + hint, provider: "gemini", status: s });
+    return;
+  }
   res.status(502).json({ error: "No TTS engine available. Set GEMINI_API_KEY (recommended) or OPENAI_API_KEY in Vercel." });
 };
