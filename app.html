@@ -1648,6 +1648,12 @@
           <p>Turn notes into a full slide deck — title slide with a cover image, clean bullets, speaker notes — then export to PowerPoint, PDF or Google Slides.</p>
           <span class="bento-go">Build my deck</span>
         </div>
+        <div class="bento-card" onclick="showView('video')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="14" rx="2"/><path d="M17.5 10l4-2.5v9L17.5 14"/><path d="M8 9.5l3.5 2.5L8 14.5z" fill="currentColor" stroke="none"/></svg></div>
+          <h3>Video Overview</h3>
+          <p>Turn any saved deck into a narrated video — a teacher-style AI voice walks through your slides with motion and captions. Download &amp; share.</p>
+          <span class="bento-go">Make a video</span>
+        </div>
         <div class="bento-card" onclick="openReview()">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v5h-5"/></svg></div>
           <h3>Smart review</h3>
@@ -1843,7 +1849,6 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
           <b id="sl-count" style="font-size:14px; color:var(--muted);"></b>
           <span style="flex:1;"></span>
-          <button class="vo-open-btn" onclick="voOpen()" title="Turn this deck into a narrated video"><span class="vo-play">&#9654;</span> Generate Video Overview</button>
           <button class="btn-primary" onclick="slExportPptx()" style="padding:11px 22px; font-size:14px;">Export PowerPoint</button>
           <button class="btn-ghost" onclick="slExportPdf()">Export PDF</button>
           <button class="btn-ghost" onclick="slExportGoogle()">Google Slides</button>
@@ -1863,47 +1868,50 @@
         </div>
       </div>
 
-      <!-- VIDEO OVERVIEW -->
-      <div id="vo-scrim" class="vo-scrim" onclick="if(event.target===this)voClose()">
-        <div class="vo-card">
-          <div class="vo-head">
-            <div>
-              <div class="eyebrow">Video Overview</div>
-              <h3 class="vo-title">A narrated video of your deck</h3>
-            </div>
-            <button class="vo-x" onclick="voClose()" title="Close">&#10005;</button>
-          </div>
+    </div>
 
-          <div id="vo-setup">
-            <p class="vo-sub">Notiq writes a teacher-style script grounded in your slides, narrates it with an AI voice, and animates the slides into a shareable video with captions.</p>
-            <div class="vo-row">
-              <label class="field-label">Narrator voice</label>
-              <select class="txt-input" id="vo-voice"></select>
-            </div>
-            <div class="vo-row">
-              <label class="field-label">Length</label>
-              <select class="txt-input" id="vo-length">
-                <option value="auto" selected>Auto (match the deck)</option>
-                <option value="short">Short &amp; punchy</option>
-                <option value="detailed">More detailed</option>
-              </select>
-            </div>
-            <label class="vo-check"><input type="checkbox" id="vo-captions" checked> Burn in captions</label>
-            <button class="btn-primary vo-go" id="vo-go" onclick="voGenerate()">&#9654;&nbsp; Generate video</button>
-            <div class="vo-status" id="vo-status"></div>
-          </div>
+    <!-- VIDEO OVERVIEW (tool) -->
+    <div class="view hidden" id="view-video">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <span class="eyebrow">Video Overview</span>
+      <h1 class="page-title">Turn a deck into a <em>narrated video.</em></h1>
+      <p class="page-sub">Pick one of your saved slide decks. Notiq writes a teacher-style script grounded in it, narrates it with an AI voice, and films your animated slides into a shareable video with captions.</p>
 
-          <div id="vo-result" class="hidden">
-            <video id="vo-video" class="vo-video" controls playsinline></video>
-            <div class="vo-actions">
-              <button class="btn-primary" id="vo-download" onclick="voDownload()">Download video</button>
-              <button class="btn-ghost" onclick="voTranscript()">Transcript</button>
-              <button class="btn-ghost" onclick="voSRT()">Captions (.srt)</button>
-              <button class="btn-ghost" onclick="voReset()">Regenerate</button>
-            </div>
-            <p class="vo-hint" id="vo-hint"></p>
-          </div>
+      <div class="surface" id="vo-empty" style="display:none; max-width:620px;">
+        <p style="font-size:15.5px; line-height:1.6; margin:0;"><b>Save a slide deck first.</b> Video Overview works from a deck you've saved to a folder. <a href="#" onclick="showView('slides'); return false;" style="color:var(--coral); font-weight:800;">Build &amp; save a deck</a>, then come back here.</p>
+      </div>
+
+      <div id="vo-form" style="display:none; max-width:560px;">
+        <div class="vo-row">
+          <label class="field-label">Choose a saved deck</label>
+          <select class="txt-input" id="vo-deck"></select>
         </div>
+        <div class="vo-row">
+          <label class="field-label">Narrator voice</label>
+          <select class="txt-input" id="vo-voice"></select>
+        </div>
+        <div class="vo-row">
+          <label class="field-label">Length</label>
+          <select class="txt-input" id="vo-length">
+            <option value="auto" selected>Auto (match the deck)</option>
+            <option value="short">Short &amp; punchy</option>
+            <option value="detailed">More detailed</option>
+          </select>
+        </div>
+        <label class="vo-check"><input type="checkbox" id="vo-captions" checked> Burn in captions</label>
+        <button class="btn-primary vo-go" id="vo-go" onclick="voGenerate()">&#9654;&nbsp; Generate video</button>
+        <div class="vo-status" id="vo-status"></div>
+      </div>
+
+      <div id="vo-result" class="hidden" style="max-width:840px;">
+        <video id="vo-video" class="vo-video" controls playsinline></video>
+        <div class="vo-actions">
+          <button class="btn-primary" id="vo-download" onclick="voDownload()">Download video</button>
+          <button class="btn-ghost" onclick="voTranscript()">Transcript</button>
+          <button class="btn-ghost" onclick="voSRT()">Captions (.srt)</button>
+          <button class="btn-ghost" onclick="voReset()">Make another</button>
+        </div>
+        <p class="vo-hint" id="vo-hint"></p>
       </div>
     </div>
 
@@ -3554,19 +3562,33 @@ const VO_VOICES = [
   { label: "Clear Lecturer (M)",       gemini: "Iapetus",    openai: "alloy" },
   { label: "Storyteller (F)",          gemini: "Callirrhoe", openai: "shimmer" },
 ];
-let voScriptSegs = null, voMeta = null, voBlob = null, voURL = null, voBusy = false;
+let voScriptSegs = null, voMeta = null, voBlob = null, voURL = null, voBusy = false, voSavedDecks = [];
 
-function voOpen() {
-  if (!slDeck || !slDeck.slides || !slDeck.slides.length) { alert("Build a deck first."); return; }
-  const sel = $("vo-voice");
-  if (sel && !sel.options.length) sel.innerHTML = VO_VOICES.map((v, i) => `<option value="${i}">${v.label}</option>`).join("");
-  $("vo-setup").classList.remove("hidden");
+// Open the Video Overview tool: load the user's saved decks into the picker.
+async function voOpenTool() {
+  const vsel = $("vo-voice");
+  if (vsel && !vsel.options.length) vsel.innerHTML = VO_VOICES.map((v, i) => `<option value="${i}">${v.label}</option>`).join("");
   $("vo-result").classList.add("hidden");
   setStatus("vo-status", "");
-  $("vo-scrim").classList.add("open");
+  const dsel = $("vo-deck");
+  dsel.innerHTML = '<option>Loading your decks…</option>';
+  $("vo-form").style.display = "none";
+  $("vo-empty").style.display = "none";
+  let rows = [];
+  try {
+    const { data } = await sb.from("saved_items").select("id, title, content").eq("type", "slides");
+    rows = data || [];
+  } catch (e) { rows = []; }
+  voSavedDecks = rows.filter(r => r && r.content && Array.isArray(r.content.slides) && r.content.slides.length);
+  if (!voSavedDecks.length) { $("vo-empty").style.display = "block"; return; }
+  dsel.innerHTML = voSavedDecks.map((d, i) => `<option value="${i}">${esc(d.title || "Untitled deck")}</option>`).join("");
+  $("vo-form").style.display = "block";
 }
-function voClose() { if (voBusy) return; $("vo-scrim").classList.remove("open"); }
-function voReset() { $("vo-result").classList.add("hidden"); $("vo-setup").classList.remove("hidden"); setStatus("vo-status", ""); }
+function voReset() {
+  $("vo-result").classList.add("hidden");
+  $("vo-form").style.display = voSavedDecks.length ? "block" : "none";
+  setStatus("vo-status", "");
+}
 
 // ---- grounded, teacher-style narration script ----
 async function voScriptGen() {
@@ -3583,15 +3605,21 @@ async function voScriptGen() {
     if (s.notes) b.push("Notes: " + s.notes);
     return "SLIDE " + (i + 1) + " [" + (s.type || "bullets") + "]\n" + b.join("\n");
   }).join("\n\n");
-  const lenNote = lenMode === "short" ? "Keep each narration to 1-2 sentences; be punchy."
-    : lenMode === "detailed" ? "Use 3-5 sentences per slide where the content supports it."
-    : "Use 2-3 natural sentences per slide; give important slides a little more, simple ones less.";
+  const lenNote = lenMode === "short" ? "One short sentence per slide. Only the single most important point."
+    : lenMode === "detailed" ? "Two to three sentences per slide where the content is rich; still only the important ideas, never every detail."
+    : "Usually ONE or TWO natural sentences per slide — just the key idea. Give a genuinely rich slide up to three; breeze through a simple slide in a single short sentence.";
   const need = deck.slides.length + 1;
   const raw = await groq([
-    { role: "system", content: `You are a warm, expert presenter narrating a slide deck like a great teacher or documentary host — NOT reading the slides aloud. Respond ONLY with valid JSON:
+    { role: "system", content: `You are a warm, expert presenter narrating a slide deck out loud like a great teacher or documentary host — NOT reading the slides. Respond ONLY with valid JSON:
 {"segments":["spoken narration for the title/opening","narration for slide 1", "..."]}
-There must be EXACTLY ${need} strings: the first is an engaging OPENING for the title slide (introduce the topic and what viewers will learn), then one per content slide in order, and the LAST should close with the single biggest takeaway.
-RULES: Speak conversationally and naturally. Summarize and connect ideas; do NOT read bullet points verbatim. Explain each slide's key insight simply and add smooth transitions between slides. ${lenNote} GROUND every sentence ONLY in the provided slide content and notes — never invent facts, names, numbers, or claims that aren't there; if a slide is thin, keep its narration short. Plain spoken prose only: no markdown, no lists, no stage directions, no emojis.` },
+There must be EXACTLY ${need} strings: the first is a brief, engaging OPENING for the title slide (name the topic and what viewers will learn, in ~2 sentences), then one per content slide in order, and the LAST closes with the single biggest takeaway.
+HOW TO SPEAK:
+- Say ONLY what matters — the ONE key idea of each slide. Skip minor, obvious, or repetitive details entirely.
+- NEVER read or enumerate bullet points; blend a slide's points into one flowing thought.
+- Sound like a real person talking: natural rhythm, plain words, light connective phrases between slides ("Now…", "This is where…", "So what does that mean?"). Not stiff, not a script being read.
+- ${lenNote}
+- GROUND every sentence ONLY in the provided slide content and notes — never invent facts, names, or numbers; if a slide is thin, keep it to a few words.
+- Plain spoken prose only: no markdown, no lists, no stage directions, no emojis, no slide numbers.` },
     { role: "user", content: `Deck title: ${deck.title || ""}\nTopic: ${deck.topic || ""}\n\n${slidesText.slice(0, 14000)}` }
   ], true, Math.min(4000, 900 + deck.slides.length * 170));
   const d = JSON.parse(raw);
@@ -3678,34 +3706,46 @@ function voDrawCaption(ctx, text, W, H) {
 }
 
 // ---- record the video (real time) ----
-async function voRender(imgs, buffer, durs, says, burn, actx, onProgress) {
-  const W = 1280, H = 720, FPS = 30;
+const VO_GAP = 0.55;   // silent breath between slides — the transition happens here
+async function voRender(imgs, buffers, durs, says, burn, actx, onProgress) {
+  const W = 1280, H = 720, FPS = 30, GAP = VO_GAP, XF = 0.5;
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
   const dest = actx.createMediaStreamDestination();
-  const starts = []; let acc = 0; durs.forEach(d => { starts.push(acc); acc += d; });
-  const total = Math.max(acc, buffer ? buffer.duration : acc);
+  // each slide occupies its narration time, then a short silent gap for the transition
+  const starts = []; let acc = 0;
+  durs.forEach((d, i) => { starts.push(acc); acc += d + (i < durs.length - 1 ? GAP : 0.5); });
+  const total = acc;
   const mimes = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
   const mime = mimes.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
   const vstream = cv.captureStream(FPS);
   const stream = new MediaStream([...vstream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined);
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4500000 } : undefined);
   const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   const finished = new Promise(res => { rec.onstop = () => res(new Blob(chunks, { type: (mime.indexOf("mp4") >= 0 ? "video/mp4" : "video/webm") })); });
-  const t0 = actx.currentTime + 0.2;
-  if (buffer) { const src = actx.createBufferSource(); src.buffer = buffer; src.connect(dest); src.connect(actx.destination); src.start(t0); }
+  const t0 = actx.currentTime + 0.25;
+  // schedule each slide's narration to start exactly when its slide appears
+  buffers.forEach((b, i) => { if (!b) return; const src = actx.createBufferSource(); src.buffer = b; src.connect(dest); src.connect(actx.destination); src.start(t0 + starts[i]); });
   rec.start();
   await new Promise(resolve => {
     function frame() {
       const now = actx.currentTime - t0;
       if (now >= total) { resolve(); return; }
-      let idx = starts.length - 1;
-      for (let i = 0; i < starts.length; i++) { if (now < starts[i] + durs[i]) { idx = i; break; } }
-      const p = Math.max(0, Math.min(1, (now - starts[idx]) / (durs[idx] || 1)));
+      // current slide = the last one whose start time has passed
+      let idx = 0;
+      for (let i = 0; i < starts.length; i++) { if (now >= starts[i]) idx = i; else break; }
+      const spoken = durs[idx];
+      const into = now - starts[idx];
+      const p = Math.max(0, Math.min(1, into / spoken));      // Ken Burns over the narrated part
       voDrawSlide(ctx, imgs[idx], p, W, H);
-      const rem = starts[idx] + durs[idx] - now;
-      if (idx < imgs.length - 1 && rem < 0.5) { ctx.globalAlpha = 1 - rem / 0.5; voDrawSlide(ctx, imgs[idx + 1], 0, W, H); ctx.globalAlpha = 1; }
-      if (burn) voDrawCaption(ctx, says[idx] || "", W, H);
+      // during the silent gap after narration, crossfade smoothly into the next slide
+      const intoGap = into - spoken;
+      if (idx < imgs.length - 1 && intoGap > 0) {
+        const a = Math.min(1, intoGap / XF);
+        ctx.globalAlpha = a; voDrawSlide(ctx, imgs[idx + 1], 0, W, H); ctx.globalAlpha = 1;
+      }
+      // caption shows only while this slide is actually being narrated
+      if (burn && intoGap <= 0) voDrawCaption(ctx, says[idx] || "", W, H);
       if (onProgress) onProgress(now / total);
       requestAnimationFrame(frame);
     }
@@ -3720,30 +3760,46 @@ async function voGenerate() {
   if (voBusy) return;
   const cvTest = document.createElement("canvas");
   if (!window.MediaRecorder || !cvTest.captureStream) { setStatus("vo-status", "Your browser can't record video. Use Chrome or Edge on a computer.", true); return; }
+  const di = parseInt($("vo-deck").value, 10);
+  if (isNaN(di) || !voSavedDecks[di]) { setStatus("vo-status", "Pick a saved deck first.", true); return; }
   voBusy = true; $("vo-go").disabled = true;
   const vObj = VO_VOICES[parseInt($("vo-voice").value, 10) || 0];
   const burn = $("vo-captions").checked;
   const actx = new (window.AudioContext || window.webkitAudioContext)();
   try {
     if (actx.state === "suspended") await actx.resume();
+    // load the chosen saved deck and refill its images (they're stripped on save)
+    const item = voSavedDecks[di];
+    slDeck = item.content || {}; slDeck.savedId = item.id;
+    slStyle = (slDeck.style === "auto" || (slDeck.style && SL_STYLES[slDeck.style])) ? slDeck.style : "auto";
+    setStatus("vo-status", "Loading the deck and its images…", false, true);
+    try { await slAutoImages(); } catch (e) {}
     setStatus("vo-status", "Writing a narration script from your slides…", false, true);
     const says = await voScriptGen();
     setStatus("vo-status", "Rendering your slides…", false, true);
     const imgs = await voRasterize();
-    setStatus("vo-status", "Recording the narration…", false, true);
-    const fullText = says.filter(Boolean).join("   ");
-    const buffer = await voSynth(fullText, vObj, actx);
-    // allocate each slide's screen time by its share of the narration text
-    const lens = says.map(s => Math.max(1, (s || "").length));
-    const totalLen = lens.reduce((a, b) => a + b, 0);
-    const durs = lens.map(l => Math.max(1.4, buffer.duration * l / totalLen));
+    // Narrate EACH slide separately so its audio lines up exactly with that slide —
+    // the slide only advances once its own narration has finished.
+    const buffers = [];
+    for (let i = 0; i < says.length; i++) {
+      setStatus("vo-status", "Recording narration… (" + (i + 1) + "/" + says.length + ")", false, true);
+      if (!says[i]) { buffers.push(null); continue; }
+      let buf = null;
+      for (let a = 0; a < 3 && !buf; a++) {
+        try { buf = await voSynth(says[i], vObj, actx); }
+        catch (e) { if (a === 2 && i === 0) throw e; if (a < 2) await new Promise(r => setTimeout(r, 1300)); }
+      }
+      buffers.push(buf);
+      await new Promise(r => setTimeout(r, 180));   // gentle pacing to respect free-tier limits
+    }
+    const durs = buffers.map(b => b ? b.duration : 1.8);
     voScriptSegs = says; voMeta = says.map((s, i) => ({ say: s, seconds: durs[i] }));
     setStatus("vo-status", "Filming the video — this plays through in real time, hang tight…", false, true);
-    const blob = await voRender(imgs, buffer, durs, says, burn, actx, pr => setStatus("vo-status", "Filming… " + Math.round(pr * 100) + "%", false, true));
+    const blob = await voRender(imgs, buffers, durs, says, burn, actx, pr => setStatus("vo-status", "Filming… " + Math.round(pr * 100) + "%", false, true));
     try { actx.close(); } catch (e) {}
     voBlob = blob; if (voURL) URL.revokeObjectURL(voURL); voURL = URL.createObjectURL(blob);
     $("vo-video").src = voURL;
-    $("vo-setup").classList.add("hidden"); $("vo-result").classList.remove("hidden");
+    $("vo-form").style.display = "none"; $("vo-result").classList.remove("hidden");
     $("vo-hint").textContent = (blob.type.indexOf("mp4") >= 0 ? "MP4" : "WebM") + " · " + (Math.round(blob.size / 1e5) / 10) + " MB. WebM plays in browsers and uploads to YouTube/Drive; ask me if you need a true .mp4.";
     logActivity("generate");
     setStatus("vo-status", "");
@@ -3770,7 +3826,7 @@ function voSrtTime(s) { const h = Math.floor(s / 3600), m = Math.floor(s % 3600 
 function voSRT() {
   if (!voMeta) return;
   let out = "", t = 0, n = 1;
-  voMeta.forEach(m => { const en = t + (m.seconds || 2); if (m.say) { out += (n++) + "\n" + voSrtTime(t) + " --> " + voSrtTime(en) + "\n" + m.say + "\n\n"; } t = en; });
+  voMeta.forEach(m => { const en = t + (m.seconds || 2); if (m.say) { out += (n++) + "\n" + voSrtTime(t) + " --> " + voSrtTime(en) + "\n" + m.say + "\n\n"; } t = en + VO_GAP; });
   voDownloadText((slDeck.title || "captions").replace(/[^\w \-]+/g, "").slice(0, 60) + ".srt", out);
 }
 
@@ -4761,6 +4817,7 @@ function gateResources(statusId) {
 function showView(name) {
   ttsStop();
   if (name === "slides") setTimeout(openSlides, 0);
+  if (name === "video") setTimeout(voOpenTool, 0);
   if (name === "chat") setTimeout(openChat, 0);
   if (name === "dashboard") setTimeout(fwRecenter, 0);   // re-center the focus wheel (scrollTop can reset while hidden)
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
