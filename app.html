@@ -3615,8 +3615,10 @@ async function voScriptGen() {
 There must be EXACTLY ${need} strings: the first is a brief, engaging OPENING for the title slide (name the topic and what viewers will learn, in ~2 sentences), then one per content slide in order, and the LAST closes with the single biggest takeaway.
 HOW TO SPEAK:
 - Say ONLY what matters — the ONE key idea of each slide. Skip minor, obvious, or repetitive details entirely.
+- CRITICAL — each segment narrates ONLY its own slide. NEVER describe, preview, or lead into the NEXT slide's content. The viewer is looking at THIS slide while you speak, so everything you say must be about what is on screen right now. A light connector at the very end ("Now…", "But there's a catch…") is fine, but do not start explaining the next topic.
 - NEVER read or enumerate bullet points; blend a slide's points into one flowing thought.
-- Sound like a real person talking: natural rhythm, plain words, light connective phrases between slides ("Now…", "This is where…", "So what does that mean?"). Not stiff, not a script being read.
+- A "section" divider slide (just a short title, no body) gets only a SHORT spoken transition — announce the new section in a handful of words and stop (e.g. "Next, the causes." or "Now, how it actually works."). Never pad it; it must be read quickly and move on.
+- Sound like a real person talking: natural rhythm, plain words. Not stiff, not a script being read.
 - ${lenNote}
 - GROUND every sentence ONLY in the provided slide content and notes — never invent facts, names, or numbers; if a slide is thin, keep it to a few words.
 - Plain spoken prose only: no markdown, no lists, no stage directions, no emojis, no slide numbers.` },
@@ -3712,9 +3714,9 @@ function voDrawCaption(ctx, text, W, H) {
 }
 
 // ---- record the video (real time) ----
-const VO_GAP = 0.55;   // silent breath between slides — the transition happens here
+const VO_GAP = 0.4;   // silent breath between slides — the transition happens here (kept short so slides don't linger after their narration)
 async function voRender(imgs, buffers, durs, says, burn, actx, onProgress) {
-  const W = 1280, H = 720, FPS = 30, GAP = VO_GAP, XF = 0.5;
+  const W = 1280, H = 720, FPS = 30, GAP = VO_GAP, XF = 0.38;
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
   const dest = actx.createMediaStreamDestination();
@@ -3786,13 +3788,29 @@ async function voGenerate() {
     const imgs = await voRasterize();
     // Narrate EACH slide separately so its audio lines up exactly with that slide —
     // the slide only advances once its own narration has finished.
+    // Guarantee EVERY slide gets its own spoken line. If the script came back
+    // short or empty for a slide, speak a short line drawn from the slide itself,
+    // so no slide flashes by in silence — that silent tail was why the end of the
+    // video raced ahead with no voice. says[0]=title, says[i]=slDeck.slides[i-1].
+    const slideFallback = (i) => {
+      if (i === 0) return (slDeck.title || "Overview") + (slDeck.subtitle ? ". " + slDeck.subtitle : "");
+      const s = slDeck.slides[i - 1] || {};
+      const h = (s.heading || "").trim();
+      if (s.type === "section") return h || "Next section.";
+      if (s.type === "takeaways") return "In short: " + (s.bullets || []).slice(0, 3).map(x => String(x).replace(/\*\*/g, "")).join(". ");
+      if (s.big) return (h ? h + ". " : "") + String(s.big) + (s.caption ? ". " + s.caption : "");
+      const pts = (s.bullets || []).slice(0, 2).map(x => String(x).replace(/\*\*/g, "")).join(". ");
+      return [h, pts].filter(Boolean).join(". ") || h || "This slide.";
+    };
     const buffers = [];
     for (let i = 0; i < says.length; i++) {
       setStatus("vo-status", "Recording narration… (" + (i + 1) + "/" + says.length + ")", false, true);
-      if (!says[i]) { buffers.push(null); continue; }
+      const text = ((says[i] || "").trim()) || slideFallback(i);
+      says[i] = text;   // keep captions + transcript aligned with what's actually spoken
+      if (!text) { buffers.push(null); continue; }
       let buf = null;
       for (let a = 0; a < 3 && !buf; a++) {
-        try { buf = await voSynth(says[i], vObj, actx); }
+        try { buf = await voSynth(text, vObj, actx); }
         catch (e) { if (a === 2 && i === 0) throw e; if (a < 2) await new Promise(r => setTimeout(r, 1300)); }
       }
       buffers.push(buf);
