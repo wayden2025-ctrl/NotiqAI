@@ -38,11 +38,34 @@ module.exports = async (req, res) => {
   const text = String((body && body.text) || "").trim().slice(0, 8000);
   const voice = String((body && body.voice) || "Kore").trim();
   const ovoice = String((body && body.ovoice) || "alloy").trim();
+  const gvoice = String((body && body.gvoice) || "Celeste-PlayAI").trim();
   if (!text) { res.status(400).json({ error: "Missing text" }); return; }
 
-  // Remember WHY Gemini failed so we can surface a real reason instead of the
-  // misleading "set GEMINI_API_KEY" message when the key is actually present.
-  let geminiFail = null;
+  // Remember WHY each provider failed so we can surface a real reason instead of
+  // the misleading "set GEMINI_API_KEY" message when a key is actually present.
+  let groqFail = null, geminiFail = null;
+
+  // ---- 0) Groq TTS (PlayAI) — primary: reuses your GROQ_API_KEY, more generous
+  // free tier than Gemini's preview TTS. OpenAI-compatible /audio/speech endpoint.
+  if (process.env.GROQ_API_KEY) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/audio/speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + process.env.GROQ_API_KEY },
+        body: JSON.stringify({ model: process.env.GROQ_TTS_MODEL || "playai-tts", voice: gvoice, input: text, response_format: "wav" }),
+      });
+      if (r.ok) {
+        const buf = Buffer.from(await r.arrayBuffer());
+        res.status(200).json({ audio: "data:audio/wav;base64," + buf.toString("base64"), provider: "groq" });
+        return;
+      }
+      let detail = "";
+      try { const eb = await r.json(); detail = (eb && eb.error && eb.error.message) || ""; }
+      catch (e2) { try { detail = (await r.text()).slice(0, 300); } catch (e3) { /* ignore */ } }
+      groqFail = { status: r.status, detail: detail || ("HTTP " + r.status) };
+      // fall through to Gemini/OpenAI on any Groq failure
+    } catch (e) { groqFail = { status: 0, detail: String(e && e.message || e) }; }
+  }
 
   // ---- 1) Gemini TTS (free tier, uses your existing key) ----
   // Some keys/projects don't have access to a given preview TTS model, so try a
@@ -111,6 +134,17 @@ module.exports = async (req, res) => {
 
   // Report the real cause. If a key WAS present but the provider rejected the
   // request, show that — "set GEMINI_API_KEY" is wrong and confusing then.
+  if (groqFail) {
+    const s = groqFail.status;
+    let hint = groqFail.detail || "the request was rejected";
+    if (s === 400 || s === 403) {
+      // Groq requires a one-time acceptance of the PlayAI TTS model terms.
+      if (/terms|accept|agree/i.test(groqFail.detail || "")) hint = "Accept the playai-tts model terms once at console.groq.com (Playground → pick playai-tts), then retry. Details: " + groqFail.detail;
+      else hint = "Groq rejected the TTS request (model '" + (process.env.GROQ_TTS_MODEL || "playai-tts") + "'). If you haven't yet, accept the playai-tts terms at console.groq.com. Details: " + groqFail.detail;
+    } else if (s === 429) hint = "Groq TTS rate limit reached — wait a moment and try again. Details: " + groqFail.detail;
+    res.status(502).json({ error: "Narration failed: " + hint, provider: "groq", status: s });
+    return;
+  }
   if (geminiFail) {
     const s = geminiFail.status;
     let hint = geminiFail.detail || "the request was rejected";
@@ -120,5 +154,5 @@ module.exports = async (req, res) => {
     res.status(502).json({ error: "Narration failed: " + hint, provider: "gemini", status: s });
     return;
   }
-  res.status(502).json({ error: "No TTS engine available. Set GEMINI_API_KEY (recommended) or OPENAI_API_KEY in Vercel." });
+  res.status(502).json({ error: "No TTS engine available. Set GROQ_API_KEY or GEMINI_API_KEY (both free) or OPENAI_API_KEY in Vercel." });
 };
