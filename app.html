@@ -3553,14 +3553,14 @@ function slExportPdf() {
 // script -> premium AI voice (Gemini TTS) -> Ken Burns slides + captions, recorded
 // in-browser to a downloadable WebM. Plus transcript (.txt) and captions (.srt).
 const VO_VOICES = [
-  { label: "Professional Teacher (F)", gemini: "Kore",       openai: "nova",    groq: "Celeste-PlayAI" },
-  { label: "Friendly Tutor (M)",       gemini: "Puck",       openai: "fable",   groq: "Fritz-PlayAI" },
-  { label: "Documentary Narrator (M)", gemini: "Charon",     openai: "onyx",    groq: "Atlas-PlayAI" },
-  { label: "Calm & Warm (F)",          gemini: "Aoede",      openai: "shimmer", groq: "Gail-PlayAI" },
-  { label: "Confident Presenter (M)",  gemini: "Orus",       openai: "echo",    groq: "Briggs-PlayAI" },
-  { label: "Bright Podcast Host (F)",  gemini: "Leda",       openai: "nova",    groq: "Arista-PlayAI" },
-  { label: "Clear Lecturer (M)",       gemini: "Iapetus",    openai: "alloy",   groq: "Calum-PlayAI" },
-  { label: "Storyteller (F)",          gemini: "Callirrhoe", openai: "shimmer", groq: "Cheyenne-PlayAI" },
+  { label: "Professional Teacher (F)", gemini: "Kore",       openai: "nova" },
+  { label: "Friendly Tutor (M)",       gemini: "Puck",       openai: "fable" },
+  { label: "Documentary Narrator (M)", gemini: "Charon",     openai: "onyx" },
+  { label: "Calm & Warm (F)",          gemini: "Aoede",      openai: "shimmer" },
+  { label: "Confident Presenter (M)",  gemini: "Orus",       openai: "echo" },
+  { label: "Bright Podcast Host (F)",  gemini: "Leda",       openai: "nova" },
+  { label: "Clear Lecturer (M)",       gemini: "Iapetus",    openai: "alloy" },
+  { label: "Storyteller (F)",          gemini: "Callirrhoe", openai: "shimmer" },
 ];
 let voScriptSegs = null, voMeta = null, voBlob = null, voURL = null, voBusy = false, voSavedDecks = [];
 
@@ -3635,7 +3635,7 @@ HOW TO SPEAK:
 async function voSynth(text, vObj, actx) {
   const r = await fetch("/api/tts", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: text.slice(0, 7000), voice: vObj.gemini, ovoice: vObj.openai, gvoice: vObj.groq }),
+    body: JSON.stringify({ text: text.slice(0, 7000), voice: vObj.gemini, ovoice: vObj.openai }),
   });
   if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || "Narration engine unavailable. Make sure GEMINI_API_KEY is set in Vercel."); }
   const j = await r.json();
