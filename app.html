@@ -3113,7 +3113,7 @@ ${bulletsType}
 Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" slide a single "imgquery". (Only "compare", "stat" and "takeaways" go without images.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 12000) }
     ], true, Math.min(4600, 1400 + n * 230));
-    const d = JSON.parse(raw);
+    const d = parseAIJson(raw);
     d.slides = (d.slides || []).filter(s => s.heading);
     if (!d.slides.length) throw new Error("Couldn't build slides from that — try more material.");
     slDeck = d;
@@ -3622,7 +3622,7 @@ HOW TO SPEAK:
 - Plain spoken prose only: no markdown, no lists, no stage directions, no emojis, no slide numbers.` },
     { role: "user", content: `Deck title: ${deck.title || ""}\nTopic: ${deck.topic || ""}\n\n${slidesText.slice(0, 14000)}` }
   ], true, Math.min(4000, 900 + deck.slides.length * 170));
-  const d = JSON.parse(raw);
+  const d = parseAIJson(raw);
   let segs = (Array.isArray(d.segments) ? d.segments : []).map(s => String(s || "").replace(/\s+/g, " ").trim());
   if (segs.length > need) segs = segs.slice(0, need);
   while (segs.length < need) segs.push("");
@@ -3647,10 +3647,16 @@ async function voSynth(text, vObj, actx) {
 let _h2cTried = false;
 async function loadHtml2Canvas() {
   if (window.html2canvas) return;
+  // html2canvas-pro: maintained fork that understands modern CSS color functions
+  // (color-mix, color(srgb …), oklch). Plain html2canvas 1.4.1 THROWS on these —
+  // current Chrome serializes our color-mix(in srgb, …) slide styles as
+  // color(srgb …), which made every slide render fail into a blank dark frame.
+  // Drop-in: same window.html2canvas global and API.
   const cdns = [
-    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+    "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js",
+    "https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js",
+    // last-resort legacy fallback (may blank modern-color slides, but better than nothing)
     "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
-    "https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js",
   ];
   for (const src of cdns) { try { await loadScriptOnce(src); if (window.html2canvas) return; } catch (e) { /* next */ } }
   throw new Error("Couldn't load the video renderer — check your connection or ad-blocker.");
@@ -3976,7 +3982,7 @@ async function blSubmit() {
       { role: "system", content: 'You grade a student\'s memory brain-dump against their study material. Respond ONLY with valid JSON: {"coverage": 0-100, "nailed": ["short point the student correctly remembered"], "missed": [{"topic": "name of the missed concept, under 40 chars", "notes": "2-3 full sentences that actually TEACH the missed content — the facts, dates, names and why it matters, written like study notes so the student can learn it right here"}], "tip": "one concrete, encouraging study tip based on what they missed"}. Rules: 3-8 nailed items under 90 chars; 3-6 missed items, each with substantial notes of 150-300 chars; coverage = how much of the important material they recalled; be fair — credit ideas even when worded loosely or misspelled.' },
       { role: "user", content: "MATERIAL:\n" + material.slice(0, 12000) + "\n\nSTUDENT BRAIN-DUMP:\n" + dump }
     ], true);
-    const g = JSON.parse(raw);
+    const g = parseAIJson(raw);
     logActivity("generate");
     $("bl-play").classList.add("hidden");
     $("bl-done").classList.remove("hidden");
@@ -4629,7 +4635,7 @@ async function wbMapGenerate() {
       { role: "system", content: 'You turn study material into a clean ORDERED sequence — a timeline, process, or step-by-step chain. Respond ONLY with valid JSON: {"title":"short map title","steps":[{"name":"event or step name, under 34 chars","date":"year/date or empty string","desc":"1-2 full sentences of real substance, 100-180 chars — what happened, who was involved, why it mattered (or exactly what this step does)","detail":"a deeper 3-5 sentence explanation, 250-500 chars, with names, causes, consequences and anything a test might ask"}]}. Rules: 6 to 12 steps in strict chronological or process order; every step MUST have both desc and detail; use dates whenever the material is historical.' },
       { role: "user", content: "Build the sequence from this material:\n\n" + material.slice(0, 14000) }
     ], true);
-    const g = JSON.parse(raw);
+    const g = parseAIJson(raw);
     const steps = (g.steps || []).filter(s => s.name).slice(0, 12);
     if (steps.length < 3) throw new Error("Couldn't find a clear sequence in that material — try a different resource.");
     wbPushUndo();
@@ -5217,7 +5223,7 @@ async function aiTitle(text) {
       { role: "system", content: 'Respond ONLY with valid JSON: {"title":"..."} — a specific 2-6 word title describing the study material.' },
       { role: "user", content: "Title this study material:\n\n" + text.slice(0, 4000) }
     ], true);
-    const t = (JSON.parse(raw).title || "").trim();
+    const t = (parseAIJson(raw).title || "").trim();
     if (t) return t.slice(0, 60);
   } catch (e) { /* fall through */ }
   const firstLine = text.split("\n").find(l => l.trim());
@@ -5368,6 +5374,31 @@ async function groq(messages, jsonMode, maxTokens) {
   return json.choices[0].message.content;
 }
 
+// ---- Safe parse for AI-generated JSON ----------------------------------
+// Models are asked to emit LaTeX ($$\frac{a}{b}$$) inside JSON strings, but
+// they routinely UNDER-escape the backslashes (write \frac instead of \\frac).
+// A single backslash makes JSON.parse either throw or silently eat it as an
+// escape (\f -> form-feed, \r -> CR, \c -> dropped), which is how "\frac ... \cdot"
+// turns into the mangled "rac ... cdot" seen on slides. Inside math spans every
+// backslash is LaTeX, so normalize each run to exactly the "\\" that survives
+// JSON.parse. Only spans containing real math chars (\ ^ _ {) are touched, so
+// prose and currency like "$5" are left alone.
+function repairJsonLatex(s) {
+  return String(s).replace(/(\${1,2})((?:[^$])*?)\1/g, (m, d, body) =>
+    /[\\^_{]/.test(body) ? d + body.replace(/\\+/g, "\\\\") + d : m);
+}
+function parseAIJson(raw) {
+  let s = String(raw == null ? "" : raw).trim()
+    .replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");   // strip stray code fences
+  try { return JSON.parse(repairJsonLatex(s)); }
+  catch (e) {
+    // Last resort: also escape any remaining stray backslashes anywhere so a
+    // near-valid document still parses instead of failing the whole generation.
+    try { return JSON.parse(repairJsonLatex(s).replace(/\\(?![\\"\/bfnrtu])/g, "\\\\")); }
+    catch (e2) { throw e; }
+  }
+}
+
 // ================= SAVE =================
 async function saveItem(type, title, content, folderId, noteId) {
   if (!folderId) { $(noteId).textContent = "Create a folder first (sidebar folder icon)."; return; }
@@ -5402,7 +5433,7 @@ $("fc-generate").addEventListener("click", async () => {
       { role: "user", content: `Create exactly ${n} high-quality flashcards covering the most important concepts in this material, ordered from easiest to hardest so the deck ramps up in difficulty. Start with basic definitions and recognition (easy), move to understanding and connections (medium), and finish with application, analysis and tricky distinctions (hard). Roughly a third of each. Fronts should be questions or key terms; backs should be clear answers a student can memorize. Label each card's difficulty.\n\n${material}` }
     ], true);
     const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 };
-    fcDeck = JSON.parse(raw).cards
+    fcDeck = parseAIJson(raw).cards
       .map(c => ({ ...c, difficulty: DIFF_ORDER[c.difficulty] !== undefined ? c.difficulty : "medium" }))
       .sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
     fcIndex = 0;
@@ -5477,7 +5508,7 @@ $("qz-generate").addEventListener("click", async () => {
       { role: "system", content: "You are Notiq AI, an expert quiz writer. Create multiple-choice questions strictly from the student's material. Respond ONLY with valid JSON: {\"questions\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}]} where answer is the index of the correct option."},
       { role: "user", content: `Create exactly ${n} multiple-choice questions (4 options each, one correct) testing understanding of this material. Mix difficulty. Include a short explanation for each answer.\n\n${material}` }
     ], true);
-    qzData = JSON.parse(raw).questions;
+    qzData = parseAIJson(raw).questions;
     renderQuiz();
     $("qz-output").classList.remove("hidden");
     $("qz-save-note").textContent = "";
@@ -5544,7 +5575,7 @@ async function practiceWeakSpots() {
       { role: "system", content: "You are Notiq AI, an expert quiz writer. Respond ONLY with valid JSON: {\"questions\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}]} where answer is the index of the correct option." },
       { role: "user", content: `I got these questions WRONG. Write ${n} NEW multiple-choice questions (4 options each, one correct) that test the same concepts from different angles, so I can fix these weak spots. Include short explanations.\n\n${summary}` }
     ], true);
-    qzData = JSON.parse(raw).questions;
+    qzData = parseAIJson(raw).questions;
     renderQuiz();
     setStatus("qz-weak-status", "");
     logActivity("generate");
@@ -5914,7 +5945,7 @@ $("ts-generate").addEventListener("click", async () => {
       { role: "system", content: "You are Notiq AI, an expert exam writer. Build tests strictly from the student's material. Respond ONLY with valid JSON: {\"mcq\":[{\"q\":\"question\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answer\":0,\"explanation\":\"why\"}],\"fib\":[{\"q\":\"a full sentence with the missing key term written as _____\",\"answer\":\"the missing word or short phrase\"}],\"essay\":[{\"q\":\"an essay prompt requiring explanation or analysis\",\"points\":[\"key idea a good answer must cover\"]}]}" },
       { role: "user", content: `Create a test with exactly ${nm} multiple-choice questions (4 options, one correct), ${nf} fill-in-the-blank sentences (one key term each, blank written as _____), and ${ne} essay question(s) (each with 3-5 key points a strong answer must cover). Mix difficulty. Base everything on this material:\n\n${material}` }
     ], true);
-    tsData = JSON.parse(raw);
+    tsData = parseAIJson(raw);
     renderTest();
     $("ts-output").classList.remove("hidden");
     $("ts-save-note").textContent = "";
@@ -6018,7 +6049,7 @@ async function tsSubmit() {
         { role: "system", content: "You are a fair but rigorous teacher grading essay answers. Respond ONLY with valid JSON: {\"grades\":[{\"score\":0,\"feedback\":\"2-3 sentences of specific feedback\",\"missed\":[\"key points not covered\"]}]} with score out of 10 per essay, in order. A blank answer scores 0." },
         { role: "user", content: payload }
       ], true);
-      const grades = JSON.parse(raw).grades || [];
+      const grades = parseAIJson(raw).grades || [];
       essays.forEach((q, i) => {
         const g = grades[i] || { score: 0, feedback: "Could not grade.", missed: [] };
         essayEarned += Math.max(0, Math.min(10, Number(g.score) || 0));
@@ -6082,7 +6113,7 @@ async function tbAsk() {
       { role: "system", content: "You are Notiq AI, a study coach using the Feynman technique. Respond ONLY with valid JSON: {\"concept\":\"short concept name\",\"question\":\"a conversational prompt asking the student to explain that concept in their own words\"}" },
       { role: "user", content: `Pick ONE important concept from this material — a different one each time — and ask me to explain it in my own words.\n\n${tbMaterial}\n\n(random seed: ${Math.random().toString(36).slice(2, 8)})` }
     ], true);
-    tbCurrent = JSON.parse(raw);
+    tbCurrent = parseAIJson(raw);
     $("tb-concept").textContent = tbCurrent.concept || "Concept";
     $("tb-q").textContent = tbCurrent.question;
     $("tb-answer").value = "";
@@ -6106,7 +6137,7 @@ $("tb-grade").addEventListener("click", async () => {
       { role: "system", content: "You are Notiq AI, a strict but encouraging study coach. Grade the student's explanation against the source material. Respond ONLY with valid JSON: {\"score\":0-10,\"verdict\":\"one punchy sentence\",\"strengths\":[\"what they got right\"],\"gaps\":[\"what was wrong or missing\"],\"tip\":\"one concrete tip to improve\"}" },
       { role: "user", content: `Concept: ${tbCurrent.concept}\nQuestion asked: ${tbCurrent.question}\n\nMy explanation:\n${ans}\n\nSource material:\n${tbMaterial.slice(0, 12000)}` }
     ], true);
-    const g = JSON.parse(raw);
+    const g = parseAIJson(raw);
     $("tb-feedback").innerHTML = `
       <div class="surface" style="margin-bottom:0;">
         <div class="tb-score">${Number(g.score) || 0}/10</div>
