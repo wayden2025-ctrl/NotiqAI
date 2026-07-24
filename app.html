@@ -1466,33 +1466,33 @@
   body.nqmode main { margin-left: 0; margin-top: var(--nqtop, 66px); padding-top: 20px; }
   :root { --nqtop: 66px; }
 
-  /* dark top bar */
+  /* dark top bar — themed via the palette's deepest colors, always dark enough for white text */
   .nqtop { position: fixed; top: 0; left: 0; right: 0; height: var(--nqtop); z-index: 300;
-    display: flex; align-items: center; gap: 12px; padding: 0 16px; color: #fff;
-    background: linear-gradient(100deg, #16305f, #0d1f42 60%, #122a54); box-shadow: 0 6px 22px rgba(13,31,66,.28); }
+    display: flex; align-items: center; gap: 10px; padding: 0 16px; color: #fff;
+    background: linear-gradient(100deg, var(--orbBtn), var(--orb4) 62%, var(--g2)); box-shadow: 0 6px 22px rgba(0,0,0,.28); }
   .nqbrand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .nqbrand .nqorb { width: 32px; height: 32px; border-radius: 10px; background: radial-gradient(120% 120% at 30% 25%, #dbe8fb, #5b8ac9 50%, #0d1f42); box-shadow: 0 4px 12px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.5); }
-  .nqbrand .nqwm { font-size: 18px; font-weight: 800; letter-spacing: -.5px; } .nqbrand .nqwm em { font-style: normal; color: #9dc0f0; }
+  .nqbrand .nqorb { width: 32px; height: 32px; border-radius: 10px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 50%, var(--orb4)); box-shadow: 0 4px 12px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.5); }
+  .nqbrand .nqwm { font-size: 18px; font-weight: 800; letter-spacing: -.5px; color: #fff; } .nqbrand .nqwm em { font-style: normal; color: var(--orb1); }
   .nqnb { display: flex; align-items: center; gap: 8px; margin-left: 6px; padding: 7px 13px; border-radius: 11px; cursor: pointer;
-    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); font-size: 13px; font-weight: 700; color: #fff; }
-  .nqnb .nqfdot { width: 8px; height: 8px; border-radius: 3px; background: #6fa0e0; } .nqnb svg { width: 13px; height: 13px; opacity: .8; }
-  .nqtop .nqsp { flex: 1; }
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .nqnb .nqfdot { width: 8px; height: 8px; border-radius: 3px; background: var(--orb2); } .nqnb svg { width: 13px; height: 13px; opacity: .8; }
+  .nqtop .nqsp { flex: 1; min-width: 8px; }
   .nqtb { border: 0; background: rgba(255,255,255,.08); color: #dce7f7; width: 38px; height: 38px; border-radius: 11px; cursor: pointer; display: grid; place-items: center; transition: .15s; }
   .nqtb:hover { background: rgba(255,255,255,.18); color: #fff; } .nqtb svg { width: 18px; height: 18px; }
-  .nqpro { border: 0; cursor: pointer; height: 38px; padding: 0 16px; border-radius: 11px; font-weight: 800; font-size: 13px; color: #0d1f42;
-    background: linear-gradient(180deg, #ffe1a6, #f2b74e); box-shadow: 0 5px 14px rgba(242,183,78,.34); display: flex; align-items: center; gap: 6px; }
+  .nqpro { border: 0; cursor: pointer; height: 38px; padding: 0 16px; border-radius: 11px; font-weight: 800; font-size: 13px; color: #3a2a08;
+    background: linear-gradient(180deg, #ffe1a6, #f2b74e); box-shadow: 0 5px 14px rgba(242,183,78,.34); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
   .nqpro svg { width: 14px; height: 14px; }
-  .nqav { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; color: #0d1f42; font-weight: 800; font-size: 14px; background: linear-gradient(180deg, #dbe8fb, #9dc0f0); }
+  .nqav { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; color: var(--orb4); font-weight: 800; font-size: 14px; background: linear-gradient(180deg, var(--orb1), var(--orb2)); }
 
   /* workspace 3-pane */
   #nqhome { position: fixed; top: var(--nqtop); left: 0; right: 0; bottom: 0; z-index: 120; display: flex; gap: 0; padding: 12px; }
-  .nqpanel { border-radius: 20px; box-shadow: 0 12px 40px rgba(22,40,80,.10), inset 0 1px 0 rgba(255,255,255,.6); backdrop-filter: blur(16px) saturate(1.2); overflow: hidden; }
-  .nqlib { flex: none; width: var(--nqlib-w, 286px); display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(244,239,232,.7)); border: 1px solid rgba(255,255,255,.7); }
-  .nqchat { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: radial-gradient(120% 60% at 50% 0%, rgba(219,232,251,.5), rgba(255,255,255,.82) 55%); border: 1px solid rgba(255,255,255,.8); }
-  .nqcreate { flex: none; width: var(--nqcreate-w, 352px); display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(247,244,239,.75), rgba(255,255,255,.72)); border: 1px solid rgba(255,255,255,.7); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  .nqpanel { border-radius: 20px; box-shadow: 0 12px 40px rgba(22,40,80,.10); border: 1px solid var(--line); overflow: hidden; color: var(--ink); }
+  .nqlib { flex: none; width: var(--nqlib-w, 286px); display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card1), var(--card2)); }
+  .nqchat { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: linear-gradient(180deg, color-mix(in srgb, var(--coral) 6%, var(--card1)), var(--card1) 55%); }
+  .nqcreate { flex: none; width: var(--nqcreate-w, 352px); display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
   /* drag handles between panes (provide the 12px gutter + a grabber) */
   .nqrz { flex: none; width: 12px; align-self: stretch; cursor: col-resize; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 2; }
-  .nqrz::before { content: ""; width: 3px; height: 40px; border-radius: 3px; background: rgba(30,58,110,.16); transition: background .15s, height .15s; }
+  .nqrz::before { content: ""; width: 3px; height: 40px; border-radius: 3px; background: color-mix(in srgb, var(--coral) 24%, transparent); transition: background .15s, height .15s; }
   .nqrz:hover::before, .nqrz.nqdragging::before { background: var(--coral); height: 64px; }
   .nqresizing { transition: none !important; } /* instant while dragging; expand keeps its animation otherwise */
   .nqcreate.nqexpanded { width: min(880px, 60vw); }
@@ -1504,8 +1504,8 @@
   .nqcreate.nqexpanded .nqcscroll { display: none; }
   .nqcreate.nqexpanded .nqviewer { display: flex; }
   .nqviewer-head { display: flex; align-items: center; gap: 11px; padding: 13px 14px; border-bottom: 1px solid var(--line); flex: none; }
-  .nqviewer-head .nqback { border: 0; background: rgba(30,58,110,.08); color: var(--coral); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; flex: none; }
-  .nqviewer-head .nqback:hover { background: rgba(30,58,110,.16); } .nqviewer-head .nqback svg { width: 18px; height: 18px; }
+  .nqviewer-head .nqback { border: 0; background: color-mix(in srgb, var(--coral) 10%, transparent); color: var(--coral); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; flex: none; }
+  .nqviewer-head .nqback:hover { background: color-mix(in srgb, var(--coral) 20%, transparent); } .nqviewer-head .nqback svg { width: 18px; height: 18px; }
   .nqviewer-head b { font-size: 15px; letter-spacing: -.2px; }
   .nqviewer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 0 0; }
   /* the moved-in view: it lived under <main> (padded, max-width) — reset for the pane */
@@ -1515,28 +1515,28 @@
   .nqph { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 10px; }
   .nqph h2 { font-size: 16px; font-weight: 800; margin: 0; letter-spacing: -.3px; display: flex; align-items: center; gap: 8px; }
   .nqph h2 .nqdot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
-  .nqph .nqcount { font-size: 11.5px; color: var(--muted); font-weight: 700; background: rgba(30,58,110,.07); padding: 3px 9px; border-radius: 999px; }
-  .nqadd { margin: 2px 14px 12px; padding: 13px 16px; border: 0; cursor: pointer; width: calc(100% - 28px); display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 14.5px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #2f5aa0, #15305f); border-radius: 14px; box-shadow: 0 8px 22px rgba(22,50,100,.32); transition: .16s; }
+  .nqph .nqcount { font-size: 11.5px; color: var(--muted); font-weight: 700; background: color-mix(in srgb, var(--coral) 9%, transparent); padding: 3px 9px; border-radius: 999px; }
+  .nqadd { margin: 2px 14px 12px; padding: 13px 16px; border: 0; cursor: pointer; width: calc(100% - 28px); display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 14.5px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--g1), var(--g2)); border-radius: 14px; box-shadow: 0 8px 22px rgba(22,50,100,.32); transition: .16s; }
   .nqadd:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(22,50,100,.4); } .nqadd svg { width: 18px; height: 18px; }
   .nqscroll { flex: 1; overflow-y: auto; padding: 0 10px 14px; }
   .nqfilt { display: flex; gap: 6px; padding: 0 14px 10px; }
-  .nqfilt button { border: 1px solid var(--line); background: rgba(255,255,255,.7); padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+  .nqfilt button { border: 1px solid var(--line); background: var(--card1); padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
   .nqfilt button.on { background: linear-gradient(180deg, var(--g1), var(--g2)); color: #fff; border-color: transparent; }
   .nqfoldh { display: flex; align-items: center; gap: 7px; padding: 10px 8px 4px; font-size: 11.5px; font-weight: 800; color: var(--coral); text-transform: uppercase; letter-spacing: .7px; }
   .nqfoldh svg { width: 14px; height: 14px; flex: none; }
   .nqsub { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; padding: 8px 10px 3px; opacity: .7; }
   .nqitem { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 11px; cursor: pointer; transition: .12s; font-size: 13.5px; }
-  .nqitem:hover { background: rgba(30,58,110,.055); }
-  .nqitem .nqic { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(160deg, #eaf1fb, #dfeaf8); color: var(--coral); }
-  .nqitem .nqic svg { width: 15px; height: 15px; } .nqitem.nqsaved .nqic { color: #fff; background: linear-gradient(150deg, #3a6aaf, #1e3a6e); }
+  .nqitem:hover { background: color-mix(in srgb, var(--coral) 8%, transparent); }
+  .nqitem .nqic { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--coral) 12%, var(--card1)); color: var(--coral); }
+  .nqitem .nqic svg { width: 15px; height: 15px; } .nqitem.nqsaved .nqic { color: #fff; background: linear-gradient(150deg, var(--g1), var(--coral)); }
   .nqitem .nqnm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nqitem input[type=checkbox] { accent-color: var(--coral); width: 16px; height: 16px; }
-  .nqitem .nqtag { flex: none; font-size: 10px; font-weight: 800; color: var(--muted); background: rgba(30,58,110,.07); padding: 2px 7px; border-radius: 999px; }
+  .nqitem .nqtag { flex: none; font-size: 10px; font-weight: 800; color: var(--muted); background: color-mix(in srgb, var(--coral) 9%, transparent); padding: 2px 7px; border-radius: 999px; }
   .nqempty { font-size: 12.5px; color: var(--muted); text-align: center; padding: 20px 12px; border: 1.5px dashed var(--line); border-radius: 12px; line-height: 1.5; margin: 4px 4px; }
 
   /* center chat host — the app's real #chat-wrap gets moved in here */
   .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--line); }
-  .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, #cfe0f6, #3a6aaf 55%, #0d1f42); flex: none; }
+  .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
   .nqchat .nqchath .t { font-weight: 800; font-size: 15px; } .nqchat .nqchath .s { font-size: 12.5px; color: var(--muted); }
   .nqchat .nqchath .nqpill { margin-left: auto; font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); padding: 6px 13px; border-radius: 999px; }
   .nqchatbody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -1547,7 +1547,7 @@
   .nqclabel .nqdot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   .nqcscroll { flex: 1; overflow-y: auto; padding: 6px 14px 16px; }
   .nqtools { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
-  .nqtool { border: 1px solid rgba(255,255,255,.8); background: linear-gradient(160deg, #fff, #eef3fb); border-radius: 16px; padding: 15px 13px; cursor: pointer; text-align: left; transition: .16s; position: relative; overflow: hidden; }
+  .nqtool { border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2)); border-radius: 16px; padding: 15px 13px; cursor: pointer; text-align: left; transition: .16s; position: relative; overflow: hidden; }
   .nqtool::after { content: ""; position: absolute; right: -26px; bottom: -26px; width: 68px; height: 68px; border-radius: 50%; opacity: .12; background: var(--tc, #2a4d8a); }
   .nqtool:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(22,40,80,.14); border-color: transparent; }
   .nqtool .nqic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 11px; color: #fff; box-shadow: 0 6px 14px rgba(22,40,80,.2); }
@@ -1561,6 +1561,14 @@
   .nqt6 { --tc: #8a2a4d; } .nqt6 .nqic { background: linear-gradient(150deg, #c95b7a, #8a2a4d); }
   .nqt7 { --tc: #0d1f42; } .nqt7 .nqic { background: linear-gradient(150deg, #2a4d8a, #0d1f42); }
 
+  /* tip of the day — lives in the top bar's middle, never grows its height */
+  .nqtip { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); max-width: 44vw; }
+  .nqtip svg { width: 15px; height: 15px; flex: none; color: #ffd98a; }
+  .nqtip .nqtip-lbl { font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #ffd98a; flex: none; }
+  .nqtip span { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 1150px) { .nqtip { display: none; } }
+
   @media (max-width: 920px) { .nqlib { display: none; } .nqcreate { width: 300px; } }
   @media (max-width: 680px) { #nqhome { flex-direction: column; overflow-y: auto; } .nqcreate, .nqchat { width: auto; } }
 </style>
@@ -1573,8 +1581,15 @@
     <div class="nqbrand" onclick="showView('dashboard')"><div class="nqorb"></div><div class="nqwm">Notiq<em>.</em></div></div>
     <div class="nqnb" id="nqnb" onclick="openPanel('folder')"><span class="nqfdot"></span> <span id="nqnb-label">Your library</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
     <div class="nqsp"></div>
-    <button class="nqtb" title="Themes" onclick="openPanel('themes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a9 9 0 1 0 0 18h.9a2.1 2.1 0 0 0 1.6-3.5 2.1 2.1 0 0 1 1.6-3.5H18a3.5 3.5 0 0 0 3.5-3.5C21.5 6 17.2 3 12 3z"/></svg></button>
-    <button class="nqtb" title="Whiteboard" onclick="openBoard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+    <div class="nqtip" id="nq-tip" title="A new study tip every day">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg>
+      <span class="nqtip-lbl">Tip</span><span id="nq-tip-text">Loading today's tip…</span>
+    </div>
+    <div class="nqsp"></div>
+    <button class="nqtb" title="Color palettes — make it yours" onclick="openPanel('themes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a9 9 0 1 0 0 18h.9a2.1 2.1 0 0 0 1.6-3.5 2.1 2.1 0 0 1 1.6-3.5H18a3.5 3.5 0 0 0 3.5-3.5C21.5 6 17.2 3 12 3z"/><circle cx="7.5" cy="10.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="16.5" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg></button>
+    <button class="nqtb" title="Whiteboard — sketch &amp; diagram" onclick="openBoard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+    <button class="nqtb" title="Donate — keep Notiq free" onclick="window.open('https://ko-fi.com/ayden1234', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.7-9.3-9.2C1.3 7.8 3.6 4.5 7 4.5c2 0 3.7 1.1 5 2.9 1.3-1.8 3-2.9 5-2.9 3.4 0 5.7 3.3 4.3 6.8-1.8 4.5-9.3 9.2-9.3 9.2z"/></svg></button>
+    <button class="nqtb" title="Feedback &amp; problems" onclick="window.open('https://docs.google.com/forms/d/1rFwTc_BWUC0pAEqc6YWp1BRBjRdxbZEkaITDMBH9fPw/viewform', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8.5 10h7"/><path d="M8.5 13.5h4.5"/></svg></button>
     <button class="nqpro" onclick="location.href='pricing.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3L22 9l-5 4.6 1.3 7L12 17l-6.3 3.6L7 13.6 2 9l7.1-.7z"/></svg>Pro</button>
     <button class="nqav" id="nqav" onclick="showView('account')">A</button>
   </header>
@@ -5043,6 +5058,7 @@ function nqInit() {
   try { openChat(); } catch (e) {}
   try { nqRefresh(); } catch (e) {}
   try { nqSetupResizers(); } catch (e) {}
+  try { nqRenderTip(); } catch (e) {}
   const ws = document.getElementById("nqhome"); const mainEl = document.querySelector("main");
   if (ws) ws.style.display = "flex"; if (mainEl) mainEl.style.display = "none";
 }
@@ -5134,6 +5150,17 @@ async function nqRenderLibrary() {
 function nqUpdCount() {
   const n = document.querySelectorAll("#nq-lib input:checked").length;
   const c = document.getElementById("nq-count"); if (c) c.textContent = n + " selected";
+}
+// Tip of the day in the top bar (same daily rotation as the old dashboard card).
+function nqRenderTip() {
+  const el = document.getElementById("nq-tip-text");
+  if (!el || typeof TIPS === "undefined" || !TIPS.length) return;
+  const dayNum = Math.floor(Date.now() / 86400000);
+  const idx = (dayNum * 7) % TIPS.length;
+  const tip = TIPS[idx];
+  el.textContent = tip.t;
+  const wrap = document.getElementById("nq-tip");
+  if (wrap) wrap.title = tip.t + " — " + tip.b;
 }
 
 // ---- Open a Create tool INSIDE the Create pane (expand instead of full-screen) ----
