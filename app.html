@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -1316,6 +1316,113 @@
 
   main::-webkit-scrollbar, .panel-body::-webkit-scrollbar, .res-picker::-webkit-scrollbar { width: 8px; }
   @media (max-width: 720px) { main { padding: 34px 22px 70px; } }
+
+  /* ============ TOPIC THEMES: fonts, heading personalities, decorations ============ */
+  /* body + heading fonts come from per-theme CSS vars (fall back to the originals) */
+  .slide { font-family: var(--bf, 'Hanken Grotesk', system-ui, sans-serif); }
+  .slide h2, .slide h3, .slide .sl-big,
+  .slide.title-slide h2, .slide.section-slide h2 { font-family: var(--tf, 'Instrument Serif', Georgia, serif); }
+  /* heading personalities — each theme picks one, changing case / weight / slant */
+  .slide.th-serif h2, .slide.th-serif .sl-big { font-style: italic; font-weight: 400; }
+  .slide.th-slab h2, .slide.th-slab .sl-big { font-style: normal; font-weight: 700; letter-spacing: -.5px; }
+  .slide.th-display h2, .slide.th-display .sl-big { font-style: normal; font-weight: 700; letter-spacing: -1px; }
+  .slide.th-upper h2, .slide.th-upper .sl-big { font-style: normal; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+  /* uppercase runs wide — ease the size so headings don't overflow */
+  .slide.th-upper h2 { font-size: clamp(26px, 3.9vw, 50px); }
+  .slide.th-upper.title-slide h2, .slide.th-upper .sl-big { font-size: clamp(30px, 5vw, 74px); letter-spacing: 2px; }
+  .slide.th-display.title-slide h2, .slide.th-slab.title-slide h2 { letter-spacing: -1px; }
+
+  /* decorative background motifs — subtle, sit under the text, tuned by --acc */
+  .slide.deco-dots { background-image: radial-gradient(circle, color-mix(in srgb, var(--acc) 8%, transparent) 1.5px, transparent 1.6px); background-size: 26px 26px; background-position: 3px 3px; }
+  .slide.deco-grid { background-image:
+      linear-gradient(color-mix(in srgb, var(--acc) 8%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--acc) 8%, transparent) 1px, transparent 1px);
+    background-size: 34px 34px; }
+  .slide.deco-graph { background-image:
+      linear-gradient(color-mix(in srgb, var(--acc) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--acc) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(color-mix(in srgb, var(--acc) 16%, transparent) 1.4px, transparent 1.4px),
+      linear-gradient(90deg, color-mix(in srgb, var(--acc) 16%, transparent) 1.4px, transparent 1.4px);
+    background-size: 22px 22px, 22px 22px, 110px 110px, 110px 110px; }
+  .slide.deco-blueprint { background-image:
+      linear-gradient(color-mix(in srgb, var(--acc) 10%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--acc) 10%, transparent) 1px, transparent 1px);
+    background-size: 26px 26px; }
+  .slide.deco-stars { background-image:
+      radial-gradient(1.6px 1.6px at 18% 28%, color-mix(in srgb, var(--acc) 60%, transparent), transparent),
+      radial-gradient(1.2px 1.2px at 68% 18%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1.7px 1.7px at 84% 62%, color-mix(in srgb, var(--acc) 55%, transparent), transparent),
+      radial-gradient(1.1px 1.1px at 38% 74%, rgba(255,255,255,.55), transparent),
+      radial-gradient(1.2px 1.2px at 58% 48%, color-mix(in srgb, var(--acc) 45%, transparent), transparent),
+      radial-gradient(1.5px 1.5px at 8% 82%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.2px 1.2px at 92% 32%, rgba(255,255,255,.5), transparent);
+    background-repeat: no-repeat; }
+  .slide.deco-circuit { background-image:
+      linear-gradient(color-mix(in srgb, var(--acc) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--acc) 6%, transparent) 1px, transparent 1px),
+      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--acc) 32%, transparent) 3px, transparent 4px),
+      radial-gradient(circle at 82% 68%, color-mix(in srgb, var(--acc) 30%, transparent) 3px, transparent 4px),
+      radial-gradient(circle at 62% 22%, color-mix(in srgb, var(--acc) 26%, transparent) 2.5px, transparent 3.5px);
+    background-size: 40px 40px, 40px 40px, auto, auto, auto;
+    background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat; }
+  .slide.deco-parchment { background-image:
+      radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 55%),
+      radial-gradient(120% 90% at 100% 100%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 55%),
+      radial-gradient(60% 40% at 60% 40%, color-mix(in srgb, var(--acc) 5%, transparent), transparent 70%); }
+  .slide.deco-waves { background-image: repeating-linear-gradient(45deg, color-mix(in srgb, var(--acc) 6%, transparent) 0 2px, transparent 2px 15px); }
+  .slide.deco-soft { background-image:
+      radial-gradient(58% 48% at 86% 14%, color-mix(in srgb, var(--acc) 11%, transparent), transparent 60%),
+      radial-gradient(55% 45% at 10% 90%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 60%); }
+  /* covers still win — no motif behind a cover photo */
+  .slide.title-slide.has-cover, .slide.section-slide.has-cover { background-image: none; }
+
+  /* ============ PHONES ============ */
+  @media (max-width: 640px) {
+    :root { --rail-w: 58px; }
+    html { -webkit-text-size-adjust: 100%; }
+    main { padding: 24px 15px 100px; }
+
+    /* stop iOS Safari from zooming the page in when a field gets focus */
+    input, textarea, select, .txt-input, .paste-area, .chat-bar textarea { font-size: 16px; }
+
+    /* headings scaled for a narrow screen */
+    h1#greeting { font-size: clamp(34px, 11vw, 46px); }
+    h1.page-title { font-size: clamp(28px, 8.5vw, 42px); }
+    .page-sub { font-size: 14.5px; margin-bottom: 24px; }
+
+    /* dashboard hero */
+    .dash-hero { gap: 18px; margin-bottom: 24px; }
+    .hero-orb { width: 124px; height: 124px; }
+    .stat-row { gap: 18px 24px; }
+    .stat b { font-size: 27px; }
+    .dash-quote { font-size: 17px; margin-bottom: 18px; }
+    .donate-bar { padding: 12px 14px; gap: 10px; }
+    .donate-txt { min-width: 140px; font-size: 12.5px; }
+
+    /* grids collapse */
+    .card-grid { grid-template-columns: 1fr; gap: 12px; }
+    .subj-grid { grid-template-columns: 1fr 1fr; }
+    .sl-styles { grid-template-columns: 1fr 1fr; }
+
+    /* ---- SLIDE PREVIEW: drop the 16/9 squeeze so text stays readable, and
+       stack image slides (picture on top, text below) instead of a cramped row ---- */
+    .slide { aspect-ratio: auto; min-height: 300px; padding: 24px 22px; }
+    .slide.with-img, .slide.with-img.img-left { flex-direction: column; gap: 16px; }
+    .sl-body { min-width: 0; }
+    .sl-imgstack, .sl-imgbox { flex: none; width: 100%; }
+    .sl-imgstack { flex-direction: row; height: 130px; }
+    .sl-imgbox { height: 165px; }
+    .cmp { flex-direction: column; gap: 12px; }
+
+    /* modals + popups fit the viewport */
+    .modal-scrim { padding: 22px 12px; }
+    .modal-card { padding: 22px 18px; }
+    .modal-top h3 { font-size: 24px; }
+    .pro-pop-card { padding: 26px 22px; max-width: 92vw; }
+
+    /* the "present" overlay controls sit clear of the thumb */
+    .sl-pbar { bottom: 12px; }
+  }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -2696,18 +2803,141 @@ const SL_STYLES = {
   nebula:      { emoji:"\ud83c\udf0c", name:"Nebula",       bg:"#16142a", fg:"#e9e6f8", accent:"#b39df0", titleBg:"#0f0d20", titleFg:"#ffffff" },
   noir:        { emoji:"\ud83c\udf11", name:"Noir",         bg:"#121212", fg:"#ededed", accent:"#c9c9c9", titleBg:"#000000", titleFg:"#ffffff" },
 };
-let slStyle = "school", slDeck = null;
+// ============ TOPIC-AWARE THEMES ============
+// Each theme detects its subject from the deck topic and dresses the whole deck
+// to match — not just colours, but the TITLE + BODY font pairing, the heading
+// personality (head), and a decorative background motif (deco). Every theme has
+// 3+ variants that are picked at random so two decks on the same subject differ.
+const _TF = {  // title / display fonts
+  instr:"'Instrument Serif',Georgia,serif", playfair:"'Playfair Display',Georgia,serif",
+  fraunces:"'Fraunces',Georgia,serif", dmserif:"'DM Serif Display',Georgia,serif",
+  spaceg:"'Space Grotesk',system-ui,sans-serif", sora:"'Sora',system-ui,sans-serif",
+  orbitron:"'Orbitron',system-ui,sans-serif",
+};
+const _BF = {  // body fonts
+  hanken:"'Hanken Grotesk',system-ui,sans-serif", inter:"'Inter',system-ui,sans-serif",
+  garamond:"'EB Garamond',Georgia,serif", mono:"'IBM Plex Mono',ui-monospace,monospace",
+};
+// v(bg,fg,accent,titleBg,titleFg,titleFont,bodyFont,headStyle,decoMotif)
+const _v = (bg,fg,ac,tb,tf,ti,bo,hd,dc) => ({ bg, fg, accent:ac, titleBg:tb, titleFg:tf, tf:ti, bf:bo, head:hd, deco:dc });
+const SL_THEMES = {
+  cybersecurity: { name:"Cybersecurity", tags:["cybersecurity","cyber security","hacking","hacker","encryption","malware","firewall","ransomware","phishing","cryptograph","infosec","network security","data breach"], variants:[
+    _v("#0c1116","#cfe0d6","#35d07a","#080d11","#fff",_TF.spaceg,_BF.inter,"upper","circuit"),
+    _v("#0d1017","#d5dbe6","#4b8dff","#090c12","#fff",_TF.spaceg,_BF.inter,"upper","circuit"),
+    _v("#12141a","#dfe2e8","#9aa4b2","#0a0c10","#fff",_TF.spaceg,_BF.inter,"display","grid") ] },
+  futuristic: { name:"Futuristic", tags:["futuristic","sci-fi","scifi","sci fi","cyberpunk","hologram","metaverse","virtual reality","augmented reality","the future","dystopia"], variants:[
+    _v("#0a0e1a","#cfe6ff","#35d0ff","#070a14","#fff",_TF.orbitron,_BF.inter,"upper","circuit"),
+    _v("#0d0a1a","#e2d6ff","#b45cff","#0a0716","#fff",_TF.orbitron,_BF.inter,"upper","stars"),
+    _v("#08121a","#cdeef5","#2ee6c6","#061019","#fff",_TF.spaceg,_BF.inter,"upper","circuit") ] },
+  space: { name:"Space", tags:["space","astronomy","astronomical","planet","galaxy","galaxies","universe","cosmos","cosmic","solar system","nasa","orbit","rocket","nebula","black hole","the moon","mars","jupiter","stars","interstellar","spacecraft"], variants:[
+    _v("#0b1026","#dfe4fb","#8ea2ff","#070a1a","#fff",_TF.orbitron,_BF.inter,"upper","stars"),
+    _v("#10132e","#e7e9fb","#b39df0","#0a0c22","#fff",_TF.spaceg,_BF.inter,"display","stars"),
+    _v("#141a3a","#e9ecff","#6bd6ff","#0c1030","#fff",_TF.sora,_BF.inter,"display","stars") ] },
+  technology: { name:"Technology", tags:["technology","computer science","computer","software","programming","coding","source code","algorithm","internet","robot","artificial intelligence","machine learning","neural network","database","hardware","semiconductor","app development"], variants:[
+    _v("#0d1017","#d5dbe6","#5aa0ff","#090c12","#fff",_TF.spaceg,_BF.inter,"display","circuit"),
+    _v("#f5f7fb","#1a2233","#4b6bfb","#141a2b","#fff",_TF.sora,_BF.inter,"display","grid"),
+    _v("#0b0f1a","#cfe0ff","#7c5cff","#0b0f1a","#fff",_TF.orbitron,_BF.inter,"upper","circuit") ] },
+  mathematics: { name:"Mathematics", tags:["math","mathematic","algebra","geometry","calculus","equation","trigonometry","statistics","probability","arithmetic","number theory","theorem","polynomial","fractions"], variants:[
+    _v("#f4f8ff","#12324f","#2563b0","#123a63","#fff",_TF.spaceg,_BF.inter,"display","graph"),
+    _v("#f1faf3","#12492e","#1f8a4c","#124a2e","#fff",_TF.sora,_BF.inter,"display","graph"),
+    _v("#f6f6fb","#24224a","#5140cf","#211c55","#fff",_TF.spaceg,_BF.inter,"upper","grid") ] },
+  medical: { name:"Medical", tags:["medical","medicine","health","anatomy","disease","doctor","nurse","clinical","patient","hospital","physiology","immune","cardio","neuro","pharmac","surgery","virus","vaccine","diagnosis"], variants:[
+    _v("#f5fbfd","#0d3b52","#1a86a8","#0e6b7a","#fff",_TF.sora,_BF.inter,"display","waves"),
+    _v("#fdf6f6","#5e1f24","#c0424c","#8f2d34","#fff",_TF.sora,_BF.inter,"display","waves"),
+    _v("#f4f9ff","#14314f","#2b6fd6","#123a63","#fff",_TF.sora,_BF.inter,"display","grid") ] },
+  engineering: { name:"Engineering", tags:["engineering","mechanical","electrical","civil engineer","architecture","architect","construction","CAD","structural","aerospace","blueprint","robotics","thermodynamics","circuitry"], variants:[
+    _v("#eef4fb","#143a63","#1f66c4","#0f3a6b","#fff",_TF.spaceg,_BF.inter,"upper","blueprint"),
+    _v("#0e2036","#cfe0f5","#4ea3ff","#0a1728","#fff",_TF.spaceg,_BF.inter,"upper","blueprint"),
+    _v("#f4f6f8","#2a2f36","#556270","#2a2f36","#fff",_TF.sora,_BF.inter,"display","grid") ] },
+  finance: { name:"Finance", tags:["finance","financial","economic","economy","money","investment","invest","stock market","stocks","banking","trading","budget","accounting","gdp","inflation","revenue","profit","capital"], variants:[
+    _v("#f2faf4","#123a26","#1f8a52","#124a2e","#fff",_TF.sora,_BF.inter,"display","graph"),
+    _v("#f5f8fc","#16283f","#2f6bd0","#12233d","#fff",_TF.spaceg,_BF.inter,"display","graph"),
+    _v("#10141d","#dfe6ee","#d8b24a","#0a0d14","#fff",_TF.sora,_BF.inter,"upper","graph") ] },
+  business: { name:"Business", tags:["business","management","strategy","marketing","startup","company","corporate","leadership","sales","entrepreneur","operations","supply chain","productivity","negotiation"], variants:[
+    _v("#ffffff","#1f2937","#2f5bd0","#12203a","#fff",_TF.sora,_BF.inter,"display","grid"),
+    _v("#f5f7fb","#16233b","#33507f","#0f1b30","#fff",_TF.spaceg,_BF.inter,"upper","dots"),
+    _v("#ffffff","#1c2530","#0f766e","#0e5c56","#fff",_TF.sora,_BF.inter,"display","grid") ] },
+  science: { name:"Science", tags:["science","scientific","biology","biolog","chemistry","chemical","physics","physical","lab","experiment","molecule","atom","atomic","cell","genetic","evolution","reaction","quantum","photosynthesis","ecosystem"], variants:[
+    _v("#f4fbfb","#0c3b3b","#0e7490","#0e7490","#fff",_TF.spaceg,_BF.inter,"display","grid"),
+    _v("#f2f9ff","#0b3a5e","#1477c4","#103a63","#fff",_TF.sora,_BF.inter,"display","circuit"),
+    _v("#0e1826","#d6e6f5","#35c0e0","#0a1220","#fff",_TF.spaceg,_BF.inter,"upper","graph") ] },
+  nature: { name:"Nature", tags:["nature","environment","ecology","ecosystem","plant","animal","forest","ocean","climate","wildlife","botany","geology","weather","rainforest","biome","conservation","sustainab"], variants:[
+    _v("#f2faf3","#1c3d24","#3a8a4f","#1e5c37","#fff",_TF.fraunces,_BF.inter,"slab","soft"),
+    _v("#f6f4ea","#3c3320","#7a6a2b","#4a4022","#f2ecda",_TF.fraunces,_BF.garamond,"serif","soft"),
+    _v("#eff9fb","#0e4552","#16889b","#0e6b7a","#fff",_TF.sora,_BF.inter,"display","waves") ] },
+  geography: { name:"Geography", tags:["geography","geographic","continent","country","countries","terrain","population","region","capital city","topography","cartograph","atlas","world map","map ","maps","borders","landform"], variants:[
+    _v("#f3f8f4","#1d3f2e","#2f7d5a","#1e5c47","#fff",_TF.fraunces,_BF.inter,"slab","soft"),
+    _v("#f1f7fb","#143b52","#1f7ab0","#124a63","#fff",_TF.sora,_BF.inter,"display","grid"),
+    _v("#f6f3ea","#3c3320","#8a6a2b","#4a3c22","#f2e6cf",_TF.fraunces,_BF.garamond,"serif","parchment") ] },
+  history: { name:"History", tags:["history","historical","ancient","empire","warfare","world war","civil war","revolution","medieval","dynasty","civilization","century","monarch","rome","roman empire","romans","egypt","greece","greek","colonial","the crusades"], variants:[
+    _v("#f7efdd","#4a3620","#9c6b2f","#5a3d22","#f7efdd",_TF.playfair,_BF.garamond,"serif","parchment"),
+    _v("#f5efe6","#3f2f22","#8a5a2b","#3a2a1c","#f3e9d8",_TF.fraunces,_BF.garamond,"slab","parchment"),
+    _v("#f6f0e2","#40331d","#a6852f","#2e2a1a","#f1e6c9",_TF.dmserif,_BF.garamond,"serif","parchment") ] },
+  literature: { name:"Literature", tags:["literature","literary","novel","poetry","poem","poet","author","book","shakespeare","fiction","prose","essay","drama","playwright","narrative","mythology"], variants:[
+    _v("#f8f4ec","#33281c","#8a5a2b","#2f251a","#f3e9d8",_TF.playfair,_BF.garamond,"serif","parchment"),
+    _v("#faf7f2","#2a2320","#6b4a3a","#2a221e","#f3ebe2",_TF.dmserif,_BF.garamond,"serif","soft"),
+    _v("#f6f5f2","#23201d","#3a3a44","#1c1a18","#f2efe9",_TF.fraunces,_BF.garamond,"slab","parchment") ] },
+  music: { name:"Music", tags:["music","musical","song","instrument","composer","orchestra","jazz","rhythm","melody","harmony","symphony","marching band","rock band","guitar","piano","violin","opera house"], variants:[
+    _v("#14101f","#e7e0f2","#b57cff","#0d0a17","#fff",_TF.sora,_BF.inter,"display","waves"),
+    _v("#f6f3fb","#2a2140","#7d3fc0","#4a2c6b","#fff",_TF.spaceg,_BF.inter,"display","waves"),
+    _v("#111318","#e2e5ea","#59c3ff","#0a0c10","#fff",_TF.spaceg,_BF.inter,"upper","waves") ] },
+  art: { name:"Art", tags:["artwork","fine art","visual art","painting","paint","sculpture","artist","art gallery","drawing","aesthetic","impressionism","cubism","surrealism","illustration"], variants:[
+    _v("#fbf6f2","#3a2a2a","#c2506a","#7a2f46","#fff",_TF.dmserif,_BF.inter,"serif","soft"),
+    _v("#f7f4fb","#2f2440","#8a5cff","#3a2c66","#fff",_TF.fraunces,_BF.inter,"slab","soft"),
+    _v("#fff7ee","#4a3517","#e08a2a","#b3661f","#fff",_TF.playfair,_BF.inter,"serif","soft") ] },
+  education: { name:"Education", tags:["education","learning","teaching","classroom","pedagogy","curriculum","lesson","study skills"], variants:[
+    _v("#ffffff","#1e3a6e","#2a4d8a","#1e3a6e","#fff",_TF.instr,_BF.hanken,"serif","dots"),
+    _v("#fffdf5","#2a3550","#2f5bd0","#1e3a6e","#fff",_TF.sora,_BF.inter,"display","dots"),
+    _v("#f7f9fc","#24324f","#3763c9","#17203a","#fff",_TF.instr,_BF.hanken,"serif","dots") ] },
+};
+// Detect the best theme for a deck from its subject text (model can also name one).
+function slResolveThemeId(deck) {
+  if (deck && deck.theme && SL_THEMES[deck.theme]) return deck.theme;
+  const hay = ((deck && (deck.theme || "")) + " " + (deck && deck.topic || "") + " " +
+    (deck && deck.title || "") + " " + (deck && deck.subtitle || "")).toLowerCase();
+  // match on a word BOUNDARY at the start of the tag (so a stem like "cartograph"
+  // still catches "cartography", but "star" can't fire inside "startup")
+  const has = (w) => new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(hay);
+  for (const [id, t] of Object.entries(SL_THEMES))
+    if ((t.tags || []).some(has)) return id;
+  return "education";
+}
+// The style object actually used to render — resolves "auto" to a topic theme
+// variant (chosen once per deck and remembered so it stays stable).
+function slEffStyle() {
+  if (slStyle !== "auto") return SL_STYLES[slStyle] || SL_STYLES.school;
+  const id = slResolveThemeId(slDeck);
+  const t = SL_THEMES[id] || SL_THEMES.education;
+  let vi = (slDeck && slDeck.themeVar != null && t.variants[slDeck.themeVar]) ? slDeck.themeVar : Math.floor(Math.random() * t.variants.length);
+  if (slDeck) { slDeck.theme = id; slDeck.themeVar = vi; }
+  return Object.assign({ name: t.name + " (auto)", emoji: "✨" }, t.variants[vi]);
+}
+// font + accent CSS variables and the theme classes each slide root carries
+const _FB_TF = "'Instrument Serif',Georgia,serif", _FB_BF = "'Hanken Grotesk',system-ui,sans-serif";
+function slVars(s) { return `--acc:${s.accent}; --tf:${s.tf || _FB_TF}; --bf:${s.bf || _FB_BF};`; }
+function slDecoCls(s) { return `th-${s.head || "serif"} deco-${s.deco || "dots"}`; }
+
+let slStyle = "auto", slDeck = null;
 const CE = 'contenteditable="true" spellcheck="false"';   // editable words, locked styling
 const SL_SLIDES = { "3": 5, "5": 8, "10": 14, "20": 22 };
 
 function renderSlStyles() {
-  $("sl-styles").innerHTML = Object.entries(SL_STYLES).map(([id, s]) =>
+  const auto = `<div class="sl-style sl-auto${slStyle === "auto" ? " sel" : ""}" onclick="slPickStyle('auto')" title="Notiq picks fonts, colours & decorations to match your topic">
+       <div class="sl-swatch" style="background:linear-gradient(135deg,#1e3a6e,#7d3fc0,#0e7490); color:#fff;">Aa</div>
+       <b>✨ Auto — match topic</b>
+     </div>`;
+  $("sl-styles").innerHTML = auto + Object.entries(SL_STYLES).map(([id, s]) =>
     `<div class="sl-style${id === slStyle ? " sel" : ""}" onclick="slPickStyle('${id}')">
        <div class="sl-swatch" style="background-color:${s.titleBg}; color:${s.titleFg};">Aa</div>
        <b>${s.emoji} ${s.name}</b>
      </div>`).join("");
 }
-function slPickStyle(id) { slStyle = id; renderSlStyles(); }
+function slPickStyle(id) {
+  // switching to a fixed colour style clears the auto-theme memory so re-picking Auto re-detects
+  if (id !== "auto" && slDeck) { slDeck.theme = undefined; slDeck.themeVar = undefined; }
+  slStyle = id; renderSlStyles();
+  if (slDeck && !$("sl-out").classList.contains("hidden")) slRender();
+}
 
 function openSlides() {
   renderResPicker("sl");
@@ -2742,7 +2972,7 @@ function slOpenSaved(item) {
   const c = item.content || {};
   slDeck = c;
   slDeck.savedId = item.id;
-  slStyle = (c.style && SL_STYLES[c.style]) ? c.style : "school";
+  slStyle = (c.style === "auto" || (c.style && SL_STYLES[c.style])) ? c.style : "auto";
   showView("slides");
   renderSlStyles();
   renderFolderSelect("sl");
@@ -2776,7 +3006,7 @@ async function slGenerate() {
   try {
     const raw = await groq([
       { role: "system", content: `You are Notiq AI, an expert presentation designer who follows the golden rule of slide design: THE SLIDE IS NOT THE SCRIPT. Slides carry only the key words; the speaker explains the rest. Respond ONLY with valid JSON:
-{"title":"deck title","subtitle":"one-line subtitle","date":"a short context line for the title slide — the era/topic/subject or a date, or empty string","topic":"the deck's overall subject in 1-3 plain words for image search (e.g. American Civil War, cell biology, French Revolution)","coverquery":"a 2-4 word concrete, literal stock-photo search term that captures the whole deck's subject for the title slide (e.g. ancient rome ruins, human brain anatomy, wall street skyline)","slides":[ ...slide objects... ]}
+{"title":"deck title","subtitle":"one-line subtitle","date":"a short context line for the title slide — the era/topic/subject or a date, or empty string","topic":"the deck's overall subject in 1-3 plain words for image search (e.g. American Civil War, cell biology, French Revolution)","theme":"the ONE best-fitting subject category from this exact list: science, history, space, technology, mathematics, medical, nature, business, finance, engineering, geography, literature, music, art, futuristic, cybersecurity, education","coverquery":"a 2-4 word concrete, literal stock-photo search term that captures the whole deck's subject for the title slide (e.g. ancient rome ruins, human brain anatomy, wall street skyline)","slides":[ ...slide objects... ]}
 
 DESIGN LAWS (follow all):
 1. ONE idea per slide. One clear message, one takeaway. Never mix multiple topics on a slide.
@@ -2802,7 +3032,9 @@ Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count).
     d.slides = (d.slides || []).filter(s => s.heading);
     if (!d.slides.length) throw new Error("Couldn't build slides from that — try more material.");
     slDeck = d;
-    slDeck.savedId = null;                       // fresh deck — not tied to a saved item yet
+    slDeck.theme = SL_THEMES[(d.theme || "").toLowerCase()] ? (d.theme || "").toLowerCase() : undefined;
+    slDeck.themeVar = undefined;                  // pick a fresh random theme variant for this deck
+    slDeck.savedId = null;                        // fresh deck — not tied to a saved item yet
     $("sl-title2").value = d.title || "";         // prefill the save name
     slRender();
     logActivity("generate");
@@ -2836,16 +3068,16 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
     { const cov = sl.img
         ? `<div class="sl-cover" style="background-image:url('${sl.img}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
         : "";
-      return `<div class="slide section-slide sl-sec${i % 4}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
+      return `<div class="slide section-slide sl-sec${i % 4} ${slDecoCls(s)}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; ${slVars(s)}">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
   if (type === "stat")
-    return `<div class="slide stat-slide" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};">
+    return `<div class="slide stat-slide ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}">
         <div class="sl-stat" ${CE} data-e="stat-big" style="color:${s.accent};">${esc(sl.big || "")}</div>
         ${sl.heading ? `<h3 class="sl-stat-h" ${CE} data-e="stat-heading">${esc(sl.heading)}</h3>` : ""}
         ${sl.caption ? `<p class="sl-cap" ${CE} data-e="stat-caption">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "takeaways") {
     const items = (sl.bullets || []).map((b, k) =>
       `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span ${CE} data-e="tk" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("");
-    return `<div class="slide tk-slide" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">
+    return `<div class="slide tk-slide ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">
         <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
         <h2 ${CE} data-e="heading" style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
@@ -2867,14 +3099,14 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
   }
   const slot = slImgSlot(sl, i, s);
   const imgLeft = slot && (i % 2 === 1);
-  return `<div class="slide sl-content${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; --acc:${s.accent};"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  return `<div class="slide sl-content ${slDecoCls(s)}${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slTitleHtml(s) {
   const hasCover = !!slDeck.cover;
   const cover = hasCover
     ? `<div class="sl-cover" style="background-image:url('${slDeck.cover}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
     : "";
-  return `<div class="slide title-slide${hasCover ? " has-cover" : ""}" data-si="-1" style="background-color:${s.titleBg}; color:${s.titleFg}; --acc:${s.accent};">${cover}
+  return `<div class="slide title-slide ${slDecoCls(s)}${hasCover ? " has-cover" : ""}" data-si="-1" style="background-color:${s.titleBg}; color:${s.titleFg}; ${slVars(s)}">${cover}
       <div class="sl-title-body">
         ${slDeck.date ? `<div class="sl-eyebrow" ${CE} data-e="deck-date">${esc(slDeck.date)}</div>` : ""}
         <h2 class="sl-big" ${CE} data-e="deck-title">${esc(slDeck.title || "Untitled")}</h2>
@@ -2928,10 +3160,10 @@ function slEditSync(el) {
   else if (f === "stat-caption") sl.caption = plain();
 }
 function slRender() {
-  const s = SL_STYLES[slStyle];
+  const s = slEffStyle();
   const wantNotes = $("sl-notes").value === "yes";
   slBindEdit();
-  $("sl-count").innerHTML = `${slDeck.slides.length + 1} slides · ${esc(SL_STYLES[slStyle].name)} style <span style="opacity:.7; font-weight:600;">· click any text to rewrite it</span>`;
+  $("sl-count").innerHTML = `${slDeck.slides.length + 1} slides · ${esc(s.name)} style <span style="opacity:.7; font-weight:600;">· click any text to rewrite it</span>`;
   let html = slTitleHtml(s);
   let section = slDeck.topic || "";
   slDeck.slides.forEach((sl, i) => {
@@ -2969,7 +3201,7 @@ function slPresentFit() {
   $("sl-stage").style.transform = `scale(${sc})`;
 }
 function slPresentShow(idx) {
-  const s = SL_STYLES[slStyle];
+  const s = slEffStyle();
   idx = Math.max(0, Math.min(slPres.total - 1, idx));
   slPres.idx = idx;
   $("sl-stage").innerHTML = idx === 0 ? slTitleHtml(s) : slSlideHtml(slDeck.slides[idx - 1], idx - 1, s, false, slSectionFor(idx - 1));
@@ -3029,44 +3261,64 @@ async function slAutoImages() {
     try { const r = await fetch("/api/image?q=" + encodeURIComponent(q)); const j = await r.json(); return (j && j.url) || null; }
     catch (e) { return null; }
   };
-  // try the most specific query first, then progressively broader ones, so a
-  // slide always ends up with an on-topic image instead of nothing (or random)
-  const grabFirst = async (...qs) => {
-    for (const q of qs) { if (!clean(q)) continue; const u = await grab(q); if (u) return u; }
-    return null;
+  // Track every image already placed anywhere in this deck so we don't repeat one.
+  // Seed it with anything already present (cover / a re-opened saved deck).
+  const used = new Set();
+  if (deck.cover) used.add(deck.cover);
+  deck.slides.forEach(sl => { if (sl.img) used.add(sl.img); if (Array.isArray(sl.imgs)) sl.imgs.forEach(u => u && used.add(u)); });
+  // Walk the queries most-specific → broadest and return the first result that
+  // ISN'T already used elsewhere in the deck. Only when allowDup is true (last
+  // resort, so a slide isn't left blank) will it fall back to reusing an image.
+  const grabUnused = async (qs, allowDup) => {
+    let dup = null;
+    for (const q of qs) {
+      if (!clean(q)) continue;
+      const u = await grab(q);
+      if (!u) continue;
+      if (!used.has(u)) { used.add(u); return u; }
+      if (!dup) dup = u;            // valid photo, but already on another slide
+    }
+    return (allowDup && dup) ? dup : null;
   };
   const topic = deck.topic || deck.title || "";
-  const jobs = [];
   let any = false;
-  // cover image for the title slide
-  if (!deck.cover) jobs.push((async () => {
-    const url = await grabFirst(deck.coverquery, deck.title, topic);
+  // cover image for the title slide (a repeat here is fine — it's the only one)
+  if (!deck.cover) {
+    const url = await grabUnused([deck.coverquery, deck.title, topic], true);
     if (url && slDeck === deck) { deck.cover = url; any = true; }
-  })());
-  deck.slides.forEach(sl => {
-    if (sl.img || (sl.imgs && sl.imgs.length)) return;
+  }
+  // slides are filled sequentially so the "used" set stays consistent and dedup
+  // is deterministic (parallel fetching could hand the same photo to two slides)
+  for (const sl of deck.slides) {
+    if (slDeck !== deck) break;
+    if (sl.img || (sl.imgs && sl.imgs.length)) continue;
     const isSection = sl.type === "section";
     const wants = sl.image || (isSection && (sl.imgquery || (sl.imgqueries && sl.imgqueries.length)));
-    if (!wants) return;
+    if (!wants) continue;
     // collect the slide's image search terms (2-3 for content slides -> a small collage)
     let qs = Array.isArray(sl.imgqueries) ? sl.imgqueries.filter(Boolean) : [];
     if (sl.imgquery) qs.unshift(sl.imgquery);
     if (!qs.length && sl.heading) qs = [clean(sl.heading) + " " + topic];
     qs = qs.slice(0, isSection ? 1 : 3);
-    jobs.push((async () => {
-      const results = await Promise.all(qs.map((q, idx) =>
-        grabFirst(q, idx === 0 && sl.heading ? clean(sl.heading) + " " + topic : "", topic)));
-      let imgs = [];
-      for (const u of results) if (u && !imgs.includes(u)) imgs.push(u);   // de-dup
-      if (!imgs.length) { const u = await grabFirst((sl.heading || "") + " " + topic, topic); if (u) imgs = [u]; }
-      if (imgs.length && slDeck === deck) {
-        if (isSection) sl.img = imgs[0];
-        else { sl.imgs = imgs; sl.img = imgs[0]; }
-        any = true;
-      }
-    })());
-  });
-  await Promise.all(jobs);
+    const headTopic = sl.heading ? clean(sl.heading) + " " + topic : "";
+    const imgs = [];
+    // fill each collage slot with a DISTINCT, not-yet-used photo
+    for (let idx = 0; idx < qs.length; idx++) {
+      const u = await grabUnused([qs[idx], idx === 0 ? headTopic : "", topic], false);
+      if (u && !imgs.includes(u)) imgs.push(u);
+    }
+    // if every candidate collided with an earlier slide, accept one repeat so the
+    // slide still shows something (this is the "if it's not possible, that's fine" path)
+    if (!imgs.length) {
+      const u = await grabUnused([qs[0], headTopic, topic], true);
+      if (u && !imgs.includes(u)) imgs.push(u);
+    }
+    if (imgs.length && slDeck === deck) {
+      if (isSection) sl.img = imgs[0];
+      else { sl.imgs = imgs; sl.img = imgs[0]; }
+      any = true;
+    }
+  }
   if (any && slDeck === deck) slRender();
 }
 
@@ -3097,8 +3349,11 @@ async function slExportPptx() {
   if (!slDeck) return;
   try { await loadPptxGen(); }
   catch (e) { alert(e.message); throw e; }
-  const s = SL_STYLES[slStyle];
+  const s = slEffStyle();
   const hex = c => c.replace("#", "");
+  // PowerPoint can't use the web fonts, so map the theme's heading personality to
+  // a PPTX-safe face (serif themes → Georgia, everything else → a clean sans).
+  const headFont = (s.head === "serif" || s.head === "slab") ? "Georgia" : "Trebuchet MS";
   const p = new PptxGenJS();
   p.defineLayout({ name: "N", width: 13.33, height: 7.5 });
   p.layout = "N";
@@ -3113,7 +3368,7 @@ async function slExportPptx() {
   }
   try { t.addShape(p.ShapeType.rect, { x: 0.8, y: 4.5, w: 2.5, h: 0.09, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
   if (slDeck.date) t.addText(strip(slDeck.date).toUpperCase(), { x: 0.8, y: 2.0, w: 11.7, h: 0.5, fontSize: 16, color: hex(s.titleFg), charSpacing: 4, fontFace: "Arial" });
-  t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.5, w: 11.7, h: 1.9, fontSize: 60, bold: true, color: hex(s.titleFg), fontFace: "Georgia" });
+  t.addText(slDeck.title || "Untitled", { x: 0.8, y: 2.5, w: 11.7, h: 1.9, fontSize: 60, bold: true, color: hex(s.titleFg), fontFace: headFont });
   if (slDeck.subtitle) t.addText(slDeck.subtitle, { x: 0.8, y: 4.7, w: 11.0, h: 1.0, fontSize: 24, color: hex(s.titleFg), fontFace: "Arial" });
   slDeck.slides.forEach((sl, idx) => {
     const type = sl.type || "bullets";
@@ -3124,13 +3379,13 @@ async function slExportPptx() {
         sd.addImage({ data: sl.img, x: 0, y: 0, w: 13.33, h: 7.5, sizing: { type: "cover", w: 13.33, h: 7.5 } });
         sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 7.5, fill: { color: hex(s.titleBg), transparency: 26 }, line: { type: "none" } });
       } catch (e) {} }
-      sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 44, bold: true, italic: true, align: "center", color: hex(s.titleFg), fontFace: "Georgia" });
+      sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 44, bold: true, italic: true, align: "center", color: hex(s.titleFg), fontFace: headFont });
       if (sl.notes) sd.addNotes(sl.notes);
       return;
     }
     sd.background = { color: hex(s.bg) };
     try { sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 0.16, h: 7.5, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
-    if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.45, w: 12, h: 1.1, fontSize: 34, bold: true, italic: true, color: hex(s.accent), fontFace: "Georgia" });
+    if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.45, w: 12, h: 1.1, fontSize: 34, bold: true, italic: true, color: hex(s.accent), fontFace: headFont });
     const wide = !!sl.img;
     const imgLeft = wide && (idx % 2 === 1);
     const txX = wide ? (imgLeft ? 6.9 : 0.9) : 0.9;
@@ -3171,7 +3426,7 @@ async function slExportGoogle() {
 
 function slExportPdf() {
   if (!slDeck) return;
-  const s = SL_STYLES[slStyle];
+  const s = slEffStyle();
   // Build the deck with the SAME renderer the preview uses, so the PDF is pixel-identical
   // (real fonts, colours, decorations, image collages — nothing hand-rebuilt).
   let html = slTitleHtml(s);
@@ -3183,7 +3438,7 @@ function slExportPdf() {
   // Copy the app's own stylesheet so every .slide / decoration / typography rule applies
   const appCss = Array.from(document.querySelectorAll("style")).map(st => st.textContent).join("\n");
   const fonts = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
-    '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">';
+    '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">';
   const w = window.open("", "_blank");
   if (!w) { alert("Allow popups to export the PDF."); return; }
   w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(slDeck.title || "Deck")}</title>${fonts}
