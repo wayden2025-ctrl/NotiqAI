@@ -1,0 +1,16 @@
+# macOS / editor junk that should never be committed
+.DS_Store
+.DS_Store?
+._*
+*.textClipping
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Cowork / Claude workspace metadata
+.claude/
+
+# Local environment / secrets — never commit these
+.env
+.env.local
+.env.*.local

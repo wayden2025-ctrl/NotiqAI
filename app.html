@@ -3026,8 +3026,8 @@ ${bulletsType}
 - {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
 
 Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" slide a single "imgquery". (Only "compare", "stat" and "takeaways" go without images.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
-      { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 16000) }
-    ], true);
+      { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 12000) }
+    ], true, Math.min(4600, 1400 + n * 230));
     const d = JSON.parse(raw);
     d.slides = (d.slides || []).filter(s => s.heading);
     if (!d.slides.length) throw new Error("Couldn't build slides from that — try more material.");
@@ -4946,7 +4946,7 @@ async function getMaterial(ids) {
 }
 
 // ================= GROQ =================
-async function groq(messages, jsonMode) {
+async function groq(messages, jsonMode, maxTokens) {
   // every generator gets the same math rule: output LaTeX so it renders beautifully
   const msgs = (messages || []).map((m, i) =>
     i === 0 && m.role === "system"
@@ -4956,7 +4956,9 @@ async function groq(messages, jsonMode) {
     model: NOTIQ_CONFIG.GROQ_MODEL,
     messages: msgs,
     temperature: 0.4,
-    max_tokens: 6000,
+    // reserve only as much output as the caller needs — a fixed 6000 alone exceeds
+    // some free-tier per-minute token limits, so keep this modest by default
+    max_tokens: maxTokens || 4096,
   };
   if (jsonMode) body.response_format = { type: "json_object" };
   // If a key is pasted in config.js (local testing), call Groq directly.

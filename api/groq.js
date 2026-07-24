@@ -133,7 +133,10 @@ module.exports = async (req, res) => {
     // 1) if Groq says the wait is short, wait it out and retry the same model;
     // 2) still limited? switch to the fallback model (separate token bucket);
     // 3) still limited? return one clean, human message instead of Groq's raw error.
-    if (r.status === 429) {
+    // 429 = too many requests; 413 = single request bigger than the model's
+    // per-minute token budget. Both mean "this model can't take it right now" —
+    // handle them the same way (wait / smaller model / other engines).
+    if (r.status === 429 || r.status === 413) {
       let wait = 0;
       try {
         const errData = await r.json();
@@ -144,8 +147,11 @@ module.exports = async (req, res) => {
         await new Promise(s => setTimeout(s, (wait + 1) * 1000));
         r = await callGroq(body);
       }
-      if (r.status === 429) {
-        r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant" });
+      if (r.status === 429 || r.status === 413) {
+        // the fallback model has a smaller token bucket — shrink the reserved
+        // response so the whole request fits inside its per-minute limit
+        const capped = Math.min(body.max_tokens || 4096, 3200);
+        r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant", max_tokens: capped });
       }
       // Extra free engines, each with its own separate quota. Tried only when Groq is
       // maxed, and only if the matching env var is set — so adding a key is all it takes.
@@ -156,7 +162,7 @@ module.exports = async (req, res) => {
         { on: process.env.OPENROUTER_API_KEY, url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free" },
       ];
       for (const b of backups) {
-        if (r.status !== 429 || !b.on) continue;
+        if ((r.status !== 429 && r.status !== 413) || !b.on) continue;
         try {
           const alt = await fetch(b.url, {
             method: "POST",
@@ -167,7 +173,7 @@ module.exports = async (req, res) => {
           r = alt;   // carry the status so we keep trying the next backup
         } catch (e) { /* try the next engine */ }
       }
-      if (r.status === 429) {
+      if (r.status === 429 || r.status === 413) {
         res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
         return;
       }
