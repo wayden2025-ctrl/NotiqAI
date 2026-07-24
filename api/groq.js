@@ -54,10 +54,7 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: { message: "POST only" } });
     return;
   }
-  if (!process.env.GROQ_API_KEY) {
-    res.status(500).json({ error: { message: "GROQ_API_KEY is not set in Vercel environment variables." } });
-    return;
-  }
+  const hasGroq = !!process.env.GROQ_API_KEY;
 
   const ip = ((req.headers["x-forwarded-for"] || "").split(",")[0] || "unknown").trim();
 
@@ -126,62 +123,64 @@ module.exports = async (req, res) => {
     body: JSON.stringify(b),
   });
 
-  try {
-    let r = await callGroq(body);
-
-    // Groq's free tier caps tokens-per-minute PER MODEL. If we hit that wall:
-    // 1) if Groq says the wait is short, wait it out and retry the same model;
-    // 2) still limited? switch to the fallback model (separate token bucket);
-    // 3) still limited? return one clean, human message instead of Groq's raw error.
-    // 429 = too many requests; 413 = single request bigger than the model's
-    // per-minute token budget. Both mean "this model can't take it right now" —
-    // handle them the same way (wait / smaller model / other engines).
-    if (r.status === 429 || r.status === 413) {
-      let wait = 0;
+  // Free backup engines, each with its own quota. Tried whenever Groq is missing,
+  // limited, or erroring — only the ones whose env key is set. OpenAI-compatible, so
+  // the same request body just works. A working backup ends the request with a 200.
+  const backups = [
+    { on: process.env.GEMINI_API_KEY, url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", key: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || "gemini-2.0-flash" },
+    { on: process.env.CEREBRAS_API_KEY, url: "https://api.cerebras.ai/v1/chat/completions", key: process.env.CEREBRAS_API_KEY, model: process.env.CEREBRAS_MODEL || "llama-3.3-70b" },
+    { on: process.env.OPENROUTER_API_KEY, url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free" },
+  ];
+  async function tryBackups() {
+    for (const b of backups) {
+      if (!b.on) continue;
       try {
-        const errData = await r.json();
-        const m = ((errData.error && errData.error.message) || "").match(/try again in ([\d.]+)s/i);
-        if (m) wait = Math.ceil(parseFloat(m[1]));
-      } catch (e) { /* ignore */ }
-      if (wait > 0 && wait <= 25) {
-        await new Promise(s => setTimeout(s, (wait + 1) * 1000));
-        r = await callGroq(body);
-      }
-      if (r.status === 429 || r.status === 413) {
-        // the fallback model has a smaller token bucket — shrink the reserved
-        // response so the whole request fits inside its per-minute limit
-        const capped = Math.min(body.max_tokens || 4096, 3200);
-        r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant", max_tokens: capped });
-      }
-      // Extra free engines, each with its own separate quota. Tried only when Groq is
-      // maxed, and only if the matching env var is set — so adding a key is all it takes.
-      // OpenAI-compatible endpoints, so the same request body just works.
-      const backups = [
-        { on: process.env.GEMINI_API_KEY, url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", key: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || "gemini-2.0-flash" },
-        { on: process.env.CEREBRAS_API_KEY, url: "https://api.cerebras.ai/v1/chat/completions", key: process.env.CEREBRAS_API_KEY, model: process.env.CEREBRAS_MODEL || "llama-3.3-70b" },
-        { on: process.env.OPENROUTER_API_KEY, url: "https://openrouter.ai/api/v1/chat/completions", key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free" },
-      ];
-      for (const b of backups) {
-        if ((r.status !== 429 && r.status !== 413) || !b.on) continue;
-        try {
-          const alt = await fetch(b.url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + b.key },
-            body: JSON.stringify({ ...body, model: b.model }),
-          });
-          if (alt.ok) { res.status(200).json(await alt.json()); return; }
-          r = alt;   // carry the status so we keep trying the next backup
-        } catch (e) { /* try the next engine */ }
-      }
-      if (r.status === 429 || r.status === 413) {
-        res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
-        return;
-      }
+        const alt = await fetch(b.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + b.key },
+          body: JSON.stringify({ ...body, model: b.model }),
+        });
+        if (alt.ok) { res.status(200).json(await alt.json()); return true; }
+      } catch (e) { /* next engine */ }
     }
+    return false;
+  }
 
-    const data = await r.json();
-    res.status(r.status).json(data);
+  try {
+    if (hasGroq) {
+      let r = await callGroq(body);
+      // 429 = too many requests; 413 = request bigger than the model's per-minute budget.
+      if (r.status === 429 || r.status === 413) {
+        let wait = 0;
+        try {
+          const errData = await r.json();
+          const m = ((errData.error && errData.error.message) || "").match(/try again in ([\d.]+)s/i);
+          if (m) wait = Math.ceil(parseFloat(m[1]));
+        } catch (e) { /* ignore */ }
+        if (wait > 0 && wait <= 25) { await new Promise(s => setTimeout(s, (wait + 1) * 1000)); r = await callGroq(body); }
+        if (r.status === 429 || r.status === 413) {
+          // fallback model has a smaller bucket — shrink the reserved response to fit
+          const capped = Math.min(body.max_tokens || 4096, 3200);
+          r = await callGroq({ ...body, model: process.env.GROQ_FALLBACK_MODEL || "llama-3.1-8b-instant", max_tokens: capped });
+        }
+      }
+      if (r.ok) { res.status(200).json(await r.json()); return; }
+      // Groq failed for ANY reason (rate limit, model error, 5xx) -> try the free backups
+      if (await tryBackups()) return;
+      // no backup worked -> return a clean, friendly error
+      const status = (r.status === 429 || r.status === 413) ? 429 : 503;
+      const msg = (r.status === 429 || r.status === 413)
+        ? "Too many people are generating at the same time right now — give it a minute and try again."
+        : "The AI is briefly unavailable — please try again in a minute.";
+      res.status(status).json({ error: { message: msg } });
+      return;
+    }
+    // No Groq key -> go straight to the backups (e.g. Gemini)
+    if (await tryBackups()) return;
+    res.status(503).json({ error: { message: "The AI is briefly unavailable — please try again in a minute." } });
   } catch (e) {
-    res.status(500).json({ error: { message: e.message } });
+    // an unexpected error in the Groq path must not kill the request if a backup can serve it
+    try { if (await tryBackups()) return; } catch (x) { /* ignore */ }
+    res.status(503).json({ error: { message: "The AI is briefly unavailable — please try again in a minute." } });
   }
 };
