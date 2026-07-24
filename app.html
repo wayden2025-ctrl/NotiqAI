@@ -1548,7 +1548,8 @@
   .nqclabel .nqdot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   .nqcscroll { flex: 1; overflow-y: auto; padding: 6px 14px 16px; }
   .nqtools { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
-  .nqtool { border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2)); border-radius: 16px; padding: 15px 13px; cursor: pointer; text-align: left; transition: .16s; position: relative; overflow: hidden; }
+  .nqtool { border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2)); border-radius: 16px; padding: 15px 13px; cursor: pointer; text-align: left; transition: .16s; position: relative; overflow: hidden; color: var(--ink); }
+  .nqtool b { color: var(--ink); }
   .nqtool::after { content: ""; position: absolute; right: -26px; bottom: -26px; width: 68px; height: 68px; border-radius: 50%; opacity: .12; background: var(--tc, #2a4d8a); }
   .nqtool:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(22,40,80,.14); border-color: transparent; }
   .nqtool .nqic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 11px; color: #fff; box-shadow: 0 6px 14px rgba(22,40,80,.2); }
