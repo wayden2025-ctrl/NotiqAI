@@ -1485,11 +1485,16 @@
   .nqav { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; color: #0d1f42; font-weight: 800; font-size: 14px; background: linear-gradient(180deg, #dbe8fb, #9dc0f0); }
 
   /* workspace 3-pane */
-  #nqhome { position: fixed; top: var(--nqtop); left: 0; right: 0; bottom: 0; z-index: 120; display: flex; gap: 12px; padding: 12px; }
+  #nqhome { position: fixed; top: var(--nqtop); left: 0; right: 0; bottom: 0; z-index: 120; display: flex; gap: 0; padding: 12px; }
   .nqpanel { border-radius: 20px; box-shadow: 0 12px 40px rgba(22,40,80,.10), inset 0 1px 0 rgba(255,255,255,.6); backdrop-filter: blur(16px) saturate(1.2); overflow: hidden; }
-  .nqlib { flex: none; width: 286px; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(244,239,232,.7)); border: 1px solid rgba(255,255,255,.7); }
-  .nqchat { flex: 1; min-width: 0; display: flex; flex-direction: column; background: radial-gradient(120% 60% at 50% 0%, rgba(219,232,251,.5), rgba(255,255,255,.82) 55%); border: 1px solid rgba(255,255,255,.8); }
-  .nqcreate { flex: none; width: 352px; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(247,244,239,.75), rgba(255,255,255,.72)); border: 1px solid rgba(255,255,255,.7); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  .nqlib { flex: none; width: var(--nqlib-w, 286px); display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(244,239,232,.7)); border: 1px solid rgba(255,255,255,.7); }
+  .nqchat { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: radial-gradient(120% 60% at 50% 0%, rgba(219,232,251,.5), rgba(255,255,255,.82) 55%); border: 1px solid rgba(255,255,255,.8); }
+  .nqcreate { flex: none; width: var(--nqcreate-w, 352px); display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(247,244,239,.75), rgba(255,255,255,.72)); border: 1px solid rgba(255,255,255,.7); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  /* drag handles between panes (provide the 12px gutter + a grabber) */
+  .nqrz { flex: none; width: 12px; align-self: stretch; cursor: col-resize; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 2; }
+  .nqrz::before { content: ""; width: 3px; height: 40px; border-radius: 3px; background: rgba(30,58,110,.16); transition: background .15s, height .15s; }
+  .nqrz:hover::before, .nqrz.nqdragging::before { background: var(--coral); height: 64px; }
+  .nqresizing { transition: none !important; } /* instant while dragging; expand keeps its animation otherwise */
   .nqcreate.nqexpanded { width: min(720px, 58vw); }
 
   .nqph { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 10px; }
@@ -1569,11 +1574,17 @@
       <div class="nqscroll" id="nq-lib"></div>
     </section>
 
+    <!-- drag: Library width -->
+    <div class="nqrz" id="nq-rz-left" title="Drag to resize"></div>
+
     <!-- CENTER: CHAT (the app's real chat is moved in here at init) -->
     <section class="nqpanel nqchat">
       <div class="nqchath"><div class="nqcxorb"></div><div><div class="t">Talk with Notiq</div><div class="s" id="nq-chatsub">Ask anything about your studies</div></div><span class="nqpill">Notiq AI</span></div>
       <div class="nqchatbody" id="nq-chatbody"></div>
     </section>
+
+    <!-- drag: Create width -->
+    <div class="nqrz" id="nq-rz-right" title="Drag to resize"></div>
 
     <!-- RIGHT: CREATE -->
     <aside class="nqpanel nqcreate" id="nqcreate">
@@ -5007,8 +5018,60 @@ function nqInit() {
   try { const a = document.getElementById("rb-account"); const av = document.getElementById("nqav"); if (a && av) av.textContent = (a.textContent || "A").trim() || "A"; } catch (e) {}
   try { openChat(); } catch (e) {}
   try { nqRefresh(); } catch (e) {}
+  try { nqSetupResizers(); } catch (e) {}
   const ws = document.getElementById("nqhome"); const mainEl = document.querySelector("main");
   if (ws) ws.style.display = "flex"; if (mainEl) mainEl.style.display = "none";
+}
+// Draggable dividers for the Library / Chat / Create panes, clamped so no pane
+// gets too wide or too narrow (and the chat always keeps room). Widths persist.
+const NQ_WLIMITS = { lib: [220, 460], create: [300, 620] };
+function nqSetupResizers() {
+  const home = document.getElementById("nqhome"); if (!home) return;
+  try {
+    const s = JSON.parse(localStorage.getItem("nqPanelW") || "{}");
+    if (s.lib) home.style.setProperty("--nqlib-w", nqClamp("lib", s.lib) + "px");
+    if (s.create) home.style.setProperty("--nqcreate-w", nqClamp("create", s.create) + "px");
+  } catch (e) {}
+  nqBindResizer("nq-rz-left", "lib", 1);      // handle right of Library: drag right => wider
+  nqBindResizer("nq-rz-right", "create", -1); // handle left of Create: drag left => wider
+}
+function nqClamp(key, w) {
+  const [mn, mx] = NQ_WLIMITS[key];
+  const home = document.getElementById("nqhome");
+  const homeW = home ? home.getBoundingClientRect().width : 1280;
+  const otherSel = key === "lib" ? ".nqcreate" : ".nqlib";
+  const other = document.querySelector(otherSel);
+  const otherW = other ? other.getBoundingClientRect().width : 320;
+  const maxByChat = homeW - otherW - 320 - 24 - 24; // keep chat >= 320, minus 2 gutters+padding
+  return Math.max(mn, Math.min(Math.min(mx, maxByChat), w));
+}
+function nqBindResizer(id, key, sign) {
+  const h = document.getElementById(id); if (!h) return;
+  const home = document.getElementById("nqhome");
+  const panel = document.querySelector(key === "lib" ? ".nqlib" : ".nqcreate");
+  const cssVar = key === "lib" ? "--nqlib-w" : "--nqcreate-w";
+  let active = false, startX = 0, startW = 0;
+  h.addEventListener("pointerdown", (e) => {
+    active = true; startX = e.clientX; startW = panel.getBoundingClientRect().width;
+    h.classList.add("nqdragging"); panel.classList.add("nqresizing");
+    try { h.setPointerCapture(e.pointerId); } catch (x) {}
+    document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+  h.addEventListener("pointermove", (e) => {
+    if (!active) return;
+    const w = nqClamp(key, startW + sign * (e.clientX - startX));
+    home.style.setProperty(cssVar, w + "px");
+  });
+  const end = () => {
+    if (!active) return; active = false;
+    h.classList.remove("nqdragging"); panel.classList.remove("nqresizing");
+    document.body.style.cursor = ""; document.body.style.userSelect = "";
+    try { const s = JSON.parse(localStorage.getItem("nqPanelW") || "{}"); s[key] = Math.round(panel.getBoundingClientRect().width); localStorage.setItem("nqPanelW", JSON.stringify(s)); } catch (x) {}
+  };
+  h.addEventListener("pointerup", end);
+  h.addEventListener("pointercancel", end);
+  h.addEventListener("lostpointercapture", end);
 }
 function nqFilter(mode, el) {
   nqFilterMode = mode;
