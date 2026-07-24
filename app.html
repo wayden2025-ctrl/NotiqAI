@@ -1461,10 +1461,8 @@
      NEW WORKSPACE SHELL (namespaced nq*) — NotebookLM-style
      3-pane home. Reuses the app's real chat + generators.
      ========================================================= */
-  body.nqmode { --rail-w: 0px; }
-  body.nqmode .rail { display: none; }
-  body.nqmode main { margin-left: 0; margin-top: var(--nqtop, 66px); padding-top: 20px; }
-  :root { --nqtop: 66px; }
+  /* keep the classic left rail (themed white/palette); the workspace sits to its right */
+  body.nqmode .rail { z-index: 200; }
 
   /* dark top bar — themed via the palette's deepest colors, always dark enough for white text */
   .nqtop { position: fixed; top: 0; left: 0; right: 0; height: var(--nqtop); z-index: 300;
@@ -1484,18 +1482,21 @@
   .nqpro svg { width: 14px; height: 14px; }
   .nqav { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; color: var(--orb4); font-weight: 800; font-size: 14px; background: linear-gradient(180deg, var(--orb1), var(--orb2)); }
 
-  /* workspace 3-pane */
-  #nqhome { position: fixed; top: var(--nqtop); left: 0; right: 0; bottom: 0; z-index: 120; display: flex; gap: 0; padding: 12px; }
+  /* workspace: Chat (fills ~70%) + Create (~30%), beside the rail */
+  #nqhome { position: fixed; top: 0; left: var(--rail-w); right: 0; bottom: 0; z-index: 120; display: flex; gap: 0; padding: 12px; }
   .nqpanel { border-radius: 20px; box-shadow: 0 12px 40px rgba(22,40,80,.10); border: 1px solid var(--line); overflow: hidden; color: var(--ink); }
-  .nqlib { flex: none; width: var(--nqlib-w, 286px); display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card1), var(--card2)); }
   .nqchat { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: linear-gradient(180deg, color-mix(in srgb, var(--coral) 6%, var(--card1)), var(--card1) 55%); }
-  .nqcreate { flex: none; width: var(--nqcreate-w, 352px); display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  .nqcreate { flex: none; width: var(--nqcreate-w, 30%); min-width: 300px; max-width: 46%; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  /* breathing room so chat bubbles + composer aren't jammed against the panel edges */
+  body.nqmode #chat-wrap { padding: 2px 20px 0; }
+  body.nqmode .nqchat .cw-orb { display: none; }
+  body.nqmode .nqchat .chat-welcome { padding-top: 8px; }
   /* drag handles between panes (provide the 12px gutter + a grabber) */
   .nqrz { flex: none; width: 12px; align-self: stretch; cursor: col-resize; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 2; }
   .nqrz::before { content: ""; width: 3px; height: 40px; border-radius: 3px; background: color-mix(in srgb, var(--coral) 24%, transparent); transition: background .15s, height .15s; }
   .nqrz:hover::before, .nqrz.nqdragging::before { background: var(--coral); height: 64px; }
   .nqresizing { transition: none !important; } /* instant while dragging; expand keeps its animation otherwise */
-  .nqcreate.nqexpanded { width: min(880px, 60vw); }
+  .nqcreate.nqexpanded { width: min(880px, 60vw); max-width: 72%; }
   /* when a tool is open in-panel: let the chat compress, hide the create resizer */
   body.nqtoolopen .nqchat { min-width: 220px; }
   body.nqtoolopen #nq-rz-right { display: none; }
@@ -1559,6 +1560,30 @@
   .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
   .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
+  /* saved folders at the bottom of Create */
+  .nqfolders { display: flex; flex-direction: column; gap: 6px; }
+  .nqfolders .nqfrow { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 11px; cursor: pointer; transition: .12s; font-size: 13.5px; color: var(--ink); }
+  .nqfolders .nqfrow:hover { background: color-mix(in srgb, var(--coral) 8%, transparent); }
+  .nqfolders .nqfrow .nqfic { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .nqfolders .nqfrow .nqfic svg { width: 15px; height: 15px; }
+  .nqfolders .nqfrow .nqfnm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nqfolders .nqfrow .nqftag { flex: none; font-size: 10px; font-weight: 800; color: var(--muted); background: color-mix(in srgb, var(--coral) 9%, transparent); padding: 2px 7px; border-radius: 999px; }
+  .nqfolders .nqfempty { font-size: 12px; color: var(--muted); padding: 6px 10px; }
+
+  /* tip of the day at the bottom of Create */
+  .nqtip-c { display: flex; align-items: flex-start; gap: 9px; margin-top: 14px; padding: 11px 12px; border-radius: 12px;
+    background: color-mix(in srgb, var(--amber) 12%, transparent); border: 1px solid color-mix(in srgb, var(--amber) 24%, transparent); }
+  .nqtip-c svg { width: 16px; height: 16px; flex: none; color: var(--amber); margin-top: 1px; }
+  .nqtip-c span { font-size: 12px; color: var(--ink); line-height: 1.45; }
+  .nqtip-c .nqtip-lbl { font-weight: 800; color: var(--amber); }
+
+  /* study-modes chooser box (shown in the expanded Create pane) */
+  .nqmodes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+  .nqmode { border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2)); border-radius: 16px; padding: 16px 14px; cursor: pointer; text-align: left; color: var(--ink); transition: .16s; }
+  .nqmode:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(22,40,80,.14); border-color: transparent; }
+  .nqmode .nqmic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 10px; color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); box-shadow: 0 6px 14px rgba(22,40,80,.2); }
+  .nqmode .nqmic svg { width: 19px; height: 19px; } .nqmode b { display: block; font-size: 14.5px; } .nqmode span { font-size: 11.5px; color: var(--muted); }
+
   /* tip of the day — lives in the top bar's middle, never grows its height */
   .nqtip { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 14px; border-radius: 999px;
     background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); max-width: 44vw; }
@@ -1575,48 +1600,21 @@
 <body>
 
   <!-- ============ NEW WORKSPACE TOP BAR ============ -->
-  <header class="nqtop" id="nqtop">
-    <div class="nqbrand" onclick="showView('dashboard')"><div class="nqorb"></div><div class="nqwm">Notiq<em>.</em></div></div>
-    <div class="nqnb" id="nqnb" onclick="openPanel('folder')"><span class="nqfdot"></span> <span id="nqnb-label">Your library</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
-    <div class="nqsp"></div>
-    <div class="nqtip" id="nq-tip" title="A new study tip every day">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg>
-      <span class="nqtip-lbl">Tip</span><span id="nq-tip-text">Loading today's tip…</span>
-    </div>
-    <div class="nqsp"></div>
-    <button class="nqtb" title="Color palettes — make it yours" onclick="openPanel('themes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a9 9 0 1 0 0 18h.9a2.1 2.1 0 0 0 1.6-3.5 2.1 2.1 0 0 1 1.6-3.5H18a3.5 3.5 0 0 0 3.5-3.5C21.5 6 17.2 3 12 3z"/><circle cx="7.5" cy="10.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="16.5" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg></button>
-    <button class="nqtb" title="Whiteboard — sketch &amp; diagram" onclick="openBoard()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
-    <button class="nqtb" title="Donate — keep Notiq free" onclick="window.open('https://ko-fi.com/ayden1234', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.7-9.3-9.2C1.3 7.8 3.6 4.5 7 4.5c2 0 3.7 1.1 5 2.9 1.3-1.8 3-2.9 5-2.9 3.4 0 5.7 3.3 4.3 6.8-1.8 4.5-9.3 9.2-9.3 9.2z"/></svg></button>
-    <button class="nqtb" title="Feedback &amp; problems" onclick="window.open('https://docs.google.com/forms/d/1rFwTc_BWUC0pAEqc6YWp1BRBjRdxbZEkaITDMBH9fPw/viewform', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.2-.6L3 21l1.7-4.1a8.4 8.4 0 1 1 16.3-5.4z"/><path d="M8.5 10h7"/><path d="M8.5 13.5h4.5"/></svg></button>
-    <button class="nqpro" onclick="location.href='pricing.html'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3L22 9l-5 4.6 1.3 7L12 17l-6.3 3.6L7 13.6 2 9l7.1-.7z"/></svg>Pro</button>
-    <button class="nqav" id="nqav" onclick="showView('account')">A</button>
-  </header>
-
-  <!-- ============ NEW WORKSPACE (home) ============ -->
+  <!-- ============ NEW WORKSPACE (home) — Chat 70% | Create 30%, beside the rail ============ -->
   <div id="nqhome">
-    <!-- LEFT: LIBRARY -->
-    <section class="nqpanel nqlib">
-      <div class="nqph"><h2><span class="nqdot"></span>Library</h2><span class="nqcount" id="nq-count">0 selected</span></div>
-      <button class="nqadd" onclick="showView('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add material</button>
-      <div class="nqfilt"><button class="on" data-f="all" onclick="nqFilter('all',this)">All</button><button data-f="mat" onclick="nqFilter('mat',this)">Sources</button><button data-f="saved" onclick="nqFilter('saved',this)">Saved</button></div>
-      <div class="nqscroll" id="nq-lib"></div>
-    </section>
-
-    <!-- drag: Library width -->
-    <div class="nqrz" id="nq-rz-left" title="Drag to resize"></div>
-
-    <!-- CENTER: CHAT (the app's real chat is moved in here at init) -->
+    <!-- MAIN: CHAT (the app's real chat is moved in here at init) -->
     <section class="nqpanel nqchat">
-      <div class="nqchath"><div class="nqcxorb"></div><div><div class="t">Talk with Notiq</div><div class="s" id="nq-chatsub">Ask anything about your studies</div></div><span class="nqpill">Notiq AI</span></div>
+      <div class="nqchath"><div><div class="t">Talk with Notiq</div><div class="s" id="nq-chatsub">Ask anything about your studies</div></div><span class="nqpill">Notiq AI</span></div>
       <div class="nqchatbody" id="nq-chatbody"></div>
     </section>
 
-    <!-- drag: Create width -->
+    <!-- drag: Chat / Create split -->
     <div class="nqrz" id="nq-rz-right" title="Drag to resize"></div>
 
-    <!-- RIGHT: CREATE -->
+    <!-- CREATE (Add material on top · tools · saved folders at the bottom) -->
     <aside class="nqpanel nqcreate" id="nqcreate">
       <div class="nqcscroll" id="nq-createscroll">
+        <button class="nqadd" onclick="showView('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add material</button>
         <div class="nqclabel"><span class="nqdot"></span> Create</div>
         <div class="nqtools">
           <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><b>Notes</b><span>Rewrite into notes</span></button>
@@ -1625,7 +1623,13 @@
           <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><b>Test</b><span>Exam-style</span></button>
           <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><b>Slides</b><span>A designed deck</span></button>
           <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><b>Video</b><span>Narrated overview</span></button>
-          <button class="nqtool nqt7 nqwide" onclick="nqOpenTool('study')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Review · Teach-back · Write · Match · Cram · Sprint</span></div></button>
+          <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div></button>
+        </div>
+        <div class="nqclabel" style="margin-top:2px;"><span class="nqdot"></span> Saved</div>
+        <div class="nqfolders" id="nq-folders"></div>
+        <div class="nqtip-c" id="nq-tip" title="A new study tip every day">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg>
+          <span><span class="nqtip-lbl">Tip </span><span id="nq-tip-text">Loading today's tip…</span></span>
         </div>
       </div>
       <!-- in-panel tool viewer: the app's real tool views get moved in here -->
@@ -5067,20 +5071,15 @@ function nqSetupResizers() {
   const home = document.getElementById("nqhome"); if (!home) return;
   try {
     const s = JSON.parse(localStorage.getItem("nqPanelW") || "{}");
-    if (s.lib) home.style.setProperty("--nqlib-w", nqClamp("lib", s.lib) + "px");
     if (s.create) home.style.setProperty("--nqcreate-w", nqClamp("create", s.create) + "px");
   } catch (e) {}
-  nqBindResizer("nq-rz-left", "lib", 1);      // handle right of Library: drag right => wider
   nqBindResizer("nq-rz-right", "create", -1); // handle left of Create: drag left => wider
 }
 function nqClamp(key, w) {
   const [mn, mx] = NQ_WLIMITS[key];
   const home = document.getElementById("nqhome");
   const homeW = home ? home.getBoundingClientRect().width : 1280;
-  const otherSel = key === "lib" ? ".nqcreate" : ".nqlib";
-  const other = document.querySelector(otherSel);
-  const otherW = other ? other.getBoundingClientRect().width : 320;
-  const maxByChat = homeW - otherW - 320 - 24 - 24; // keep chat >= 320, minus 2 gutters+padding
+  const maxByChat = homeW - 360 - 24; // always leave the chat at least ~360px
   return Math.max(mn, Math.min(Math.min(mx, maxByChat), w));
 }
 function nqBindResizer(id, key, sign) {
@@ -5111,45 +5110,23 @@ function nqBindResizer(id, key, sign) {
   h.addEventListener("pointercancel", end);
   h.addEventListener("lostpointercapture", end);
 }
-function nqFilter(mode, el) {
-  nqFilterMode = mode;
-  document.querySelectorAll(".nqfilt button").forEach(b => b.classList.remove("on"));
-  if (el) el.classList.add("on");
-  nqRenderLibrary();
-}
 function nqRefresh() {
-  try { nqRenderLibrary(); } catch (e) {}
+  try { nqRenderFolders(); } catch (e) {}
   try {
     const n = (typeof resources !== "undefined" ? resources.length : 0);
     const sub = document.getElementById("nq-chatsub");
     if (sub) sub.textContent = n ? ("Grounded in " + n + " source" + (n === 1 ? "" : "s") + " when you mention them") : "Ask anything about your studies";
   } catch (e) {}
 }
-async function nqRenderLibrary() {
-  const el = document.getElementById("nq-lib"); if (!el) return;
-  const res = (typeof resources !== "undefined" ? resources : []);
+// Saved folders at the bottom of the Create pane; click opens the folder.
+function nqRenderFolders() {
+  const el = document.getElementById("nq-folders"); if (!el) return;
   const fl = (typeof folders !== "undefined" ? folders : []);
-  let html = "";
-  if (nqFilterMode !== "saved") {
-    html += '<div class="nqsub">Sources</div>';
-    html += res.length ? res.map(r =>
-      '<label class="nqitem"><input type="checkbox" value="' + r.id + '" onchange="nqUpdCount()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14.5 3v4.5H19"/></svg></div><div class="nqnm">' + esc(r.name) + '</div></label>'
-    ).join("") : '<div class="nqempty">No sources yet. Tap &ldquo;Add material&rdquo; to paste, upload, import a link, or learn a new topic.</div>';
-  }
-  if (nqFilterMode !== "mat") {
-    html += '<div class="nqsub">Saved</div>';
-    html += fl.length ? fl.map(f =>
-      '<div class="nqfoldh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/></svg> ' + esc(f.name) + '<span class="nqtag" style="margin-left:auto;">' + ((typeof itemCounts !== "undefined" ? (itemCounts[f.id] || 0) : 0)) + '</span></div>'
-    ).join("") : '<div class="nqempty">No folders yet. Create one from the top bar &mdash; anything you make is saved into it.</div>';
-  }
-  el.innerHTML = html;
-  nqUpdCount();
+  el.innerHTML = fl.length ? fl.map(f =>
+    '<div class="nqfrow" onclick="openFolder(\'' + f.id + '\')"><div class="nqfic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z"/></svg></div><div class="nqfnm">' + esc(f.name) + '</div><span class="nqftag">' + ((typeof itemCounts !== "undefined" ? (itemCounts[f.id] || 0) : 0)) + '</span></div>'
+  ).join("") : '<div class="nqfempty">No folders yet — anything you save lands here.</div>';
 }
-function nqUpdCount() {
-  const n = document.querySelectorAll("#nq-lib input:checked").length;
-  const c = document.getElementById("nq-count"); if (c) c.textContent = n + " selected";
-}
-// Tip of the day in the top bar (same daily rotation as the old dashboard card).
+// Tip of the day (same daily rotation as the old dashboard card).
 function nqRenderTip() {
   const el = document.getElementById("nq-tip-text");
   if (!el || typeof TIPS === "undefined" || !TIPS.length) return;
@@ -5186,6 +5163,10 @@ function nqOpenTool(name) {
 }
 function nqReturnView() {
   if (!nqCurrentTool) return;
+  if (nqCurrentTool === "studymodes") {   // custom chooser, not a moved view
+    const b = document.getElementById("nq-viewer-body"); if (b) b.innerHTML = "";
+    nqCurrentTool = null; return;
+  }
   const view = document.getElementById("view-" + (NQ_TOOL_VIEW[nqCurrentTool] || nqCurrentTool));
   const mainEl = document.querySelector("main");
   if (view && mainEl) { view.classList.add("hidden"); mainEl.appendChild(view); }
@@ -5196,6 +5177,39 @@ function nqCloseTool() {
   nqReturnView();
   if (create) create.classList.remove("nqexpanded");
   document.body.classList.remove("nqtoolopen");
+}
+
+// ---- Study modes: expand the Create pane and show a clean chooser box ----
+const NQ_STUDY_MODES = [
+  { k: "teach",  t: "Teach-back", d: "Explain it out loud", ic: '<path d="M12 3 2 8l10 5 10-5z"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/>' },
+  { k: "write",  t: "Write",      d: "Recall by writing",   ic: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>' },
+  { k: "match",  t: "Match",      d: "Pair terms fast",     ic: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' },
+  { k: "cram",   t: "Cram",       d: "Rapid-fire review",   ic: '<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>' },
+  { k: "sprint", t: "Sprint",     d: "Beat the clock",      ic: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>' },
+];
+function nqOpenStudyModes() {
+  const create = document.getElementById("nqcreate");
+  const body = document.getElementById("nq-viewer-body");
+  if (!create || !body) { showView("study"); return; }
+  try { ttsStop(); } catch (e) {}
+  if (nqCurrentTool) nqReturnView();
+  body.innerHTML = '<div class="nqmodes">' + NQ_STUDY_MODES.map(m =>
+    '<button class="nqmode" onclick="nqStudyGo(\'' + m.k + '\')"><div class="nqmic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + m.ic + '</svg></div><b>' + m.t + '</b><span>' + m.d + '</span></button>'
+  ).join("") + '</div>';
+  const t = document.getElementById("nq-viewer-title"); if (t) t.textContent = "Study modes";
+  create.classList.add("nqexpanded");
+  document.body.classList.add("nqtoolopen");
+  nqCurrentTool = "studymodes";
+  body.scrollTop = 0;
+}
+function nqStudyGo(mode) {
+  nqCloseTool();   // collapse the chooser, then launch the real mode (full-screen; leaving it returns here)
+  try {
+    if (mode === "write") openWrite();
+    else if (mode === "match") openMatch();
+    else if (mode === "review") openReview();
+    else showView(mode);   // teach, cram, sprint
+  } catch (e) { showView(mode); }
 }
 function openPanel(name) {
   closePanels(true);
