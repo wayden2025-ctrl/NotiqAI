@@ -1553,13 +1553,11 @@
   .nqtool .nqic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 11px; color: #fff; box-shadow: 0 6px 14px rgba(22,40,80,.2); }
   .nqtool .nqic svg { width: 19px; height: 19px; } .nqtool b { display: block; font-size: 14px; } .nqtool span { font-size: 11.5px; color: var(--muted); }
   .nqtool.nqwide { grid-column: span 2; display: flex; align-items: center; gap: 12px; } .nqtool.nqwide .nqic { margin-bottom: 0; }
-  .nqt1 { --tc: #1e3a6e; } .nqt1 .nqic { background: linear-gradient(150deg, #3a6aaf, #1e3a6e); }
-  .nqt2 { --tc: #2a4d8a; } .nqt2 .nqic { background: linear-gradient(150deg, #5b8ac9, #2a4d8a); }
-  .nqt3 { --tc: #9a5f1e; } .nqt3 .nqic { background: linear-gradient(150deg, #d59a4a, #9a5f1e); }
-  .nqt4 { --tc: #1e6e50; } .nqt4 .nqic { background: linear-gradient(150deg, #4a9c7c, #1e6e50); }
-  .nqt5 { --tc: #452a8a; } .nqt5 .nqic { background: linear-gradient(150deg, #7a5bc9, #452a8a); }
-  .nqt6 { --tc: #8a2a4d; } .nqt6 .nqic { background: linear-gradient(150deg, #c95b7a, #8a2a4d); }
-  .nqt7 { --tc: #0d1f42; } .nqt7 .nqic { background: linear-gradient(150deg, #2a4d8a, #0d1f42); }
+  /* every Create tool icon shares ONE colour that matches the logo orb and
+     follows the selected palette (orb2 -> orb4, same hues as the .nqorb logo) */
+  .nqt1, .nqt2, .nqt3, .nqt4, .nqt5, .nqt6, .nqt7 { --tc: var(--orb2); }
+  .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
+  .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
   /* tip of the day — lives in the top bar's middle, never grows its height */
   .nqtip { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 14px; border-radius: 999px;
