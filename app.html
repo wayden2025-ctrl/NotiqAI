@@ -855,7 +855,7 @@
   .mini-opts { position: absolute; top: 20px; right: 22px; display: flex; flex-direction: column; gap: 5px; }
   .mini-opts i { width: 64px; height: 12px; border-radius: 6px; background: color-mix(in srgb, var(--coral) 12%, transparent); }
   .mini-opts i.pick { background: var(--coral); position: relative; }
-  .mini-opts i.pick::after { content: "✓"; position: absolute; right: -18px; top: -3px; color: var(--coral); font-size: 12px; font-weight: 800; }
+  .mini-opts i.pick::after { content: ""; position: absolute; right: -15px; top: 0; width: 5px; height: 9px; border: solid var(--coral); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 
   .mini-lines { position: absolute; top: 22px; right: 22px; display: flex; flex-direction: column; gap: 6px; width: 72px; }
   .mini-lines i { height: 7px; border-radius: 4px; background: rgba(36,29,24,.12); }
@@ -1729,7 +1729,7 @@
 
       <!-- DONATE: swap the href below (and the matching box on the landing page) for the real donation link when ready -->
       <div class="donate-bar" id="donate-bar">
-        <span class="donate-heart">&#9829;</span>
+        <span class="donate-heart"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-.12em"><path d="M12 20.5s-7.5-4.7-9.3-9.2C1.3 7.8 3.6 4.5 7 4.5c2 0 3.7 1.1 5 2.9 1.3-1.8 3-2.9 5-2.9 3.4 0 5.7 3.3 4.3 6.8-1.8 4.5-9.3 9.2-9.3 9.2z"/></svg></span>
         <div class="donate-txt"><b>Students helping students.</b> The Free plan stays free because Pro members cover the bills — <b>$8.99/mo</b> for everything unlimited, cancel anytime. <i class="donate-note">Rather just tip once? <a href="https://ko-fi.com/ayden1234" target="_blank" rel="noopener" style="color:var(--coral); font-weight:700;">Donations</a> are always welcome too.</i></div>
         <a class="donate-btn" href="pricing.html">Go Pro</a>
       </div>
@@ -2267,7 +2267,7 @@
             <button class="btn-ghost" onclick="fcEditToggle()">&#9998; Edit card</button>
           </div>
           <div class="fc-nav" style="margin-top:2px;">
-            <button class="btn-ghost" id="fc-tts-q" onclick="fcReadQuestion()">&#128266; Read question</button>
+            <button class="btn-ghost" id="fc-tts-q" onclick="fcReadQuestion()">Read question</button>
             <button class="btn-ghost hidden" id="fc-tts-a" onclick="fcReadAnswer()">Continue to answer &rarr;</button>
           </div>
           <p style="font-size:13px;color:var(--muted);">Click the card to flip it. Cards get harder as you go.</p>
@@ -3048,28 +3048,28 @@ $("wr-input").addEventListener("keydown", (e) => { if (e.key === "Enter") wrChec
 // ================= SLIDES =================
 // [bg, text, accent, bulletColor, titleBg, titleText]
 const SL_STYLES = {
-  school:      { emoji:"\ud83c\udf93", name:"School",       bg:"#ffffff", fg:"#1e3a6e", accent:"#2a4d8a", titleBg:"#1e3a6e", titleFg:"#ffffff" },
-  professional:{ emoji:"\ud83d\udcbc", name:"Professional", bg:"#ffffff", fg:"#1f2937", accent:"#334155", titleBg:"#0f172a", titleFg:"#ffffff" },
-  minimal:     { emoji:"\ud83d\udcca", name:"Minimal",      bg:"#ffffff", fg:"#111111", accent:"#111111", titleBg:"#ffffff", titleFg:"#111111" },
-  dark:        { emoji:"\ud83c\udf19", name:"Dark",         bg:"#141821", fg:"#e8eaf0", accent:"#7aa2ff", titleBg:"#0c0f16", titleFg:"#ffffff" },
-  startup:     { emoji:"\ud83d\ude80", name:"Startup Pitch",bg:"#0e1230", fg:"#f0f2ff", accent:"#ff7a59", titleBg:"#ff7a59", titleFg:"#0e1230" },
-  modern:      { emoji:"\ud83c\udfa8", name:"Modern",       bg:"#fbf9ff", fg:"#241d18", accent:"#7d3fc0", titleBg:"#7d3fc0", titleFg:"#ffffff" },
-  science:     { emoji:"\ud83d\udd2c", name:"Science",      bg:"#f4fbfb", fg:"#0c3b3b", accent:"#0e7490", titleBg:"#0e7490", titleFg:"#ffffff" },
+  school:      { emoji:"", name:"School",       bg:"#ffffff", fg:"#1e3a6e", accent:"#2a4d8a", titleBg:"#1e3a6e", titleFg:"#ffffff" },
+  professional:{ emoji:"", name:"Professional", bg:"#ffffff", fg:"#1f2937", accent:"#334155", titleBg:"#0f172a", titleFg:"#ffffff" },
+  minimal:     { emoji:"", name:"Minimal",      bg:"#ffffff", fg:"#111111", accent:"#111111", titleBg:"#ffffff", titleFg:"#111111" },
+  dark:        { emoji:"", name:"Dark",         bg:"#141821", fg:"#e8eaf0", accent:"#7aa2ff", titleBg:"#0c0f16", titleFg:"#ffffff" },
+  startup:     { emoji:"", name:"Startup Pitch",bg:"#0e1230", fg:"#f0f2ff", accent:"#ff7a59", titleBg:"#ff7a59", titleFg:"#0e1230" },
+  modern:      { emoji:"", name:"Modern",       bg:"#fbf9ff", fg:"#241d18", accent:"#7d3fc0", titleBg:"#7d3fc0", titleFg:"#ffffff" },
+  science:     { emoji:"", name:"Science",      bg:"#f4fbfb", fg:"#0c3b3b", accent:"#0e7490", titleBg:"#0e7490", titleFg:"#ffffff" },
   // palette-inspired colour combinations
-  midnight:    { emoji:"\ud83c\udf0c", name:"Midnight",     bg:"#f5f8fd", fg:"#163264", accent:"#2a4d8a", titleBg:"#163264", titleFg:"#ffffff" },
-  forest:      { emoji:"\ud83c\udf32", name:"Forest",       bg:"#f2faf5", fg:"#143f28", accent:"#2c7a4b", titleBg:"#1d5c37", titleFg:"#ffffff" },
-  crimson:     { emoji:"\ud83c\udf77", name:"Crimson",      bg:"#fdf5f5", fg:"#5e1822", accent:"#a03a49", titleBg:"#8a2433", titleFg:"#ffffff" },
-  plum:        { emoji:"\ud83c\udf47", name:"Plum",         bg:"#faf7fd", fg:"#32204f", accent:"#5d3f8a", titleBg:"#4a2c6b", titleFg:"#ffffff" },
-  rose:        { emoji:"\ud83c\udf39", name:"Rose",         bg:"#fdf6f8", fg:"#6e2c3c", accent:"#b25a6e", titleBg:"#a34d60", titleFg:"#ffffff" },
-  sunset:      { emoji:"\ud83c\udf05", name:"Sunset",       bg:"#fff7f1", fg:"#7a3012", accent:"#c25a2a", titleBg:"#b34a1f", titleFg:"#ffffff" },
-  honey:       { emoji:"\ud83c\udf6f", name:"Honey",        bg:"#fdf9ee", fg:"#57400c", accent:"#96731a", titleBg:"#7a5a12", titleFg:"#ffffff" },
-  teal:        { emoji:"\ud83c\udf0a", name:"Teal",         bg:"#f1fbfa", fg:"#0a4f4a", accent:"#14867c", titleBg:"#0f766e", titleFg:"#ffffff" },
-  reef:        { emoji:"\ud83e\udea8", name:"Reef",         bg:"#f0fafb", fg:"#0a4c52", accent:"#14919b", titleBg:"#0e7c85", titleFg:"#ffffff" },
-  cyan:        { emoji:"\ud83d\udca7", name:"Cyan",         bg:"#eff9fd", fg:"#0a5673", accent:"#1490bd", titleBg:"#0e7fa6", titleFg:"#ffffff" },
-  indigo:      { emoji:"\ud83d\udd37", name:"Indigo",       bg:"#f5f4fc", fg:"#2c2280", accent:"#5140cf", titleBg:"#4535b8", titleFg:"#ffffff" },
-  blossom:     { emoji:"\ud83c\udf38", name:"Blossom",      bg:"#fdf4f8", fg:"#7a2450", accent:"#c9508a", titleBg:"#b83d72", titleFg:"#ffffff" },
-  nebula:      { emoji:"\ud83c\udf0c", name:"Nebula",       bg:"#16142a", fg:"#e9e6f8", accent:"#b39df0", titleBg:"#0f0d20", titleFg:"#ffffff" },
-  noir:        { emoji:"\ud83c\udf11", name:"Noir",         bg:"#121212", fg:"#ededed", accent:"#c9c9c9", titleBg:"#000000", titleFg:"#ffffff" },
+  midnight:    { emoji:"", name:"Midnight",     bg:"#f5f8fd", fg:"#163264", accent:"#2a4d8a", titleBg:"#163264", titleFg:"#ffffff" },
+  forest:      { emoji:"", name:"Forest",       bg:"#f2faf5", fg:"#143f28", accent:"#2c7a4b", titleBg:"#1d5c37", titleFg:"#ffffff" },
+  crimson:     { emoji:"", name:"Crimson",      bg:"#fdf5f5", fg:"#5e1822", accent:"#a03a49", titleBg:"#8a2433", titleFg:"#ffffff" },
+  plum:        { emoji:"", name:"Plum",         bg:"#faf7fd", fg:"#32204f", accent:"#5d3f8a", titleBg:"#4a2c6b", titleFg:"#ffffff" },
+  rose:        { emoji:"", name:"Rose",         bg:"#fdf6f8", fg:"#6e2c3c", accent:"#b25a6e", titleBg:"#a34d60", titleFg:"#ffffff" },
+  sunset:      { emoji:"", name:"Sunset",       bg:"#fff7f1", fg:"#7a3012", accent:"#c25a2a", titleBg:"#b34a1f", titleFg:"#ffffff" },
+  honey:       { emoji:"", name:"Honey",        bg:"#fdf9ee", fg:"#57400c", accent:"#96731a", titleBg:"#7a5a12", titleFg:"#ffffff" },
+  teal:        { emoji:"", name:"Teal",         bg:"#f1fbfa", fg:"#0a4f4a", accent:"#14867c", titleBg:"#0f766e", titleFg:"#ffffff" },
+  reef:        { emoji:"", name:"Reef",         bg:"#f0fafb", fg:"#0a4c52", accent:"#14919b", titleBg:"#0e7c85", titleFg:"#ffffff" },
+  cyan:        { emoji:"", name:"Cyan",         bg:"#eff9fd", fg:"#0a5673", accent:"#1490bd", titleBg:"#0e7fa6", titleFg:"#ffffff" },
+  indigo:      { emoji:"", name:"Indigo",       bg:"#f5f4fc", fg:"#2c2280", accent:"#5140cf", titleBg:"#4535b8", titleFg:"#ffffff" },
+  blossom:     { emoji:"", name:"Blossom",      bg:"#fdf4f8", fg:"#7a2450", accent:"#c9508a", titleBg:"#b83d72", titleFg:"#ffffff" },
+  nebula:      { emoji:"", name:"Nebula",       bg:"#16142a", fg:"#e9e6f8", accent:"#b39df0", titleBg:"#0f0d20", titleFg:"#ffffff" },
+  noir:        { emoji:"", name:"Noir",         bg:"#121212", fg:"#ededed", accent:"#c9c9c9", titleBg:"#000000", titleFg:"#ffffff" },
 };
 // ============ TOPIC-AWARE THEMES ============
 // Each theme detects its subject from the deck topic and dresses the whole deck
@@ -3178,7 +3178,7 @@ function slEffStyle() {
   const t = SL_THEMES[id] || SL_THEMES.education;
   let vi = (slDeck && slDeck.themeVar != null && t.variants[slDeck.themeVar]) ? slDeck.themeVar : Math.floor(Math.random() * t.variants.length);
   if (slDeck) { slDeck.theme = id; slDeck.themeVar = vi; }
-  return Object.assign({ name: t.name + " (auto)", emoji: "✨" }, t.variants[vi]);
+  return Object.assign({ name: t.name + " (auto)", emoji:"" }, t.variants[vi]);
 }
 // font + accent CSS variables and the theme classes each slide root carries
 const _FB_TF = "'Instrument Serif',Georgia,serif", _FB_BF = "'Hanken Grotesk',system-ui,sans-serif";
@@ -3192,12 +3192,12 @@ const SL_SLIDES = { "3": 5, "5": 8, "10": 14, "20": 22 };
 function renderSlStyles() {
   const auto = `<div class="sl-style sl-auto${slStyle === "auto" ? " sel" : ""}" onclick="slPickStyle('auto')" title="Notiq picks fonts, colours & decorations to match your topic">
        <div class="sl-swatch" style="background:linear-gradient(135deg,#1e3a6e,#7d3fc0,#0e7490); color:#fff;">Aa</div>
-       <b>✨ Auto — match topic</b>
+       <b>Auto — match topic</b>
      </div>`;
   $("sl-styles").innerHTML = auto + Object.entries(SL_STYLES).map(([id, s]) =>
     `<div class="sl-style${id === slStyle ? " sel" : ""}" onclick="slPickStyle('${id}')">
        <div class="sl-swatch" style="background-color:${s.titleBg}; color:${s.titleFg};">Aa</div>
-       <b>${s.emoji} ${s.name}</b>
+       <b>${s.name}</b>
      </div>`).join("");
 }
 function slPickStyle(id) {
@@ -3229,7 +3229,7 @@ async function slSave() {
     // update in place if this deck was opened from (or already saved to) a folder
     $("sl-save-note").textContent = "Saving...";
     const { error } = await sb.from("saved_items").update({ title, content: lean }).eq("id", slDeck.savedId);
-    $("sl-save-note").textContent = error ? error.message : "Saved ✓";
+    $("sl-save-note").textContent = error ? error.message : "Saved";
     return;
   }
   const newId = await saveItem("slides", title, lean, $("sl-folder").value, "sl-save-note");
@@ -5439,7 +5439,7 @@ $("yt-add").addEventListener("click", async () => {
     if (!r.ok) throw new Error(j.error || "Couldn't read that video.");
     const { error } = await sb.from("resources").insert({
       user_id: user.id,
-      name: "▶ " + (j.title || "YouTube video"),
+      name: (j.title || "YouTube video"),
       content: j.text.slice(0, 200000),
     });
     if (error) throw error;
@@ -5584,7 +5584,7 @@ async function learnTopic() {
       { role: "system", content: "You are Notiq AI, an expert teacher writing study material for a student. Respond in clean, well-structured Markdown only." },
       { role: "user", content: `Write a thorough, well-organized study overview of: ${topic}. Use clear headings for the core concepts a student must know. Include definitions, key terms in bold, concrete examples (worked examples for anything mathematical), common mistakes or misconceptions, and end with a short summary of the most important takeaways. Be accurate and detailed.` }
     ]);
-    const { error } = await sb.from("resources").insert({ user_id: user.id, name: "\u2726 " + topic.slice(0, 76), content: md.slice(0, 200000) });
+    const { error } = await sb.from("resources").insert({ user_id: user.id, name: topic.slice(0, 76), content: md.slice(0, 200000) });
     if (error) throw error;
     logActivity("generate");
     await loadResources();
@@ -5790,7 +5790,7 @@ async function saveItem(type, title, content, folderId, noteId) {
   $(noteId).textContent = "Saving...";
   const { data: ins, error } = await sb.from("saved_items").insert({ user_id: user.id, folder_id: folderId, type, title, content }).select("id").single();
   if (error) { $(noteId).textContent = error.message; return; }
-  $(noteId).textContent = "Saved ✓";
+  $(noteId).textContent = "Saved";
   await loadCounts();
   renderFoldersRow(); renderPanelFolders(); updateDashStats();
   if (type === "flashcards") loadReviewDecks();   // so games & Smart review see the new deck immediately
