@@ -327,10 +327,24 @@
   .cw-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .cw-chip { border: 1.5px solid var(--line); background: var(--card1); border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
   .cw-chip:hover { border-color: var(--coral); color: var(--coral); }
-  .chat-bar { display: flex; gap: 10px; align-items: flex-end; background: var(--card1); border: 1.5px solid var(--line); border-radius: 16px; padding: 8px 8px 8px 14px; }
-  .chat-bar textarea { flex: 1; border: 0; background: transparent; resize: none; outline: none; font-family: inherit; font-size: 15px; color: var(--ink); max-height: 140px; line-height: 1.5; padding: 6px 0; }
+  .chat-bar { display: flex; gap: 8px; align-items: flex-end; background: var(--card1); border: 1.5px solid var(--line); border-radius: 16px; padding: 8px; }
+  .chat-bar textarea { flex: 1; border: 0; background: transparent; resize: none; outline: none; font-family: inherit; font-size: 15px; color: var(--ink); max-height: 140px; line-height: 1.5; padding: 6px 4px; }
+  .chat-attach { flex: none; width: 42px; height: 42px; border-radius: 12px; border: 0; cursor: pointer; color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, transparent); display: flex; align-items: center; justify-content: center; transition: .15s; }
+  .chat-attach:hover { color: var(--coral); background: color-mix(in srgb, var(--coral) 12%, transparent); }
   .chat-send { flex: none; width: 42px; height: 42px; border-radius: 12px; border: 0; cursor: pointer; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); display: flex; align-items: center; justify-content: center; }
   .chat-send:disabled { opacity: .5; cursor: wait; }
+  .chat-attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .chat-attachments:empty { display: none; }
+  .chat-att { display: inline-flex; align-items: center; gap: 9px; background: var(--card1); border: 1.5px solid var(--line); border-radius: 12px; padding: 7px 10px 7px 8px; font-size: 13px; color: var(--ink); max-width: 260px; }
+  .chat-att.loading { opacity: .75; }
+  .chat-att.error { border-color: color-mix(in srgb, #c0392b 45%, var(--line)); }
+  .chat-att-ic { flex: none; width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center; color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .chat-att-ic svg { width: 15px; height: 15px; }
+  .chat-att img.chat-att-thumb { flex: none; width: 27px; height: 27px; border-radius: 8px; object-fit: cover; }
+  .chat-att .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .chat-att .nm small { font-weight: 500; color: var(--muted); }
+  .chat-att .rm { flex: none; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; background: none; border: 0; padding: 0 2px; }
+  .chat-att .rm:hover { color: var(--coral); }
   .chat-foot { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; }
 
   /* ============ BLURTING ============ */
@@ -664,7 +678,7 @@
   .eyebrow { font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--coral); font-weight: 700; }
   h1.page-title {
     font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic;
-    font-size: clamp(34px, 4.4vw, 52px); color: var(--ink); letter-spacing: -1.5px;
+    font-size: clamp(40px, 5vw, 60px); color: var(--ink); letter-spacing: -1.5px;
     margin: 8px 0 6px;
   }
   h1.page-title em { font-style: italic; color: var(--coral); }
@@ -722,8 +736,8 @@
   .dash-quote::before { content: "“"; color: var(--amber); font-size: 24px; }
   .dash-quote::after { content: "”"; color: var(--amber); font-size: 24px; }
   .stat-row { display: flex; gap: 34px; flex-wrap: wrap; }
-  .stat b { display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 34px; color: var(--amber); line-height: 1; }
-  .stat span { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .stat b { display: block; font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 42px; color: var(--amber); line-height: 1; }
+  .stat span { font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
   .stat.exam b { color: #ef5330; }
 
   .hero-orb { position: relative; width: 190px; height: 190px; flex: none; perspective: 900px; animation: bob 7s ease-in-out infinite; }
@@ -2155,7 +2169,12 @@
           <div class="chat-scroll" id="chat-scroll"></div>
         </div>
         <div class="chat-foot-wrap">
+          <div class="chat-attachments" id="chat-attachments"></div>
           <div class="chat-bar" id="chat-bar">
+            <button class="chat-attach" id="chat-attach" type="button" onclick="cwPickFile()" title="Attach an image or file">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="chat-file" accept=".pdf,.txt,.md,image/*" multiple style="display:none;">
             <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Ask anything about your studies..."></textarea>
             <button class="chat-send" id="chat-send" onclick="cwSend()" title="Send">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
@@ -4142,13 +4161,59 @@ function cwType(text) {
   });
 }
 
+// ---- chat attachments (upload an image or file, ChatGPT-style) ----
+let cwAtts = [];   // { id, name, text, isImage, thumb, loading, error }
+function cwPickFile() { $("chat-file").click(); }
+async function cwAddAttachment(file) {
+  const id = "att-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+  const isImage = !!(file.type && file.type.startsWith("image/"));
+  const a = { id, name: file.name, text: "", isImage, thumb: "", loading: true, error: "" };
+  cwAtts.push(a);
+  if (isImage) { try { a.thumb = await fileToScaledDataUrl(file, 96); } catch (e) {} }
+  cwRenderAtts();
+  try {
+    let text = await extractText(file);
+    if (text && text.length > 100000) text = text.slice(0, 100000);
+    a.text = text || "";
+    a.loading = false;
+    if (!a.text) a.error = "no readable text";
+  } catch (e) {
+    a.loading = false;
+    a.error = (e.message || "couldn't read this file").replace(/^this /, "");
+  }
+  cwRenderAtts();
+}
+function cwRemoveAtt(id) { cwAtts = cwAtts.filter(a => a.id !== id); cwRenderAtts(); }
+function cwRenderAtts() {
+  const el = $("chat-attachments");
+  if (!el) return;
+  el.innerHTML = cwAtts.map(a => {
+    const pic = a.thumb
+      ? `<img class="chat-att-thumb" src="${a.thumb}" alt="">`
+      : `<span class="chat-att-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>`;
+    const note = a.loading ? ` <small>— reading…</small>` : a.error ? ` <small>— ${esc(a.error)}</small>` : "";
+    return `<div class="chat-att${a.loading ? " loading" : ""}${a.error ? " error" : ""}">${pic}<span class="nm">${esc(a.name)}${note}</span><button class="rm" onclick="cwRemoveAtt('${a.id}')" title="Remove">&times;</button></div>`;
+  }).join("");
+}
+
 async function cwSend() {
   const inp = $("chat-input");
   const text = inp.value.trim();
-  if (!text) return;
+  const ready = cwAtts.filter(a => !a.loading && a.text);
+  if (cwAtts.some(a => a.loading)) { return; }   // still reading a file — wait
+  if (!text && !ready.length) return;
   $("chat-wrap").classList.remove("empty");   // switch to conversation layout
-  cwAddBubble("me", text);
-  cwMsgs.push({ role: "user", content: text });
+  // what the user sees in their bubble: their text + a line naming each file
+  const attLine = cwAtts.length ? "Attached: " + cwAtts.map(a => a.name).join(", ") : "";
+  cwAddBubble("me", [text, attLine].filter(Boolean).join("\n\n"));
+  // what the model receives: the text plus each file's extracted content
+  let content = text;
+  if (ready.length) {
+    const dump = ready.map(a => `--- Attached file: ${a.name} ---\n${a.text}`).join("\n\n");
+    content = (text ? text + "\n\n" : "Please read the attached file(s) and help me with them.\n\n") + dump;
+  }
+  cwMsgs.push({ role: "user", content });
+  cwAtts = []; cwRenderAtts();
   inp.value = ""; inp.style.height = "auto";
   $("chat-send").disabled = true;
   const typing = document.createElement("div");
@@ -5486,6 +5551,10 @@ $("file-input").addEventListener("change", async (e) => {
   e.target.value = "";
   if (ok) readyPop(ok === 1 ? "Your notes are ready for generation." : ok + " files are ready for generation.");
 });
+$("chat-file").addEventListener("change", async (e) => {
+  for (const f of e.target.files) { await cwAddAttachment(f); }
+  e.target.value = "";
+});
 ["dragover", "dragleave", "drop"].forEach(evt =>
   $("dropzone").addEventListener(evt, (e) => {
     e.preventDefault();
@@ -5625,9 +5694,10 @@ const NOTIQ_SUBJECTS = {
   "Agriculture":            ["Soil science", "Crop production", "Animal science", "Agricultural economics", "Sustainable farming"],
 };
 let curSubject = null, subjExpanded = false;
+const SUBJ_COLLAPSED = ["Math", "Biology", "Physics", "History", "English"];
 function renderSubjects() {
   const keys = Object.keys(NOTIQ_SUBJECTS);
-  const shown = subjExpanded ? keys : keys.slice(0, 15);
+  const shown = subjExpanded ? keys : SUBJ_COLLAPSED.filter(s => keys.includes(s));
   $("subj-grid").innerHTML = shown.map(s =>
     `<div class="subj${curSubject === s ? " sel" : ""}" onclick="pickSubject('${s.replace(/'/g, "\\'")}')"><span class="ic">${s.charAt(0)}</span>${s}</div>`).join("") +
     `<div class="subj subj-more" onclick="subjExpanded = !subjExpanded; renderSubjects();"><span class="ic">${subjExpanded ? "\u2212" : "+"}</span>${subjExpanded ? "Show fewer" : "All " + keys.length + " subjects"}</div>`;
