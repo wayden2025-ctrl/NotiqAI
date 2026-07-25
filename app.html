@@ -1590,7 +1590,7 @@
   .nqtool::after { content: ""; position: absolute; right: -26px; bottom: -26px; width: 68px; height: 68px; border-radius: 50%; opacity: .12; background: var(--tc, #2a4d8a); }
   .nqtool:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(22,40,80,.14); border-color: transparent; }
   .nqtool .nqic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 11px; color: #fff; box-shadow: 0 6px 14px rgba(22,40,80,.2); }
-  .nqtool .nqic svg { width: 19px; height: 19px; } .nqtool b { display: block; font-size: 14px; } .nqtool span { font-size: 11.5px; color: var(--muted); }
+  .nqtool .nqic svg { width: 19px; height: 19px; } .nqtool b { display: block; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 18px; letter-spacing: .2px; line-height: 1.05; } .nqtool span { font-size: 11.5px; color: var(--muted); }
   .nqtool.nqwide { grid-column: span 2; display: flex; align-items: center; gap: 12px; } .nqtool.nqwide .nqic { margin-bottom: 0; }
   /* every Create tool icon shares ONE colour that matches the logo orb and
      follows the selected palette (orb2 -> orb4, same hues as the .nqorb logo) */
@@ -4167,16 +4167,22 @@ function cwPickFile() { $("chat-file").click(); }
 async function cwAddAttachment(file) {
   const id = "att-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
   const isImage = !!(file.type && file.type.startsWith("image/"));
-  const a = { id, name: file.name, text: "", isImage, thumb: "", loading: true, error: "" };
+  const a = { id, name: file.name, text: "", isImage, thumb: "", imgUrl: "", loading: true, error: "" };
   cwAtts.push(a);
-  if (isImage) { try { a.thumb = await fileToScaledDataUrl(file, 96); } catch (e) {} }
   cwRenderAtts();
   try {
-    let text = await extractText(file);
-    if (text && text.length > 100000) text = text.slice(0, 100000);
-    a.text = text || "";
-    a.loading = false;
-    if (!a.text) a.error = "no readable text";
+    if (isImage) {
+      // Keep the picture itself — the vision model reads it directly (no OCR needed).
+      a.imgUrl = await fileToScaledDataUrl(file, 1400);
+      a.thumb = a.imgUrl;
+      a.loading = false;
+    } else {
+      let text = await extractText(file);
+      if (text && text.length > 100000) text = text.slice(0, 100000);
+      a.text = text || "";
+      a.loading = false;
+      if (!a.text) a.error = "no readable text";
+    }
   } catch (e) {
     a.loading = false;
     a.error = (e.message || "couldn't read this file").replace(/^this /, "");
@@ -4199,20 +4205,38 @@ function cwRenderAtts() {
 async function cwSend() {
   const inp = $("chat-input");
   const text = inp.value.trim();
-  const ready = cwAtts.filter(a => !a.loading && a.text);
   if (cwAtts.some(a => a.loading)) { return; }   // still reading a file — wait
-  if (!text && !ready.length) return;
+  const imgs = cwAtts.filter(a => a.imgUrl);              // pictures → vision model sees them
+  const docs = cwAtts.filter(a => a.text && !a.imgUrl);  // pdf/text → extracted text
+  if (!text && !imgs.length && !docs.length) return;
   $("chat-wrap").classList.remove("empty");   // switch to conversation layout
   // what the user sees in their bubble: their text + a line naming each file
   const attLine = cwAtts.length ? "Attached: " + cwAtts.map(a => a.name).join(", ") : "";
   cwAddBubble("me", [text, attLine].filter(Boolean).join("\n\n"));
-  // what the model receives: the text plus each file's extracted content
-  let content = text;
-  if (ready.length) {
-    const dump = ready.map(a => `--- Attached file: ${a.name} ---\n${a.text}`).join("\n\n");
-    content = (text ? text + "\n\n" : "Please read the attached file(s) and help me with them.\n\n") + dump;
+
+  // Build the message the model receives.
+  let userText = text;
+  if (docs.length) {
+    userText = (userText ? userText + "\n\n" : "") +
+      docs.map(a => `--- Attached file: ${a.name} ---\n${a.text}`).join("\n\n");
   }
-  cwMsgs.push({ role: "user", content });
+  if (!userText.trim()) userText = imgs.length ? "Please look at the attached image(s) and help me." : "Please read the attached file(s) and help me.";
+
+  let outgoing, historyEntry, model = null;
+  if (imgs.length) {
+    // multimodal turn: text + the actual pictures, sent to the vision model
+    model = NOTIQ_CONFIG.GROQ_VISION_MODEL || null;
+    outgoing = { role: "user", content: [
+      { type: "text", text: userText },
+      ...imgs.map(a => ({ type: "image_url", image_url: { url: a.imgUrl } })),
+    ] };
+    // keep history lightweight — don't resend big images every turn
+    historyEntry = { role: "user", content: userText + `\n[attached image: ${imgs.map(a => a.name).join(", ")}]` };
+  } else {
+    outgoing = { role: "user", content: userText };
+    historyEntry = outgoing;
+  }
+
   cwAtts = []; cwRenderAtts();
   inp.value = ""; inp.style.height = "auto";
   $("chat-send").disabled = true;
@@ -4222,11 +4246,12 @@ async function cwSend() {
   try {
     if (!gateGenerate("res-status")) { throw new Error("You've hit today's free AI limit — upgrade to Pro to keep chatting."); }
     const ctx = await cwResourceContext(text);
-    // server caps at 6 messages: system + up to last 5 turns
-    const history = cwMsgs.slice(-5);
-    const messages = [{ role: "system", content: CW_SYSTEM + ctx }, ...history];
-    const reply = await groq(messages);
+    // server caps at 6 messages: system + up to last 4 prior turns + this one
+    const history = cwMsgs.slice(-4);
+    const messages = [{ role: "system", content: CW_SYSTEM + ctx }, ...history, outgoing];
+    const reply = await groq(messages, false, 4096, model);
     typing.remove();
+    cwMsgs.push(historyEntry);
     cwMsgs.push({ role: "assistant", content: reply });
     await cwType(reply);
     logActivity("generate");
@@ -5434,6 +5459,23 @@ async function loadResources() {
   try { nqAfterResourceLoad(); } catch (e) {}
 }
 
+// ---- Read an image into text. Prefer the vision model (handles handwriting,
+// diagrams, equations); fall back to OCR.space if vision is unavailable. ----
+async function imageToText(dataUrl) {
+  const model = NOTIQ_CONFIG.GROQ_VISION_MODEL;
+  if (model) {
+    try {
+      const msgs = [{ role: "user", content: [
+        { type: "text", text: "Transcribe EVERYTHING in this image into clean, well-structured text. Include all text, and write any math/chemistry/physics as LaTeX. Briefly describe any diagrams or figures. Output only the transcription — no commentary." },
+        { type: "image_url", image_url: { url: dataUrl } },
+      ] }];
+      const out = await groq(msgs, false, 2048, model);
+      if (out && out.trim()) return out.trim();
+    } catch (e) { /* fall back to OCR below */ }
+  }
+  return await ocrDataUrl(dataUrl);
+}
+
 // ---- OCR (photos + scanned pages) via /api/ocr ----
 async function ocrDataUrl(dataUrl) {
   const r = await fetch("/api/ocr", {
@@ -5491,7 +5533,7 @@ async function ensurePdfJs() {
 
 async function extractText(file) {
   if (file.type && file.type.startsWith("image/")) {
-    return await ocrDataUrl(await fileToScaledDataUrl(file));
+    return await imageToText(await fileToScaledDataUrl(file));
   }
   if (file.name.toLowerCase().endsWith(".pdf")) {
     await ensurePdfJs();
@@ -5842,14 +5884,14 @@ async function getMaterial(ids) {
 }
 
 // ================= GROQ =================
-async function groq(messages, jsonMode, maxTokens) {
+async function groq(messages, jsonMode, maxTokens, model) {
   // every generator gets the same math rule: output LaTeX so it renders beautifully
   const msgs = (messages || []).map((m, i) =>
     i === 0 && m.role === "system"
       ? { role: "system", content: m.content + " IMPORTANT: whenever math, chemistry or physics notation appears, write it as LaTeX wrapped in $...$ for inline math or $$...$$ for display equations (e.g. $x^2 + 3x - 4 = 0$, $$\\frac{a}{b}$$) — never plain text like x^2 or sqrt(x)." }
       : m);
   const body = {
-    model: NOTIQ_CONFIG.GROQ_MODEL,
+    model: model || NOTIQ_CONFIG.GROQ_MODEL,
     messages: msgs,
     temperature: 0.4,
     // reserve only as much output as the caller needs — a fixed 6000 alone exceeds
