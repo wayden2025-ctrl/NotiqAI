@@ -1558,6 +1558,15 @@
   .nqchatbody #chat-wrap { flex: 1; min-height: 0; }
 
   /* right create pane */
+  /* "ready to generate" prompt after adding material */
+  .nqready { display: flex; align-items: flex-start; gap: 11px; margin: 10px 2px 2px; padding: 13px 14px; border-radius: 14px;
+    background: color-mix(in srgb, var(--coral) 12%, var(--card1)); border: 1px solid color-mix(in srgb, var(--coral) 32%, transparent); animation: pop .3s ease; }
+  .nqready.hidden { display: none; }
+  .nqready-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .nqready-ic svg { width: 17px; height: 17px; }
+  .nqready-txt { flex: 1; min-width: 0; } .nqready-txt b { display: block; font-size: 13px; color: var(--ink); }
+  .nqready-txt span { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .nqready-x { flex: none; border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 2px; }
   .nqclabel { font-size: 11.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; padding: 14px 6px 11px; display: flex; align-items: center; gap: 8px; }
   .nqclabel .nqdot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   .nqcscroll { flex: 1; overflow-y: auto; padding: 6px 14px 16px; }
@@ -1640,8 +1649,13 @@
     <!-- CREATE (Add material on top · tools · saved folders at the bottom) -->
     <aside class="nqpanel nqcreate" id="nqcreate">
       <div class="nqcscroll" id="nq-createscroll">
+        <div class="nqready hidden" id="nq-ready">
+          <span class="nqready-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span class="nqready-txt"><b>Material added — you're ready to generate.</b><span>Pick any tool below to create from your new material.</span></span>
+          <button class="nqready-x" onclick="nqHideReady()" title="Dismiss">&times;</button>
+        </div>
         <div class="nqclabel" style="padding-top:16px;"><span class="nqdot"></span> Create</div>
-        <button class="nqadd" onclick="showView('import')">
+        <button class="nqadd" onclick="nqOpenTool('import')">
           <span class="nqadd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
           <span class="nqadd-txt"><b>Add material</b><span>Upload, paste, import a link, or learn a new topic</span></span>
         </button>
@@ -5178,14 +5192,17 @@ function nqRenderTip() {
 
 // ---- Open a Create tool INSIDE the Create pane (expand instead of full-screen) ----
 let nqCurrentTool = null;
-const NQ_TOOL_VIEW = { notes: "notes", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study" };
-const NQ_TOOL_TITLE = { notes: "Notes", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes" };
+const NQ_TOOL_VIEW = { notes: "notes", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study", import: "import" };
+const NQ_TOOL_TITLE = { notes: "Notes", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
+let nqAddBaseCount = 0;
 function nqOpenTool(name) {
   const create = document.getElementById("nqcreate");
   const body = document.getElementById("nq-viewer-body");
   const view = document.getElementById("view-" + (NQ_TOOL_VIEW[name] || name));
   if (!create || !body || !view) { showView(name); return; }   // safe fallback to full-screen
   try { ttsStop(); } catch (e) {}
+  try { nqHideReady(); } catch (e) {}
+  if (name === "import") nqAddBaseCount = (typeof resources !== "undefined" ? resources.length : 0);
   if (nqCurrentTool && nqCurrentTool !== name) nqReturnView();
   body.appendChild(view);
   body.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
@@ -5215,6 +5232,23 @@ function nqCloseTool() {
   nqReturnView();
   if (create) create.classList.remove("nqexpanded");
   document.body.classList.remove("nqtoolopen");
+}
+// After Add material: when a new resource lands while the add panel is open,
+// collapse back to the tools and show a "ready to generate" prompt.
+function nqAfterResourceLoad() {
+  try { nqRenderFolders(); nqRenderGreeting(); } catch (e) {}
+  if (nqCurrentTool === "import" && typeof resources !== "undefined" && resources.length > nqAddBaseCount) {
+    nqAddBaseCount = resources.length;
+    nqCloseTool();
+    nqShowReady();
+  }
+}
+function nqShowReady() {
+  const el = document.getElementById("nq-ready"); if (el) el.classList.remove("hidden");
+  const sc = document.getElementById("nq-createscroll"); if (sc) sc.scrollTop = 0;
+}
+function nqHideReady() {
+  const el = document.getElementById("nq-ready"); if (el) el.classList.add("hidden");
 }
 
 // ---- Study modes: expand the Create pane and show a clean chooser box ----
@@ -5332,6 +5366,7 @@ $("create-folder-btn").addEventListener("click", async () => {
 async function loadResources() {
   const { data, error } = await sb.from("resources").select("id, name, storage_path, created_at").order("created_at", { ascending: false });
   if (!error) resources = data || [];
+  try { nqAfterResourceLoad(); } catch (e) {}
 }
 
 // ---- OCR (photos + scanned pages) via /api/ocr ----
