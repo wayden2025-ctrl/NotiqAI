@@ -637,19 +637,19 @@
   .rail-btn:hover .tip { opacity: 1; }
   .rail .spacer { flex: 1; }
   .rail-btn.pro-btn {
-    background: linear-gradient(160deg, var(--g1), var(--g2));
-    box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--g2) 80%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
+    background: linear-gradient(160deg, #ffdf9c, #f2b03e);
+    box-shadow: 0 10px 22px -8px rgba(216,150,40,.7), inset 0 1px 0 rgba(255,255,255,.5);
     margin-bottom: 10px;
     animation: proPulse 2.6s ease-in-out infinite;
   }
   @keyframes proPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--g2) 80%, transparent), inset 0 1px 0 rgba(255,255,255,.35); }
-    50% { transform: scale(1.09); box-shadow: 0 14px 30px -8px color-mix(in srgb, var(--g2) 95%, transparent), inset 0 1px 0 rgba(255,255,255,.35); }
+    0%, 100% { transform: scale(1); box-shadow: 0 10px 22px -8px rgba(216,150,40,.7), inset 0 1px 0 rgba(255,255,255,.5); }
+    50% { transform: scale(1.09); box-shadow: 0 14px 30px -8px rgba(216,150,40,.9), inset 0 1px 0 rgba(255,255,255,.5); }
   }
-  .rail-btn.pro-btn:hover { animation: none; transform: scale(1.12); background: linear-gradient(160deg, var(--g1b), var(--g2)); }
-  .pro-word {
+  .rail-btn.pro-btn:hover { animation: none; transform: scale(1.12); background: linear-gradient(160deg, #ffe7b0, #f0a52c); }
+  .rail-btn.pro-btn .pro-word {
     font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
-    font-size: 17px; color: #fff; letter-spacing: .5px; text-shadow: 0 1px 3px rgba(10,24,50,.5);
+    font-size: 17px; color: #4a3208; letter-spacing: .5px; text-shadow: 0 1px 0 rgba(255,255,255,.4);
   }
   .rail .avatar {
     width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
@@ -1486,7 +1486,7 @@
   #nqhome { position: fixed; top: 0; left: var(--rail-w); right: 0; bottom: 0; z-index: 120; display: flex; gap: 0; padding: 12px; }
   .nqpanel { border-radius: 20px; box-shadow: 0 12px 40px rgba(22,40,80,.10); border: 1px solid var(--line); overflow: hidden; color: var(--ink); }
   .nqchat { flex: 1; min-width: 320px; display: flex; flex-direction: column; background: linear-gradient(180deg, color-mix(in srgb, var(--coral) 6%, var(--card1)), var(--card1) 55%); }
-  .nqcreate { flex: none; width: var(--nqcreate-w, 30%); min-width: 300px; max-width: 46%; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
+  .nqcreate { flex: none; width: var(--nqcreate-w, 30%); min-width: 300px; max-width: 54%; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
   /* breathing room so chat bubbles + composer aren't jammed against the panel edges */
   body.nqmode #chat-wrap { padding: 2px 20px 0; }
   body.nqmode .nqchat .cw-orb { display: none; }
@@ -1517,8 +1517,14 @@
   .nqph h2 { font-size: 16px; font-weight: 800; margin: 0; letter-spacing: -.3px; display: flex; align-items: center; gap: 8px; }
   .nqph h2 .nqdot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
   .nqph .nqcount { font-size: 11.5px; color: var(--muted); font-weight: 700; background: color-mix(in srgb, var(--coral) 9%, transparent); padding: 3px 9px; border-radius: 999px; }
-  .nqadd { margin: 2px 14px 12px; padding: 13px 16px; border: 0; cursor: pointer; width: calc(100% - 28px); display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 14.5px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--g1), var(--g2)); border-radius: 14px; box-shadow: 0 8px 22px rgba(22,50,100,.32); transition: .16s; }
-  .nqadd:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(22,50,100,.4); } .nqadd svg { width: 18px; height: 18px; }
+  .nqadd { margin: 6px 12px 14px; padding: 15px 16px; border: 0; cursor: pointer; width: calc(100% - 24px); display: flex; align-items: center; gap: 13px; text-align: left; color: #fff; background: linear-gradient(135deg, var(--g1), var(--g2)); border-radius: 16px; box-shadow: 0 10px 24px rgba(22,50,100,.34); transition: .16s; position: relative; overflow: hidden; }
+  .nqadd::after { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent); transform: translateX(-120%); transition: .55s; }
+  .nqadd:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(22,50,100,.44); } .nqadd:hover::after { transform: translateX(120%); }
+  .nqadd .nqadd-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+  .nqadd .nqadd-ic svg { width: 21px; height: 21px; }
+  .nqadd .nqadd-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .nqadd .nqadd-txt b { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 20px; letter-spacing: .2px; line-height: 1; }
+  .nqadd .nqadd-txt span { font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.82); line-height: 1.35; }
   .nqscroll { flex: 1; overflow-y: auto; padding: 0 10px 14px; }
   .nqfilt { display: flex; gap: 6px; padding: 0 14px 10px; }
   .nqfilt button { border: 1px solid var(--line); background: var(--card1); padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
@@ -1539,7 +1545,14 @@
   .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--line); }
   .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
   .nqchat .nqchath .t { font-weight: 800; font-size: 15px; } .nqchat .nqchath .s { font-size: 12.5px; color: var(--muted); }
-  .nqchat .nqchath .nqpill { margin-left: auto; font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); padding: 6px 13px; border-radius: 999px; }
+  .nqchat .nqchath .nqpill { margin-left: auto; flex: none; font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); padding: 6px 13px; border-radius: 999px; }
+  /* greeting + at-a-glance stats in the chat header */
+  .nqgreet-wrap { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .nqgreet { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 21px; letter-spacing: -.3px; line-height: 1.05; color: var(--ink); }
+  .nqgreet em { font-style: italic; color: var(--coral); }
+  .nqstats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .nqstats span { white-space: nowrap; } .nqstats b { color: var(--coral); font-weight: 800; margin-right: 3px; }
+  @media (max-width: 760px) { .nqstats { display: none; } }
   .nqchatbody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .nqchatbody #chat-wrap { flex: 1; min-height: 0; }
 
@@ -1605,7 +1618,18 @@
   <div id="nqhome">
     <!-- MAIN: CHAT (the app's real chat is moved in here at init) -->
     <section class="nqpanel nqchat">
-      <div class="nqchath"><div><div class="t">Talk with Notiq</div><div class="s" id="nq-chatsub">Ask anything about your studies</div></div><span class="nqpill">Notiq AI</span></div>
+      <div class="nqchath">
+        <div class="nqgreet-wrap">
+          <div class="nqgreet" id="nq-greet">Welcome back.</div>
+          <div class="nqstats" id="nq-stats">
+            <span><b id="nq-st-streak">0</b>day streak</span>
+            <span><b id="nq-st-res">0</b>resources</span>
+            <span><b id="nq-st-made">0</b>created</span>
+            <span><b id="nq-st-fold">0</b>folders</span>
+          </div>
+        </div>
+        <span class="nqpill">Notiq AI</span>
+      </div>
       <div class="nqchatbody" id="nq-chatbody"></div>
     </section>
 
@@ -1615,8 +1639,11 @@
     <!-- CREATE (Add material on top · tools · saved folders at the bottom) -->
     <aside class="nqpanel nqcreate" id="nqcreate">
       <div class="nqcscroll" id="nq-createscroll">
-        <button class="nqadd" onclick="showView('import')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add material</button>
-        <div class="nqclabel"><span class="nqdot"></span> Create</div>
+        <div class="nqclabel" style="padding-top:16px;"><span class="nqdot"></span> Create</div>
+        <button class="nqadd" onclick="showView('import')">
+          <span class="nqadd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span class="nqadd-txt"><b>Add material</b><span>Upload, paste, import a link, or learn a new topic</span></span>
+        </button>
         <div class="nqtools">
           <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><b>Notes</b><span>Rewrite into notes</span></button>
           <button class="nqtool nqt2" onclick="nqOpenTool('flashcards')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div><b>Flashcards</b><span>Flip to learn</span></button>
@@ -5067,7 +5094,7 @@ function nqInit() {
 }
 // Draggable dividers for the Library / Chat / Create panes, clamped so no pane
 // gets too wide or too narrow (and the chat always keeps room). Widths persist.
-const NQ_WLIMITS = { lib: [220, 460], create: [300, 620] };
+const NQ_WLIMITS = { lib: [220, 460], create: [300, 760] };
 function nqSetupResizers() {
   const home = document.getElementById("nqhome"); if (!home) return;
   try {
@@ -5113,11 +5140,20 @@ function nqBindResizer(id, key, sign) {
 }
 function nqRefresh() {
   try { nqRenderFolders(); } catch (e) {}
-  try {
-    const n = (typeof resources !== "undefined" ? resources.length : 0);
-    const sub = document.getElementById("nq-chatsub");
-    if (sub) sub.textContent = n ? ("Grounded in " + n + " source" + (n === 1 ? "" : "s") + " when you mention them") : "Ask anything about your studies";
-  } catch (e) {}
+  try { nqRenderGreeting(); } catch (e) {}
+}
+// Greeting + at-a-glance stats in the chat header (reuses the values the old
+// dashboard computes at boot: greeting, streak, resources, things created, folders).
+function nqRenderGreeting() {
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const g = document.getElementById("greeting");
+  const el = document.getElementById("nq-greet");
+  if (g && el && g.textContent.trim()) el.innerHTML = g.innerHTML;
+  const streakEl = document.getElementById("streak-num");
+  set("nq-st-streak", (streakEl && streakEl.textContent) || "0");
+  set("nq-st-res", (typeof resources !== "undefined" ? resources.length : 0));
+  set("nq-st-made", (typeof itemCounts !== "undefined" ? Object.values(itemCounts).reduce((a, b) => a + b, 0) : 0));
+  set("nq-st-fold", (typeof folders !== "undefined" ? folders.length : 0));
 }
 // Saved folders at the bottom of the Create pane; click opens the folder.
 function nqRenderFolders() {
