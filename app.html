@@ -1598,6 +1598,63 @@
   .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
   .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
+  /* little illustrations in each Create tool button that resemble the tool,
+     with short smooth hover animations (palette-aware) */
+  .nqmini { position: absolute; top: 15px; right: 14px; pointer-events: none; }
+  .nqtool:hover .nqmini { will-change: transform; }
+  /* Notes — stacked lines */
+  .nqm-lines { display: flex; flex-direction: column; gap: 4px; width: 40px; }
+  .nqm-lines i { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 13%, transparent); transition: width .22s ease; }
+  .nqm-lines i:nth-child(1) { width: 100%; }
+  .nqm-lines i:nth-child(2) { width: 66%; background: linear-gradient(90deg, var(--orb2), var(--amber)); }
+  .nqm-lines i:nth-child(3) { width: 86%; }
+  .nqtool:hover .nqm-lines i:nth-child(2) { width: 100%; }
+  .nqtool:hover .nqm-lines i:nth-child(3) { width: 58%; }
+  /* Flashcards — a little deck that slides apart */
+  .nqm-deck { width: 46px; height: 34px; }
+  .nqm-deck i { position: absolute; inset: 0; border-radius: 6px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); box-shadow: 0 5px 10px -5px color-mix(in srgb, var(--g2) 40%, transparent); transition: transform .24s ease; }
+  .nqm-deck i:nth-child(1) { transform: rotate(-8deg) translateX(-5px); }
+  .nqm-deck i:nth-child(2) { transform: rotate(-1deg); }
+  .nqm-deck i:nth-child(3) { transform: rotate(7deg) translateX(5px); background: linear-gradient(150deg, var(--orb2), var(--orb4)); border: 0; }
+  .nqtool:hover .nqm-deck i:nth-child(1) { transform: rotate(-15deg) translateX(-11px) translateY(-2px); }
+  .nqtool:hover .nqm-deck i:nth-child(3) { transform: rotate(13deg) translateX(11px) translateY(-2px); }
+  /* Quiz — answer options with a picked one that checks */
+  .nqm-opts { display: flex; flex-direction: column; gap: 4px; width: 38px; }
+  .nqm-opts i { height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--orb2) 16%, transparent); transition: width .22s ease; }
+  .nqm-opts i.pick { background: var(--orb2); position: relative; width: 100%; }
+  .nqm-opts i:nth-child(1) { width: 80%; } .nqm-opts i:nth-child(3) { width: 62%; }
+  .nqm-opts i.pick::after { content: ""; position: absolute; right: -12px; top: -1px; width: 4px; height: 8px; border: solid var(--orb2); border-width: 0 2px 2px 0; transform: rotate(45deg) scale(.5); opacity: 0; transition: transform .2s ease, opacity .2s ease; }
+  .nqtool:hover .nqm-opts i.pick::after { transform: rotate(45deg) scale(1); opacity: 1; }
+  /* Test — checkboxes that tick off in sequence */
+  .nqm-test { display: flex; flex-direction: column; gap: 5px; width: 44px; }
+  .nqm-test i { position: relative; height: 8px; }
+  .nqm-test i::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in srgb, var(--orb2) 20%, transparent); transition: background .18s ease; }
+  .nqm-test i::after { content: ""; position: absolute; left: 12px; top: 2.5px; width: 28px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 12%, transparent); }
+  .nqtool:hover .nqm-test i:nth-child(1)::before { background: var(--orb2); }
+  .nqtool:hover .nqm-test i:nth-child(2)::before { background: var(--orb2); transition-delay: .06s; }
+  .nqtool:hover .nqm-test i:nth-child(3)::before { background: var(--orb2); transition-delay: .12s; }
+  /* Slides — a slide frame with a progress bar that advances */
+  .nqm-slide { width: 46px; }
+  .nqm-slide .fr { display: block; height: 27px; border-radius: 5px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); position: relative; }
+  .nqm-slide .fr::after { content: ""; position: absolute; left: 6px; top: 6px; width: 20px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--orb2) 45%, transparent); box-shadow: 0 7px 0 color-mix(in srgb, var(--ink) 10%, transparent); }
+  .nqm-slide .bar { display: block; height: 4px; margin-top: 5px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 10%, transparent); position: relative; overflow: hidden; }
+  .nqm-slide .bar::after { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 34%; border-radius: 2px; background: var(--orb2); transition: width .3s ease; }
+  .nqtool:hover .nqm-slide .bar::after { width: 82%; }
+  /* Video — a frame with a play button that pulses */
+  .nqm-video { width: 46px; height: 34px; }
+  .nqm-video i { display: block; width: 100%; height: 100%; border-radius: 7px; background: linear-gradient(150deg, var(--orb2), var(--orb4)); position: relative; box-shadow: 0 5px 10px -5px color-mix(in srgb, var(--g2) 40%, transparent); }
+  .nqm-video i::after { content: ""; position: absolute; left: 52%; top: 50%; transform: translate(-50%, -50%); width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 11px; border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
+  .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.14); }
+  /* Study modes — a small fan of cards */
+  .nqm-modes { top: 50%; right: 16px; transform: translateY(-50%); width: 40px; height: 34px; }
+  .nqm-modes i { position: absolute; left: 3px; top: 5px; width: 34px; height: 24px; border-radius: 6px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); box-shadow: 0 4px 9px -5px color-mix(in srgb, var(--g2) 40%, transparent); transition: transform .24s ease; }
+  .nqm-modes i:nth-child(1) { transform: translateY(-5px) rotate(-6deg); }
+  .nqm-modes i:nth-child(2) { transform: rotate(2deg); }
+  .nqm-modes i:nth-child(3) { transform: translateY(5px) rotate(8deg); background: linear-gradient(150deg, var(--orb2), var(--orb4)); border: 0; }
+  .nqtool:hover .nqm-modes i:nth-child(1) { transform: translateY(-9px) translateX(-4px) rotate(-12deg); }
+  .nqtool:hover .nqm-modes i:nth-child(3) { transform: translateY(9px) translateX(4px) rotate(14deg); }
+  @media (prefers-reduced-motion: reduce) { .nqmini i, .nqm-slide .bar::after, .nqm-opts i.pick::after, .nqm-video i::after { transition: none !important; } }
+
   /* saved folders at the bottom of Create */
   .nqfolders { display: flex; flex-direction: column; gap: 6px; }
   .nqfolders .nqfrow { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 11px; cursor: pointer; transition: .12s; font-size: 13.5px; color: var(--ink); }
@@ -1674,13 +1731,13 @@
           <span class="nqadd-txt"><b>Add material</b><span>Upload, paste, import a link, or learn a new topic</span></span>
         </button>
         <div class="nqtools">
-          <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><b>Notes</b><span>Rewrite into notes</span></button>
-          <button class="nqtool nqt2" onclick="nqOpenTool('flashcards')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div><b>Flashcards</b><span>Flip to learn</span></button>
-          <button class="nqtool nqt3" onclick="nqOpenTool('quiz')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11a3 3 0 1 1 4 2.8c-.9.4-1 .8-1 1.7"/><circle cx="12" cy="18" r=".7" fill="currentColor"/></svg></div><b>Quiz</b><span>Multiple choice</span></button>
-          <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><b>Test</b><span>Exam-style</span></button>
-          <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><b>Slides</b><span>A designed deck</span></button>
-          <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><b>Video</b><span>Narrated overview</span></button>
-          <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div></button>
+          <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><span class="nqmini nqm-lines" aria-hidden="true"><i></i><i></i><i></i></span><b>Notes</b><span>Rewrite into notes</span></button>
+          <button class="nqtool nqt2" onclick="nqOpenTool('flashcards')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div><span class="nqmini nqm-deck" aria-hidden="true"><i></i><i></i><i></i></span><b>Flashcards</b><span>Flip to learn</span></button>
+          <button class="nqtool nqt3" onclick="nqOpenTool('quiz')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11a3 3 0 1 1 4 2.8c-.9.4-1 .8-1 1.7"/><circle cx="12" cy="18" r=".7" fill="currentColor"/></svg></div><span class="nqmini nqm-opts" aria-hidden="true"><i></i><i class="pick"></i><i></i></span><b>Quiz</b><span>Multiple choice</span></button>
+          <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><span class="nqmini nqm-test" aria-hidden="true"><i></i><i></i><i></i></span><b>Test</b><span>Exam-style</span></button>
+          <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="nqmini nqm-slide" aria-hidden="true"><i class="fr"></i><i class="bar"></i></span><b>Slides</b><span>A designed deck</span></button>
+          <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><span class="nqmini nqm-video" aria-hidden="true"><i></i></span><b>Video</b><span>Narrated overview</span></button>
+          <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div><span class="nqmini nqm-modes" aria-hidden="true"><i></i><i></i><i></i></span></button>
         </div>
         <div class="nqclabel" style="margin-top:2px;"><span class="nqdot"></span> Saved</div>
         <div class="nqfolders" id="nq-folders"></div>
