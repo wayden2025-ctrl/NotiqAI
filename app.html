@@ -4295,7 +4295,7 @@ async function cwSend() {
   try {
     if (!gateGenerate("res-status")) { throw new Error("You've hit today's free AI limit — upgrade to Pro to keep chatting."); }
     const ctx = await cwResourceContext(text);
-    let messages;
+    let reply;
     if (hasImg) {
       // Vision turn: some Groq vision models reject a separate system message
       // alongside an image, so fold the instructions into the user message and
@@ -4303,13 +4303,21 @@ async function cwSend() {
       const instr = CW_SYSTEM + ctx + " Write any math, chemistry or physics as LaTeX in $...$ or $$...$$.";
       const parts = [{ type: "text", text: instr + "\n\nStudent: " + userText }];
       imgs.forEach(a => parts.push({ type: "image_url", image_url: { url: a.imgUrl } }));
-      messages = [{ role: "user", content: parts }];
+      try {
+        reply = await groq([{ role: "user", content: parts }], false, 4096, model);
+      } catch (visErr) {
+        // vision model unavailable → read the image text with OCR and answer from that
+        let ocrText = "";
+        for (const a of imgs) { try { ocrText += (await ocrDataUrl(a.imgUrl)) + "\n\n"; } catch (e) {} }
+        if (!ocrText.trim()) throw visErr;   // nothing could read the image — show the real reason
+        const fb = userText + "\n\n--- Text read from the attached image(s) ---\n" + ocrText.trim();
+        reply = await groq([{ role: "system", content: CW_SYSTEM + ctx }, { role: "user", content: fb }], false, 4096);
+      }
     } else {
       // server caps at 6 messages: system + up to last 4 prior turns + this one
       const history = cwMsgs.slice(-4);
-      messages = [{ role: "system", content: CW_SYSTEM + ctx }, ...history, { role: "user", content: userText }];
+      reply = await groq([{ role: "system", content: CW_SYSTEM + ctx }, ...history, { role: "user", content: userText }], false, 4096);
     }
-    const reply = await groq(messages, false, 4096, model);
     typing.remove();
     cwMsgs.push(historyEntry);
     cwMsgs.push({ role: "assistant", content: reply });

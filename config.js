@@ -12,9 +12,10 @@ const NOTIQ_CONFIG = {
   GROQ_API_KEY: "PASTE_YOUR_GROQ_API_KEY_HERE",
   GROQ_MODEL: "llama-3.3-70b-versatile",
   // Multimodal model used when a student uploads an IMAGE (it actually "sees"
-  // the picture — diagrams, handwriting, equations). Any Groq vision model
-  // works; swap this if your account uses a different one.
-  GROQ_VISION_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct",
+  // the picture — diagrams, handwriting, equations). Must be a vision model
+  // your Groq account can access — check console.groq.com/docs/vision for the
+  // current list and swap this if needed.
+  GROQ_VISION_MODEL: "qwen/qwen3.6-27b",
 
   // Supabase Storage bucket name for uploaded resources
   STORAGE_BUCKET: "resources",
