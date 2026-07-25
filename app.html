@@ -4222,20 +4222,12 @@ async function cwSend() {
   }
   if (!userText.trim()) userText = imgs.length ? "Please look at the attached image(s) and help me." : "Please read the attached file(s) and help me.";
 
-  let outgoing, historyEntry, model = null;
-  if (imgs.length) {
-    // multimodal turn: text + the actual pictures, sent to the vision model
-    model = NOTIQ_CONFIG.GROQ_VISION_MODEL || null;
-    outgoing = { role: "user", content: [
-      { type: "text", text: userText },
-      ...imgs.map(a => ({ type: "image_url", image_url: { url: a.imgUrl } })),
-    ] };
-    // keep history lightweight — don't resend big images every turn
-    historyEntry = { role: "user", content: userText + `\n[attached image: ${imgs.map(a => a.name).join(", ")}]` };
-  } else {
-    outgoing = { role: "user", content: userText };
-    historyEntry = outgoing;
-  }
+  const hasImg = imgs.length > 0;
+  const model = hasImg ? (NOTIQ_CONFIG.GROQ_VISION_MODEL || null) : null;
+  // history stays lightweight — a text stand-in, never the raw image bytes
+  const historyEntry = hasImg
+    ? { role: "user", content: userText + `\n[attached image: ${imgs.map(a => a.name).join(", ")}]` }
+    : { role: "user", content: userText };
 
   cwAtts = []; cwRenderAtts();
   inp.value = ""; inp.style.height = "auto";
@@ -4246,9 +4238,20 @@ async function cwSend() {
   try {
     if (!gateGenerate("res-status")) { throw new Error("You've hit today's free AI limit — upgrade to Pro to keep chatting."); }
     const ctx = await cwResourceContext(text);
-    // server caps at 6 messages: system + up to last 4 prior turns + this one
-    const history = cwMsgs.slice(-4);
-    const messages = [{ role: "system", content: CW_SYSTEM + ctx }, ...history, outgoing];
+    let messages;
+    if (hasImg) {
+      // Vision turn: some Groq vision models reject a separate system message
+      // alongside an image, so fold the instructions into the user message and
+      // send just this one turn (text + the actual pictures).
+      const instr = CW_SYSTEM + ctx + " Write any math, chemistry or physics as LaTeX in $...$ or $$...$$.";
+      const parts = [{ type: "text", text: instr + "\n\nStudent: " + userText }];
+      imgs.forEach(a => parts.push({ type: "image_url", image_url: { url: a.imgUrl } }));
+      messages = [{ role: "user", content: parts }];
+    } else {
+      // server caps at 6 messages: system + up to last 4 prior turns + this one
+      const history = cwMsgs.slice(-4);
+      messages = [{ role: "system", content: CW_SYSTEM + ctx }, ...history, { role: "user", content: userText }];
+    }
     const reply = await groq(messages, false, 4096, model);
     typing.remove();
     cwMsgs.push(historyEntry);

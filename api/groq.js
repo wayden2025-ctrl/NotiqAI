@@ -165,14 +165,24 @@ module.exports = async (req, res) => {
         }
       }
       if (r.ok) { res.status(200).json(await r.json()); return; }
+      // capture the real upstream reason before falling back (bad model id,
+      // unsupported request shape, etc.) so it can be surfaced if nothing else works
+      let upstreamMsg = "";
+      try { const ej = await r.json(); upstreamMsg = (ej.error && ej.error.message) || ""; } catch (e) { /* ignore */ }
       // Groq failed for ANY reason (rate limit, model error, 5xx) -> try the free backups
       if (await tryBackups()) return;
-      // no backup worked -> return a clean, friendly error
-      const status = (r.status === 429 || r.status === 413) ? 429 : 503;
-      const msg = (r.status === 429 || r.status === 413)
-        ? "Too many people are generating at the same time right now — give it a minute and try again."
-        : "The AI is briefly unavailable — please try again in a minute.";
-      res.status(status).json({ error: { message: msg } });
+      if (r.status === 429 || r.status === 413) {
+        res.status(429).json({ error: { message: "Too many people are generating at the same time right now — give it a minute and try again." } });
+        return;
+      }
+      // A 4xx that isn't a rate limit means the request itself was rejected
+      // (e.g. the vision model isn't enabled on this account). Surface the real
+      // reason so it's fixable instead of hiding it behind a generic message.
+      if (r.status >= 400 && r.status < 500 && upstreamMsg) {
+        res.status(400).json({ error: { message: "AI request rejected: " + upstreamMsg.slice(0, 300) } });
+        return;
+      }
+      res.status(503).json({ error: { message: "The AI is briefly unavailable — please try again in a minute." } });
       return;
     }
     // No Groq key -> go straight to the backups (e.g. Gemini)
