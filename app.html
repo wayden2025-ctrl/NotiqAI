@@ -1642,10 +1642,15 @@
   .nqempty { font-size: 12.5px; color: var(--muted); text-align: center; padding: 20px 12px; border: 1.5px dashed var(--line); border-radius: 12px; line-height: 1.5; margin: 4px 4px; }
 
   /* center chat host — the app's real #chat-wrap gets moved in here */
-  /* Header band: one solid brand colour, everything on it in white. --g2 is the
-     deepest tone in every theme's palette, so white stays legible on all 32 of them.
-     The panel's overflow:hidden clips the band to the rounded top corners. */
-  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 18px 22px; background: var(--g2); color: #fff; border-bottom: 0; }
+  /* Header band: the same light-to-dark brand gradient as the "Add material" button
+     (135deg, --g1 into --g2), everything on it in white. Two deliberate tweaks over
+     the button's exact values, because this band is far wider and carries small text:
+     the light end is held at 85% --g1 (the greeting and stats sit over that corner, and
+     at full --g1 the 12px stats drop under 4.5:1 on the warm themes), and the dark end
+     is deepened so the light-to-dark run stays visible across the width instead of
+     reading as flat. The panel's overflow:hidden clips it to the rounded top corners. */
+  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 18px 22px; color: #fff; border-bottom: 0;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--g1) 85%, #000), color-mix(in srgb, var(--g2) 68%, #000)); }
   .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
   .nqchat .nqchath .t { font-weight: 800; font-size: 15px; color: #fff; } .nqchat .nqchath .s { font-size: 12.5px; color: rgba(255,255,255,.8); }
   /* the pill can't be the brand gradient any more — it would vanish into the band */
