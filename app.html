@@ -1777,19 +1777,40 @@
      at full --g1 the 12px stats drop under 4.5:1 on the warm themes), and the dark end
      is deepened so the light-to-dark run stays visible across the width instead of
      reading as flat. The panel's overflow:hidden clips it to the rounded top corners. */
-  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 18px 22px; color: #fff; border-bottom: 0;
+  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 20px 22px; color: #fff; border-bottom: 0; position: relative; overflow: hidden;
     background: linear-gradient(135deg, color-mix(in srgb, var(--g1) 85%, #000), color-mix(in srgb, var(--g2) 68%, #000)); }
+  /* faint stars and a soft swoosh so the band isn't a flat rectangle */
+  .nqchat .nqchath::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.85) 42%, transparent 45%) 58% 24%/3px 3px no-repeat,
+      radial-gradient(circle, rgba(255,255,255,.55) 42%, transparent 45%) 67% 72%/2px 2px no-repeat,
+      radial-gradient(circle, rgba(255,255,255,.7) 42%, transparent 45%) 78% 34%/2.5px 2.5px no-repeat,
+      radial-gradient(circle, rgba(255,255,255,.4) 42%, transparent 45%) 88% 62%/2px 2px no-repeat,
+      radial-gradient(circle, rgba(255,255,255,.5) 42%, transparent 45%) 47% 78%/2px 2px no-repeat,
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120' preserveAspectRatio='none'><path d='M-10 96 C 80 46 150 108 236 62 S 360 22 410 34' fill='none' stroke='white' stroke-opacity='.13' stroke-width='2.5'/><path d='M-10 112 C 90 70 160 118 250 80 S 370 46 410 56' fill='none' stroke='white' stroke-opacity='.07' stroke-width='2'/></svg>") right bottom/72% 100% no-repeat; }
+  .nqchat .nqchath > * { position: relative; z-index: 1; }
   .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
   .nqchat .nqchath .t { font-weight: 800; font-size: 15px; color: #fff; } .nqchat .nqchath .s { font-size: 12.5px; color: rgba(255,255,255,.8); }
   /* the pill can't be the brand gradient any more — it would vanish into the band */
-  .nqchat .nqchath .nqpill { margin-left: auto; flex: none; font-size: 11.5px; font-weight: 800; color: #fff; background: rgba(255,255,255,.16);
-    border: 1px solid rgba(255,255,255,.28); padding: 6px 13px; border-radius: 999px; }
+  /* the pill is a solid accent button — --orb2 taken to 70% so white clears 4.5:1
+     on every palette (at full strength the warm themes drop to 2.6:1) */
+  .nqchat .nqchath .nqpill { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 800; color: #fff; padding: 10px 17px 10px 14px; border-radius: 999px;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--orb2) 78%, #000), color-mix(in srgb, var(--orb2) 62%, #000));
+    box-shadow: 0 10px 22px -12px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.22); }
+  .nqchat .nqchath .nqpill::before { content: ""; width: 15px; height: 15px; flex: none; background: #fff;
+    -webkit-mask: var(--spark) center/contain no-repeat; mask: var(--spark) center/contain no-repeat; }
   /* greeting + at-a-glance stats in the chat header */
   .nqgreet-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .nqgreet { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(25px, 2.5vw, 33px); letter-spacing: -.4px; line-height: 1.04; color: #fff; }
-  .nqgreet em { font-style: italic; color: #fff; }
-  .nqstats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: rgba(255,255,255,.78); font-weight: 600; }
-  .nqstats span { white-space: nowrap; } .nqstats b { color: #fff; font-weight: 800; margin-right: 3px; }
+  /* the name picks up the palette's light accent instead of plain white */
+  .nqgreet em { font-style: italic; color: color-mix(in srgb, var(--orb1) 75%, #fff); }
+  .nqstats { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 12px; }
+  .nqstat { display: grid; grid-template-columns: auto auto; grid-template-areas: "ic val" "lab lab";
+    gap: 1px 8px; align-items: center; white-space: nowrap; }
+  .nqstat svg { grid-area: ic; width: 17px; height: 17px; color: rgba(255,255,255,.72); }
+  .nqstat b { grid-area: val; font-size: 16px; font-weight: 800; letter-spacing: -.2px; color: #fff; }
+  .nqstat i { grid-area: lab; font-style: normal; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.7); }
   @media (max-width: 760px) { .nqstats { display: none; } }
   .nqchatbody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .nqchatbody #chat-wrap { flex: 1; min-height: 0; }
@@ -2007,10 +2028,10 @@
         <div class="nqgreet-wrap">
           <div class="nqgreet" id="nq-greet">Welcome back.</div>
           <div class="nqstats" id="nq-stats">
-            <span><b id="nq-st-streak">0</b>day streak</span>
-            <span><b id="nq-st-res">0</b>resources</span>
-            <span><b id="nq-st-made">0</b>created</span>
-            <span><b id="nq-st-fold">0</b>folders</span>
+            <span class="nqstat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><b id="nq-st-streak">0</b><i>day streak</i></span>
+            <span class="nqstat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 2.6 7.3 12 12l9.4-4.7z"/><path d="M2.6 16.7 12 21.4l9.4-4.7"/><path d="M2.6 12 12 16.7 21.4 12"/></svg><b id="nq-st-res">0</b><i>resources</i></span>
+            <span class="nqstat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l1.85 5.45L19.3 10.5l-5.45 1.85L12 17.8l-1.85-5.45L4.7 10.5l5.45-1.85z"/></svg><b id="nq-st-made">0</b><i>created</i></span>
+            <span class="nqstat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.4a2 2 0 0 1 2-2h3.6l2 2.2H19a2 2 0 0 1 2 2v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><b id="nq-st-fold">0</b><i>folders</i></span>
           </div>
         </div>
         <span class="nqpill">Notiq AI</span>
