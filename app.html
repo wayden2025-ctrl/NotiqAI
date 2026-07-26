@@ -384,13 +384,19 @@
   .chat-wrap.empty .chat-scroll { display: none; }
   .chat-wrap.empty .chat-foot-wrap { max-width: 680px; margin: 0 auto; width: 100%; }
   .chat-wrap.empty .chat-bar { box-shadow: 0 18px 40px -18px rgba(60,40,30,.32); }
-  .chat-wrap:not(.empty) .cw-chips { display: none; }
+  /* a soft sparkle badge, matching the chips and CTAs on the tool pages */
   .cw-orb {
-    width: 62px; height: 62px; border-radius: 18px; margin: 0 auto 18px; position: relative; overflow: hidden;
-    background: radial-gradient(circle at 32% 28%, var(--orb1), var(--coral) 55%, var(--orbBtn));
-    box-shadow: inset -6px -7px 14px rgba(14,30,60,.5), inset 4px 4px 9px rgba(255,255,255,.5), 0 16px 30px -12px color-mix(in srgb, var(--g2) 55%, transparent);
+    width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 20px; position: relative; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--orb2) 17%, var(--card1)), color-mix(in srgb, var(--orb2) 6%, var(--card1)));
+    box-shadow: 0 16px 32px -20px color-mix(in srgb, var(--g2) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.65);
   }
-  .cw-orb::before { content: ""; background: url(logo.png) center/cover no-repeat border-box; border-radius: inherit; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 3px 0 0 2px; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: #fff; text-shadow: 0 2px 6px rgba(10,24,50,.5); }
+  .cw-orb::after { content: ""; position: absolute; inset: -9px; border-radius: 50%; pointer-events: none;
+    border: 1px solid color-mix(in srgb, var(--orb2) 13%, transparent); animation: cwHalo 5s ease-in-out infinite; }
+  .cw-orb::before { content: ""; width: 36px; height: 36px; background: var(--orb2);
+    -webkit-mask: var(--spark) center/contain no-repeat; mask: var(--spark) center/contain no-repeat;
+    animation: cwSpark 4.2s ease-in-out infinite; }
+  @keyframes cwSpark { 0%, 100% { transform: scale(.94) rotate(-4deg); opacity: .85; } 50% { transform: scale(1.06) rotate(6deg); opacity: 1; } }
+  @keyframes cwHalo { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.07); opacity: .45; } }
   .cw-title { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -1.5px; color: var(--ink); line-height: 1; }
   .cw-title em { color: var(--coral); }
   .cw-hint { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 46ch; margin: 12px auto 0; }
@@ -405,9 +411,23 @@
   .cw-typing { align-self: flex-start; color: var(--muted); font-size: 14px; padding: 4px 6px; }
   .cw-caret { display: inline-block; width: 8px; height: 15px; background: var(--coral); border-radius: 1px; margin-left: 2px; vertical-align: -2px; animation: cwBlink .8s steps(1) infinite; }
   @keyframes cwBlink { 50% { opacity: 0; } }
-  .cw-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .cw-chip { border: 1.5px solid var(--line); background: var(--card1); border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
-  .cw-chip:hover { border-color: var(--coral); color: var(--coral); }
+  /* four starter cards under the welcome — what the assistant is good at */
+  .cw-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 28px auto 0; max-width: 880px; text-align: left; }
+  .cw-card { border: 1px solid var(--line); background: var(--card1); border-radius: 16px; padding: 15px 15px 17px; cursor: pointer;
+    font-family: inherit; text-align: left; color: var(--ink); box-shadow: 0 12px 26px -22px rgba(60,40,30,.55);
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+  .cw-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--orb2) 45%, transparent);
+    box-shadow: 0 18px 32px -20px color-mix(in srgb, var(--g2) 55%, transparent); }
+  .cw-card .cc-ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 12px;
+    color: var(--orb2); background: color-mix(in srgb, var(--orb2) 11%, transparent);
+    transition: background .16s ease, transform .16s ease; }
+  .cw-card .cc-ic svg { width: 19px; height: 19px; }
+  .cw-card:hover .cc-ic { background: color-mix(in srgb, var(--orb2) 19%, transparent); transform: scale(1.07) rotate(-5deg); }
+  .cw-card b { display: block; font-size: 14.5px; font-weight: 800; letter-spacing: -.1px; margin-bottom: 4px; }
+  .cw-card span { display: block; font-size: 12.8px; color: var(--muted); line-height: 1.45; }
+  @media (max-width: 900px) { .cw-cards { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .cw-cards { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .cw-orb::before, .cw-orb::after { animation: none; } }
   .chat-bar { display: flex; gap: 8px; align-items: flex-end; background: var(--card1); border: 1.5px solid var(--line); border-radius: 16px; padding: 8px; }
   .chat-bar textarea { flex: 1; border: 0; background: transparent; resize: none; outline: none; font-family: inherit; font-size: 15px; color: var(--ink); max-height: 140px; line-height: 1.5; padding: 6px 4px; }
   .chat-attach { flex: none; width: 42px; height: 42px; border-radius: 12px; border: 0; cursor: pointer; color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, transparent); display: flex; align-items: center; justify-content: center; transition: .15s; }
@@ -1693,7 +1713,10 @@
   .nqcreate { flex: none; width: var(--nqcreate-w, 30%); min-width: 300px; max-width: 54%; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--card2), var(--card1)); transition: width .34s cubic-bezier(.4,0,.2,1); }
   /* breathing room so chat bubbles + composer aren't jammed against the panel edges */
   body.nqmode #chat-wrap { padding: 2px 20px 0; }
-  body.nqmode .nqchat .cw-orb { display: none; }
+  /* the badge is a light sparkle now, not the big logo orb, so it can stay in the
+     workspace chat without competing with the greeting band above it */
+  body.nqmode .nqchat .cw-orb { width: 64px; height: 64px; margin-bottom: 16px; }
+  body.nqmode .nqchat .cw-orb::before { width: 30px; height: 30px; }
   body.nqmode .nqchat .chat-welcome { padding-top: 8px; }
   /* drag handles between panes (provide the 12px gutter + a grabber) */
   .nqrz { flex: none; width: 12px; align-self: stretch; cursor: col-resize; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 2; }
@@ -1726,7 +1749,7 @@
   .nqadd:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(22,50,100,.44); } .nqadd:hover::after { transform: translateX(120%); }
   .nqadd .nqadd-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
   .nqadd .nqadd-ic svg { width: 21px; height: 21px; }
-  .nqadd .nqadd-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .nqadd .nqadd-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-right: 52px; }
   .nqadd, .nqadd .nqadd-txt b, .nqadd .nqadd-ic { color: #fff; }
   .nqadd .nqadd-txt b { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 20px; letter-spacing: .2px; line-height: 1; }
   .nqadd .nqadd-txt span { font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.85); line-height: 1.35; }
@@ -1784,10 +1807,24 @@
   .nqclabel { font-size: 11.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; padding: 14px 6px 11px; display: flex; align-items: center; gap: 8px; }
   .nqclabel .nqdot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
   .nqcscroll { flex: 1; overflow-y: auto; padding: 6px 14px 16px; }
+  /* Container context sits on the scroll area, NOT on .nqcreate: the panel also hosts
+     #nq-viewer-body, where tool views get moved, and Slides carries a position:fixed
+     full-screen Present overlay. Containment on an ancestor would clip it to the panel. */
+  .nqcscroll { container-type: inline-size; container-name: nqcreate; }
   .nqtools { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  @container nqcreate (min-width: 560px) {
+    /* icon | title over sub, art on the right — the art no longer has to shrink */
+    .nqtool:not(.nqwide) { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "ic title" "ic sub";
+      column-gap: 13px; align-items: center; padding: 17px 15px; }
+    .nqtool:not(.nqwide) .nqic { grid-area: ic; margin-bottom: 0; }
+    .nqtool:not(.nqwide) b { grid-area: title; align-self: end; }
+    .nqtool:not(.nqwide) span { grid-area: sub; align-self: start; }
+    .nqtool .nqmini { top: 50%; right: 12px; transform: translateY(-50%); transform-origin: 100% 50%; }
+    .nqtool .nqm-modes { transform: translateY(-50%) scale(1); }
+  }
   .nqtool { border: 1px solid var(--line); background: linear-gradient(160deg, var(--card1), var(--card2)); border-radius: 16px; padding: 15px 13px; cursor: pointer; text-align: left; transition: .16s; position: relative; overflow: hidden; color: var(--ink); }
   .nqtool b { color: var(--ink); }
-  .nqtool::after { content: ""; position: absolute; right: -26px; bottom: -26px; width: 68px; height: 68px; border-radius: 50%; opacity: .12; background: var(--tc, #2a4d8a); }
+  .nqtool::after { content: ""; position: absolute; right: -30px; bottom: -30px; width: 68px; height: 68px; border-radius: 50%; opacity: .06; background: var(--tc, #2a4d8a); }
   .nqtool:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(22,40,80,.14); border-color: transparent; }
   .nqtool .nqic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 11px; color: #fff; box-shadow: 0 6px 14px rgba(22,40,80,.2); }
   .nqtool .nqic svg { width: 19px; height: 19px; } .nqtool b { display: block; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 18px; letter-spacing: .2px; line-height: 1.05; } .nqtool span { font-size: 11.5px; color: var(--muted); }
@@ -1798,62 +1835,129 @@
   .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
   .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
-  /* little illustrations in each Create tool button that resemble the tool,
-     with short smooth hover animations (palette-aware) */
-  .nqmini { position: absolute; top: 15px; right: 14px; pointer-events: none; }
+  /* Illustrations in each Create tool button: a layered little product shot on a soft
+     tinted plate, cropped by the card's right edge so it reads bigger than the space it
+     takes. Every one keeps a short hover animation. All colours come from the palette. */
+  .nqmini { position: absolute; top: 11px; right: 9px; pointer-events: none; width: 64px; height: 46px;
+    transform: scale(.72); transform-origin: 100% 0; }
+  .nqmini::before { content: ""; position: absolute; inset: -11px -12px -11px -10px; border-radius: 15px;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--orb2) 10%, transparent), color-mix(in srgb, var(--orb2) 3%, transparent));
+    transition: background .2s ease; }
+  .nqtool:hover .nqmini::before { background: linear-gradient(150deg, color-mix(in srgb, var(--orb2) 16%, transparent), color-mix(in srgb, var(--orb2) 5%, transparent)); }
   .nqtool:hover .nqmini { will-change: transform; }
-  /* Notes — stacked lines */
-  .nqm-lines { display: flex; flex-direction: column; gap: 4px; width: 40px; }
-  .nqm-lines i { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 13%, transparent); transition: width .22s ease; }
+
+  /* Notes — a sheet of paper, lines filling in */
+  .nqm-lines { display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 9px 9px 9px 10px;
+    border-radius: 8px; background: var(--card1); border: 1px solid var(--line); transform: rotate(-5deg);
+    box-shadow: 0 7px 14px -8px color-mix(in srgb, var(--g2) 45%, transparent); transition: transform .24s ease; }
+  .nqm-lines i { height: 4.5px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 12%, transparent); transition: width .22s ease; }
   .nqm-lines i:nth-child(1) { width: 100%; }
-  .nqm-lines i:nth-child(2) { width: 66%; background: linear-gradient(90deg, var(--orb2), var(--amber)); }
-  .nqm-lines i:nth-child(3) { width: 86%; }
+  .nqm-lines i:nth-child(2) { width: 64%; background: linear-gradient(90deg, var(--orb2), var(--orb4)); }
+  .nqm-lines i:nth-child(3) { width: 84%; }
+  .nqtool:hover .nqm-lines { transform: rotate(-2deg) translateY(-2px); }
   .nqtool:hover .nqm-lines i:nth-child(2) { width: 100%; }
-  .nqtool:hover .nqm-lines i:nth-child(3) { width: 58%; }
-  /* Flashcards — a little deck that slides apart */
-  .nqm-deck { width: 46px; height: 34px; }
-  .nqm-deck i { position: absolute; inset: 0; border-radius: 6px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); box-shadow: 0 5px 10px -5px color-mix(in srgb, var(--g2) 40%, transparent); transition: transform .24s ease; }
-  .nqm-deck i:nth-child(1) { transform: rotate(-8deg) translateX(-5px); }
-  .nqm-deck i:nth-child(2) { transform: rotate(-1deg); }
-  .nqm-deck i:nth-child(3) { transform: rotate(7deg) translateX(5px); background: linear-gradient(150deg, var(--orb2), var(--orb4)); border: 0; }
-  .nqtool:hover .nqm-deck i:nth-child(1) { transform: rotate(-15deg) translateX(-11px) translateY(-2px); }
-  .nqtool:hover .nqm-deck i:nth-child(3) { transform: rotate(13deg) translateX(11px) translateY(-2px); }
-  /* Quiz — answer options with a picked one that checks */
-  .nqm-opts { display: flex; flex-direction: column; gap: 4px; width: 38px; }
-  .nqm-opts i { height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--orb2) 16%, transparent); transition: width .22s ease; }
-  .nqm-opts i.pick { background: var(--orb2); position: relative; width: 100%; }
-  .nqm-opts i:nth-child(1) { width: 80%; } .nqm-opts i:nth-child(3) { width: 62%; }
-  .nqm-opts i.pick::after { content: ""; position: absolute; right: -12px; top: -1px; width: 4px; height: 8px; border: solid var(--orb2); border-width: 0 2px 2px 0; transform: rotate(45deg) scale(.5); opacity: 0; transition: transform .2s ease, opacity .2s ease; }
+  .nqtool:hover .nqm-lines i:nth-child(3) { width: 56%; }
+
+  /* Flashcards — a deck with the top card in the brand colour */
+  .nqm-deck i { position: absolute; left: 6px; top: 3px; width: 50px; height: 38px; border-radius: 7px;
+    background: var(--card1); border: 1px solid var(--line); transition: transform .24s ease;
+    box-shadow: 0 6px 12px -7px color-mix(in srgb, var(--g2) 50%, transparent); }
+  .nqm-deck i:nth-child(1) { transform: rotate(-11deg) translate(-4px, 1px); }
+  .nqm-deck i:nth-child(2) { transform: rotate(-4deg); }
+  .nqm-deck i:nth-child(3) { transform: rotate(7deg) translate(4px, -1px); border: 0;
+    background: linear-gradient(150deg, var(--orb2), var(--orb4));
+    box-shadow: 0 9px 16px -8px color-mix(in srgb, var(--orb4) 75%, transparent); }
+  .nqtool:hover .nqm-deck i:nth-child(1) { transform: rotate(-18deg) translate(-10px, -1px); }
+  .nqtool:hover .nqm-deck i:nth-child(3) { transform: rotate(13deg) translate(9px, -4px); }
+
+  /* Quiz — answer rows on a card, the right one ticks */
+  .nqm-opts { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 9px 10px;
+    border-radius: 8px; background: var(--card1); border: 1px solid var(--line);
+    box-shadow: 0 7px 14px -8px color-mix(in srgb, var(--g2) 45%, transparent); }
+  .nqm-opts i { height: 6px; border-radius: 3px; position: relative; margin-left: 12px;
+    background: color-mix(in srgb, var(--ink) 11%, transparent); transition: width .22s ease, background .2s ease; }
+  .nqm-opts i::before { content: ""; position: absolute; left: -12px; top: -1.5px; width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 16%, transparent); transition: background .2s ease, border-color .2s ease; }
+  .nqm-opts i:nth-child(1) { width: 74%; } .nqm-opts i:nth-child(3) { width: 58%; }
+  .nqm-opts i.pick { width: 88%; background: color-mix(in srgb, var(--orb2) 32%, transparent); }
+  .nqm-opts i.pick::before { background: var(--orb2); border-color: var(--orb2); }
+  .nqm-opts i.pick::after { content: ""; position: absolute; left: -8.5px; top: 0px; width: 2.5px; height: 5.5px;
+    border: solid #fff; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg) scale(.4); opacity: 0;
+    transition: transform .2s ease, opacity .2s ease; }
   .nqtool:hover .nqm-opts i.pick::after { transform: rotate(45deg) scale(1); opacity: 1; }
-  /* Test — checkboxes that tick off in sequence */
-  .nqm-test { display: flex; flex-direction: column; gap: 5px; width: 44px; }
+  .nqtool:hover .nqm-opts i.pick { background: var(--orb2); }
+
+  /* Test — a checklist that ticks down the page */
+  .nqm-test { display: flex; flex-direction: column; justify-content: center; gap: 7px; padding: 9px 10px;
+    border-radius: 8px; background: var(--card1); border: 1px solid var(--line);
+    box-shadow: 0 7px 14px -8px color-mix(in srgb, var(--g2) 45%, transparent); }
   .nqm-test i { position: relative; height: 8px; }
-  .nqm-test i::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 8px; border-radius: 2px; background: color-mix(in srgb, var(--orb2) 20%, transparent); transition: background .18s ease; }
-  .nqm-test i::after { content: ""; position: absolute; left: 12px; top: 2.5px; width: 28px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 12%, transparent); }
-  .nqtool:hover .nqm-test i:nth-child(1)::before { background: var(--orb2); }
-  .nqtool:hover .nqm-test i:nth-child(2)::before { background: var(--orb2); transition-delay: .06s; }
-  .nqtool:hover .nqm-test i:nth-child(3)::before { background: var(--orb2); transition-delay: .12s; }
-  /* Slides — a slide frame with a progress bar that advances */
-  .nqm-slide { width: 46px; }
-  .nqm-slide .fr { display: block; height: 27px; border-radius: 5px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); position: relative; }
-  .nqm-slide .fr::after { content: ""; position: absolute; left: 6px; top: 6px; width: 20px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--orb2) 45%, transparent); box-shadow: 0 7px 0 color-mix(in srgb, var(--ink) 10%, transparent); }
-  .nqm-slide .bar { display: block; height: 4px; margin-top: 5px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 10%, transparent); position: relative; overflow: hidden; }
-  .nqm-slide .bar::after { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 34%; border-radius: 2px; background: var(--orb2); transition: width .3s ease; }
-  .nqtool:hover .nqm-slide .bar::after { width: 82%; }
-  /* Video — a frame with a play button that pulses */
-  .nqm-video { width: 46px; height: 34px; }
-  .nqm-video i { display: block; width: 100%; height: 100%; border-radius: 7px; background: linear-gradient(150deg, var(--orb2), var(--orb4)); position: relative; box-shadow: 0 5px 10px -5px color-mix(in srgb, var(--g2) 40%, transparent); }
-  .nqm-video i::after { content: ""; position: absolute; left: 52%; top: 50%; transform: translate(-50%, -50%); width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 11px; border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
-  .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.14); }
-  /* Study modes — a small fan of cards */
-  .nqm-modes { top: 50%; right: 16px; transform: translateY(-50%); width: 40px; height: 34px; }
-  .nqm-modes i { position: absolute; left: 3px; top: 5px; width: 34px; height: 24px; border-radius: 6px; background: linear-gradient(160deg, var(--card1), var(--card2)); border: 1px solid var(--line); box-shadow: 0 4px 9px -5px color-mix(in srgb, var(--g2) 40%, transparent); transition: transform .24s ease; }
-  .nqm-modes i:nth-child(1) { transform: translateY(-5px) rotate(-6deg); }
-  .nqm-modes i:nth-child(2) { transform: rotate(2deg); }
-  .nqm-modes i:nth-child(3) { transform: translateY(5px) rotate(8deg); background: linear-gradient(150deg, var(--orb2), var(--orb4)); border: 0; }
-  .nqtool:hover .nqm-modes i:nth-child(1) { transform: translateY(-9px) translateX(-4px) rotate(-12deg); }
-  .nqtool:hover .nqm-modes i:nth-child(3) { transform: translateY(9px) translateX(4px) rotate(14deg); }
-  @media (prefers-reduced-motion: reduce) { .nqmini i, .nqm-slide .bar::after, .nqm-opts i.pick::after, .nqm-video i::after { transition: none !important; } }
+  .nqm-test i::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 8px; border-radius: 2.5px;
+    border: 1.5px solid color-mix(in srgb, var(--orb2) 35%, transparent); transition: background .18s ease, border-color .18s ease; }
+  .nqm-test i::after { content: ""; position: absolute; left: 13px; right: 0; top: 2.5px; height: 4px; border-radius: 2px;
+    background: color-mix(in srgb, var(--ink) 11%, transparent); }
+  .nqtool:hover .nqm-test i::before { background: var(--orb2); border-color: var(--orb2); }
+  .nqtool:hover .nqm-test i:nth-child(2)::before { transition-delay: .07s; }
+  .nqtool:hover .nqm-test i:nth-child(3)::before { transition-delay: .14s; }
+
+  /* Slides — a slide with a picture block, and a bar that advances */
+  .nqm-slide { display: flex; flex-direction: column; justify-content: center; }
+  .nqm-slide .fr { display: block; height: 34px; border-radius: 7px; background: var(--card1); border: 1px solid var(--line);
+    position: relative; overflow: hidden; box-shadow: 0 7px 14px -8px color-mix(in srgb, var(--g2) 45%, transparent); }
+  .nqm-slide .fr::before { content: ""; position: absolute; left: 6px; top: 7px; width: 20px; height: 20px; border-radius: 4px;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--orb2) 55%, transparent), color-mix(in srgb, var(--orb2) 22%, transparent)); }
+  .nqm-slide .fr::after { content: ""; position: absolute; left: 31px; top: 9px; width: 24px; height: 4px; border-radius: 2px;
+    background: color-mix(in srgb, var(--ink) 13%, transparent);
+    box-shadow: 0 7px 0 color-mix(in srgb, var(--ink) 10%, transparent), 0 14px 0 color-mix(in srgb, var(--ink) 7%, transparent); }
+  .nqm-slide .bar { display: block; height: 4px; margin-top: 6px; border-radius: 2px; position: relative; overflow: hidden;
+    background: color-mix(in srgb, var(--ink) 9%, transparent); }
+  .nqm-slide .bar::after { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 34%; border-radius: 2px;
+    background: var(--orb2); transition: width .3s ease; }
+  .nqtool:hover .nqm-slide .bar::after { width: 84%; }
+
+  /* Video — a strip of film with a play button */
+  .nqm-video i { display: block; width: 100%; height: 100%; border-radius: 7px; position: relative; overflow: hidden;
+    background: linear-gradient(150deg, var(--orb2), var(--orb4));
+    box-shadow: 0 9px 16px -8px color-mix(in srgb, var(--orb4) 75%, transparent); }
+  .nqm-video i::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 4px, transparent 4px 9px) top 3px left 3px / calc(100% - 6px) 3.5px no-repeat,
+      repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 4px, transparent 4px 9px) bottom 3px left 3px / calc(100% - 6px) 3.5px no-repeat; }
+  .nqm-video i::after { content: ""; position: absolute; left: 52%; top: 50%; transform: translate(-50%, -50%);
+    width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px;
+    border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
+  .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.16); }
+
+  /* Study modes — a target you keep hitting */
+  .nqm-modes { top: 50%; right: 14px; width: 46px; height: 46px; transform: translateY(-50%) scale(.86); transform-origin: 100% 50%; }
+  .nqm-modes i { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%;
+    transition: transform .26s ease; }
+  .nqm-modes i:nth-child(1) { width: 44px; height: 44px; border: 2px solid color-mix(in srgb, var(--orb2) 26%, transparent); }
+  .nqm-modes i:nth-child(2) { width: 27px; height: 27px; border: 2px solid color-mix(in srgb, var(--orb2) 45%, transparent); }
+  .nqm-modes i:nth-child(3) { width: 12px; height: 12px; background: linear-gradient(150deg, var(--orb2), var(--orb4));
+    box-shadow: 0 5px 10px -5px color-mix(in srgb, var(--orb4) 80%, transparent); }
+  .nqtool:hover .nqm-modes i:nth-child(1) { transform: translate(-50%, -50%) scale(1.08); }
+  .nqtool:hover .nqm-modes i:nth-child(2) { transform: translate(-50%, -50%) scale(.9); }
+  .nqtool:hover .nqm-modes i:nth-child(3) { transform: translate(-50%, -50%) scale(1.3); }
+
+  /* Add material — papers sliding into a folder (on the brand gradient, so white art) */
+  .nqm-add { right: 12px; width: 62px; height: 46px; }
+  .nqm-add::before { display: none; }
+  .nqm-add i:nth-child(1) { position: absolute; right: 20px; top: 0; width: 30px; height: 36px; border-radius: 5px;
+    background: rgba(255,255,255,.9); transform: rotate(-9deg); transition: transform .26s ease;
+    box-shadow: 0 6px 12px -6px rgba(0,0,0,.45); }
+  .nqm-add i:nth-child(1)::after { content: ""; position: absolute; left: 6px; top: 8px; width: 18px; height: 3px; border-radius: 2px;
+    background: color-mix(in srgb, var(--orb4) 35%, transparent);
+    box-shadow: 0 7px 0 color-mix(in srgb, var(--orb4) 22%, transparent), 0 14px 0 color-mix(in srgb, var(--orb4) 15%, transparent); }
+  .nqm-add i:nth-child(2) { position: absolute; right: 0; bottom: 2px; width: 46px; height: 32px; border-radius: 4px 8px 8px 8px;
+    background: linear-gradient(160deg, rgba(255,255,255,.98), rgba(255,255,255,.82)); transition: transform .26s ease;
+    box-shadow: 0 8px 16px -7px rgba(0,0,0,.5); }
+  .nqm-add i:nth-child(2)::before { content: ""; position: absolute; left: 0; top: -6px; width: 20px; height: 8px;
+    border-radius: 4px 4px 0 0; background: rgba(255,255,255,.9); }
+  .nqadd:hover .nqm-add i:nth-child(1) { transform: rotate(-15deg) translate(-4px, -5px); }
+  .nqadd:hover .nqm-add i:nth-child(2) { transform: translateY(2px); }
+
+  @media (prefers-reduced-motion: reduce) { .nqmini i, .nqmini, .nqm-slide .bar::after, .nqm-opts i.pick::after, .nqm-video i::after { transition: none !important; } }
 
   /* saved folders at the bottom of Create */
   .nqfolders { display: flex; flex-direction: column; gap: 6px; }
@@ -1929,6 +2033,7 @@
         <button class="nqadd" onclick="nqOpenTool('import')">
           <span class="nqadd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
           <span class="nqadd-txt"><b>Add material</b><span>Upload, paste, import a link, or learn a new topic</span></span>
+          <span class="nqmini nqm-add" aria-hidden="true"><i></i><i></i></span>
         </button>
         <div class="nqtools">
           <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><span class="nqmini nqm-lines" aria-hidden="true"><i></i><i></i><i></i></span><b>Notes</b><span>Rewrite into notes</span></button>
@@ -2431,6 +2536,7 @@
             <div class="cw-orb"></div>
             <h2 class="cw-title">How can I help you <em>study?</em></h2>
             <p class="cw-hint">Solve a problem, plan an essay, or break down a tough concept — I work from your resources when you mention them.</p>
+            <div class="cw-cards" id="cw-starters"></div>
           </div>
           <div class="chat-scroll" id="chat-scroll"></div>
         </div>
@@ -2446,7 +2552,6 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
             </button>
           </div>
-          <div class="cw-chips" id="cw-chips"></div>
           <p class="chat-foot">Notiq keeps to studying — it won't help with off-topic requests.</p>
         </div>
       </div>
@@ -4800,18 +4905,48 @@ const CW_SYSTEM = "You are Notiq AI, a friendly, encouraging study assistant for
 function cwGreeting() {
   return "Hi! I'm your Notiq study assistant. I can:\n\n- **Solve problems** step by step from any subject\n- **Help with writing** — essays, discussion posts, outlines\n- **Explain, teach, or help you research** any concept\n\nA few tips: mention any resource by name if you want me to use it, be specific, and break big tasks into steps. **How can I help?**";
 }
+// Starter cards on the empty chat. Three of them need the student's own topic, so
+// they open the composer primed and focused rather than firing a vague question the
+// assistant can only answer with "sure — what about?". The last one stands alone, so
+// it just sends.
+const CW_STARTERS = [
+  { t: "Explain a concept", d: "Get a clear explanation in simple terms",
+    fill: "Explain this concept to me in simple terms: ",
+    ic: '<path d="M9 18h6"/><path d="M10 21.5h4"/><path d="M15.1 14c.2-1 .65-1.75 1.4-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.25 1.5 3.5.75.75 1.2 1.5 1.4 2.5"/>' },
+  { t: "Plan an essay", d: "Outline, structure, and key points",
+    fill: "Help me plan an essay on: ",
+    ic: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>' },
+  { t: "Solve a problem", d: "Step-by-step help with any subject",
+    fill: "Walk me through this problem step by step: ",
+    ic: '<path d="M3 13.5h2.6l2.9 6.5L12.6 4H21"/><path d="M15 9.5l5 5M20 9.5l-5 5"/>' },
+  { t: "Study tips", d: "Strategies to learn smarter, not harder",
+    send: "Give me a few study strategies that actually work, and how to put them to use this week.",
+    ic: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>' },
+];
 function openChat() {
   if (!cwMsgs.length) {
     $("chat-wrap").classList.add("empty");
     $("chat-scroll").innerHTML = "";
-    const chips = ["Explain a concept to me", "Help me start an essay", "Give me a practice problem", "Quiz me on my notes"];
-    $("cw-chips").innerHTML = chips.map(c => `<span class="cw-chip" onclick="cwChip(this)">${c}</span>`).join("");
+    const el = $("cw-starters");
+    if (el) el.innerHTML = CW_STARTERS.map((c, i) =>
+      `<button class="cw-card" type="button" onclick="cwStart(${i})">
+         <span class="cc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${c.ic}</svg></span>
+         <b>${esc(c.t)}</b><span>${esc(c.d)}</span>
+       </button>`).join("");
   } else {
     $("chat-wrap").classList.remove("empty");
   }
   setTimeout(() => $("chat-input").focus(), 40);
 }
-function cwChip(el) { $("chat-input").value = el.textContent; cwSend(); }
+function cwStart(i) {
+  const c = CW_STARTERS[i]; if (!c) return;
+  const inp = $("chat-input");
+  if (c.send) { inp.value = c.send; cwSend(); return; }
+  inp.value = c.fill;
+  inp.focus();
+  inp.setSelectionRange(inp.value.length, inp.value.length);   // caret after the prompt, ready to type
+  inp.style.height = "auto"; inp.style.height = Math.min(inp.scrollHeight, 140) + "px";
+}
 (function cwBind() {
   const inp = $("chat-input"); if (!inp) return;
   inp.addEventListener("input", () => { inp.style.height = "auto"; inp.style.height = Math.min(inp.scrollHeight, 140) + "px"; });
