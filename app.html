@@ -238,7 +238,7 @@
   .slide .sl-num { position: absolute; bottom: 14px; right: 18px; z-index: 2; font-size: 11px; font-weight: 800; letter-spacing: .5px;
     padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--acc) 14%, transparent);
     color: var(--acc); border: 1px solid color-mix(in srgb, var(--acc) 30%, transparent); }
-  .slide.section-slide .sl-num, .slide.title-slide .sl-num { background: rgba(255,255,255,.14); color: currentColor; border-color: rgba(255,255,255,.22); }
+  .slide.section-slide .sl-num, .slide.title-slide .sl-num, .slide.hero-slide .sl-num { background: rgba(255,255,255,.14); color: currentColor; border-color: rgba(255,255,255,.22); }
   .slide .sl-eyebrow { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: .75; margin-bottom: 12px; font-weight: 700; }
   .slide .sl-big { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; letter-spacing: -1px; }
   .slide.section-slide { justify-content: center; align-items: center; text-align: center; }
@@ -291,6 +291,87 @@
   .sl-imgx { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
   .sl-notes { font-size: 13px; color: var(--muted); background: color-mix(in srgb, var(--coral) 5%, transparent); border-radius: 0 0 12px 12px; padding: 10px 16px; margin: -14px 0 16px; line-height: 1.55; }
   .sl-notes b { color: var(--coral); }
+  .sl-notes .sl-nmeta { display: block; margin-top: 6px; font-size: 12px; opacity: .8; }
+  .sl-notes .sl-nmeta em { font-style: normal; font-weight: 700; color: var(--coral); }
+
+  /* ============ PREMIUM EDITORIAL LAYOUTS ============
+     Hero, card grids, pull quotes, stat rows and closing slides. These exist so a
+     deck never reads as one bullet layout repeated N times — slNormalizeDeck also
+     actively breaks up runs of the same type. Everything below shares one design
+     language: 16px radii, soft accent-tinted fills, a single accent, generous air. */
+
+  /* --- hero: full-bleed photo, headline anchored low over a cinematic scrim --- */
+  .slide.hero-slide { justify-content: flex-end; }
+  .hero-slide .sl-cover { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; }
+  .hero-slide .sl-cover-veil { position: absolute; inset: 0; z-index: 0;
+    background: linear-gradient(2deg, color-mix(in srgb, var(--tbg) 96%, transparent) 4%,
+      color-mix(in srgb, var(--tbg) 80%, transparent) 44%, color-mix(in srgb, var(--tbg) 28%, transparent) 100%); }
+  .hero-slide.has-cover::before, .hero-slide.has-cover::after { display: none; }
+  .hero-slide .hero-body { position: relative; z-index: 1; max-width: 78%; }
+  .hero-slide.has-cover .hero-body { text-shadow: 0 2px 24px rgba(0,0,0,.5); }
+  .hero-slide h2 { font-size: clamp(36px, 5.8vw, 72px); line-height: .99; letter-spacing: -1.4px; margin-bottom: 12px; }
+  .hero-rule { width: 62px; height: 5px; border-radius: 3px; background: var(--acc); margin-bottom: 20px; }
+  .hero-sub { font-size: clamp(15px, 1.95vw, 23px); font-weight: 600; opacity: .93; line-height: 1.35; max-width: 42ch; }
+
+  /* --- cards: 2-4 callout cards with number badges (feature showcase) --- */
+  .cards-grid { display: flex; gap: 14px; align-items: stretch; }
+  .cards-grid.c4 { gap: 10px; }
+  .sl-card { flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 6px;
+    background: linear-gradient(163deg, color-mix(in srgb, var(--acc) 11%, transparent), color-mix(in srgb, var(--acc) 3%, transparent));
+    border: 1px solid color-mix(in srgb, var(--acc) 20%, transparent);
+    box-shadow: 0 20px 30px -26px color-mix(in srgb, var(--acc) 85%, transparent); }
+  .cd-badge { width: 29px; height: 29px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--bf); font-weight: 800; font-size: 13.5px; background: var(--acc); color: var(--sbg, #fff); margin-bottom: 3px; }
+  .cd-label { font-family: var(--bf); font-size: clamp(9.5px, 1.05vw, 11.5px); font-weight: 800; letter-spacing: 2.2px;
+    text-transform: uppercase; color: var(--acc); opacity: .9; }
+  .cd-title { font-size: clamp(14px, 1.6vw, 19px); font-weight: 800; line-height: 1.2; letter-spacing: -.2px; }
+  .cd-text { font-size: clamp(11.5px, 1.32vw, 15px); line-height: 1.45; opacity: .88; }
+  .cards-grid.c4 .cd-title { font-size: clamp(13px, 1.42vw, 17px); }
+  .cards-grid.c4 .cd-text { font-size: clamp(11px, 1.22vw, 14px); }
+
+  /* --- pull quote: oversized mark, big italic line, attribution rule --- */
+  .slide.quote-slide { justify-content: center; }
+  .quote-slide .sl-body { justify-content: center; }
+  .qt-mark { font-family: var(--tf); font-size: clamp(70px, 11vw, 130px); line-height: .6; color: var(--acc); opacity: .3; margin-bottom: 4px; }
+  .qt-text { font-family: var(--tf); font-style: italic; font-size: clamp(24px, 3.5vw, 44px); line-height: 1.16; letter-spacing: -.6px; max-width: 21ch; }
+  .quote-slide.with-img .qt-text { max-width: 100%; }
+  .qt-attr { display: flex; align-items: center; gap: 12px; margin-top: 24px; font-family: var(--bf);
+    font-size: clamp(12px, 1.35vw, 15px); font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; opacity: .82; }
+  .qt-attr::before { content: ""; width: 42px; height: 3px; border-radius: 2px; background: var(--acc); flex: none; }
+
+  /* --- stat row: 2-3 big-number cards --- */
+  .stats-row { display: flex; gap: 14px; align-items: stretch; }
+  .sr-card { flex: 1 1 0; min-width: 0; border-radius: 16px; padding: 28px 18px 26px; text-align: center;
+    background: linear-gradient(168deg, color-mix(in srgb, var(--acc) 12%, transparent), color-mix(in srgb, var(--acc) 3%, transparent));
+    border: 1px solid color-mix(in srgb, var(--acc) 20%, transparent);
+    box-shadow: 0 20px 30px -26px color-mix(in srgb, var(--acc) 85%, transparent); }
+  .sr-val { font-family: var(--tf); font-size: clamp(30px, 4.6vw, 60px); font-weight: 700; line-height: 1; letter-spacing: -1.5px; color: var(--acc); }
+  .sr-label { font-family: var(--bf); font-size: clamp(11px, 1.28vw, 14.5px); font-weight: 700; line-height: 1.35; opacity: .85; margin-top: 9px; }
+
+  /* --- highlight / callout box on any content slide --- */
+  .sl-callout { display: flex; gap: 11px; align-items: flex-start; margin-top: 12px; padding: 9px 15px; border-radius: 13px;
+    background: color-mix(in srgb, var(--acc) 8%, transparent);
+    border-left: 4px solid var(--acc); font-size: clamp(11.5px, 1.3vw, 15px); line-height: 1.45; }
+  .sl-callout .co-key { font-family: var(--bf); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--acc); flex: none; padding-top: 2px; }
+
+  /* --- closing slide: quiet, centred, one last thought --- */
+  .slide.close-slide { justify-content: center; align-items: center; text-align: center; }
+  .close-slide h2 { font-size: clamp(38px, 6vw, 74px); line-height: 1; letter-spacing: -1.4px; }
+  .close-slide .close-sub { font-size: clamp(15px, 1.9vw, 22px); font-weight: 600; opacity: .85; margin-top: 16px; max-width: 34ch; line-height: 1.4; }
+  .close-slide .close-rule { width: 78px; height: 4px; border-radius: 3px; margin: 24px auto 0;
+    background: linear-gradient(90deg, transparent, var(--acc), transparent); }
+  .close-slide::before { left: 50%; top: 50%; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--acc) 12%, transparent); }
+  .close-slide::after { left: 50%; top: 50%; width: 320px; height: 320px; margin: -160px 0 0 -160px; border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--acc) 9%, transparent); }
+
+  /* --- present-mode reveal personalities (the deck's animation metadata) --- */
+  #sl-present .anim-rise [data-reveal] { opacity: 0; transform: translateY(14px); transition: opacity .38s ease, transform .38s cubic-bezier(.2,.7,.3,1); }
+  #sl-present .anim-fade [data-reveal] { opacity: 0; transform: none; transition: opacity .45s ease; }
+  #sl-present .anim-zoom [data-reveal] { opacity: 0; transform: scale(.94); transition: opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1); }
+  #sl-present .anim-slide [data-reveal] { opacity: 0; transform: translateX(-18px); transition: opacity .36s ease, transform .36s cubic-bezier(.2,.7,.3,1); }
+  #sl-present [data-reveal].shown { opacity: 1 !important; transform: none !important; }
 
   /* ============ TALK WITH AI ============ */
   .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 210px); min-height: 440px; }
@@ -1460,6 +1541,10 @@
     .sl-imgstack { flex-direction: row; height: 130px; }
     .sl-imgbox { height: 165px; }
     .cmp { flex-direction: column; gap: 12px; }
+    /* premium layouts stack too — cards side by side get unreadable on a phone */
+    .cards-grid, .cards-grid.c4, .stats-row { flex-direction: column; gap: 10px; }
+    .hero-slide .hero-body { max-width: 100%; }
+    .qt-text { max-width: 100%; }
 
     /* modals + popups fit the viewport */
     .modal-scrim { padding: 22px 12px; }
@@ -1557,16 +1642,21 @@
   .nqempty { font-size: 12.5px; color: var(--muted); text-align: center; padding: 20px 12px; border: 1.5px dashed var(--line); border-radius: 12px; line-height: 1.5; margin: 4px 4px; }
 
   /* center chat host — the app's real #chat-wrap gets moved in here */
-  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--line); }
+  /* Header band: one solid brand colour, everything on it in white. --g2 is the
+     deepest tone in every theme's palette, so white stays legible on all 32 of them.
+     The panel's overflow:hidden clips the band to the rounded top corners. */
+  .nqchat .nqchath { display: flex; align-items: center; gap: 12px; padding: 18px 22px; background: var(--g2); color: #fff; border-bottom: 0; }
   .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
-  .nqchat .nqchath .t { font-weight: 800; font-size: 15px; } .nqchat .nqchath .s { font-size: 12.5px; color: var(--muted); }
-  .nqchat .nqchath .nqpill { margin-left: auto; flex: none; font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(180deg, var(--g1), var(--g2)); padding: 6px 13px; border-radius: 999px; }
+  .nqchat .nqchath .t { font-weight: 800; font-size: 15px; color: #fff; } .nqchat .nqchath .s { font-size: 12.5px; color: rgba(255,255,255,.8); }
+  /* the pill can't be the brand gradient any more — it would vanish into the band */
+  .nqchat .nqchath .nqpill { margin-left: auto; flex: none; font-size: 11.5px; font-weight: 800; color: #fff; background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.28); padding: 6px 13px; border-radius: 999px; }
   /* greeting + at-a-glance stats in the chat header */
-  .nqgreet-wrap { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-  .nqgreet { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 21px; letter-spacing: -.3px; line-height: 1.05; color: var(--ink); }
-  .nqgreet em { font-style: italic; color: var(--coral); }
-  .nqstats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); font-weight: 600; }
-  .nqstats span { white-space: nowrap; } .nqstats b { color: var(--coral); font-weight: 800; margin-right: 3px; }
+  .nqgreet-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .nqgreet { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(25px, 2.5vw, 33px); letter-spacing: -.4px; line-height: 1.04; color: #fff; }
+  .nqgreet em { font-style: italic; color: #fff; }
+  .nqstats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: rgba(255,255,255,.78); font-weight: 600; }
+  .nqstats span { white-space: nowrap; } .nqstats b { color: #fff; font-weight: 800; margin-right: 3px; }
   @media (max-width: 760px) { .nqstats { display: none; } }
   .nqchatbody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .nqchatbody #chat-wrap { flex: 1; min-height: 0; }
@@ -1941,7 +2031,7 @@
         <div class="bento-card" onclick="showView('slides')">
           <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 8.5h6"/><path d="M7 12h4"/></svg></div>
           <h3>Slides</h3>
-          <p>Turn notes into a full slide deck — title slide with a cover image, clean bullets, speaker notes — then export to PowerPoint, PDF or Google Slides.</p>
+          <p>Turn notes into a designed deck — cover photo, card grids, pull quotes, stat rows, timelines, speaker notes — then export to PowerPoint, PDF or Google Slides.</p>
           <span class="bento-go">Build my deck</span>
         </div>
         <div class="bento-card" onclick="showView('video')">
@@ -2104,7 +2194,7 @@
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
       <span class="eyebrow">From notes to deck</span>
       <h1 class="page-title">Slide <em>deck.</em></h1>
-      <p class="page-sub">Pick your material, a style, and how long you'll present — the AI builds a clean deck: a cover-image title slide, bullets, timelines, comparisons and a Key Takeaways summary, with the detail tucked into speaker notes. Export to PowerPoint, PDF or Google Slides.</p>
+      <p class="page-sub">Pick your material, a style, and how long you'll present — the AI builds a designed deck, not a bullet list: a cover-image title slide, full-bleed photo slides, card grids, pull quotes, stat rows, timelines and a Key Takeaways summary, with the detail tucked into speaker notes. No two slides in a row share a layout. Export to PowerPoint, PDF or Google Slides.</p>
 
       <div class="surface" id="sl-setup">
         <label class="field-label">Build from</label>
@@ -2185,14 +2275,6 @@
         <div class="vo-row">
           <label class="field-label">Narrator voice</label>
           <select class="txt-input" id="vo-voice"></select>
-        </div>
-        <div class="vo-row">
-          <label class="field-label">Length</label>
-          <select class="txt-input" id="vo-length">
-            <option value="auto" selected>Auto (match the deck)</option>
-            <option value="short">Short &amp; punchy</option>
-            <option value="detailed">More detailed</option>
-          </select>
         </div>
         <label class="vo-check"><input type="checkbox" id="vo-captions" checked> Burn in captions</label>
         <button class="btn-primary vo-go" id="vo-go" onclick="voGenerate()">&#9654;&nbsp; Generate video</button>
@@ -3065,11 +3147,7 @@ scheduleMath();
 // ================= WRITE MODE =================
 let wrDeckObj = null, wrQueue = [], wrCur = null, wrFirstRight = 0, wrTotal = 0, wrAwait = false, wrCurWrong = false;
 
-function openWrite() {
-  showView("write");
-  renderWriteDecks();
-  wrReset();
-}
+function openWrite() { showView("write"); }   // setup runs from VIEW_SETUP
 function renderWriteDecks() {
   const has = rvDecks.length > 0;
   $("wr-empty").classList.toggle("hidden", has);
@@ -3083,7 +3161,7 @@ function wrReset() {
   $("wr-done").classList.add("hidden");
 }
 function wrStart() {
-  wrDeckObj = rvDecks.find(d => d.id === $("wr-deck").value);
+  wrDeckObj = rvDecks.find(d => String(d.id) === String($("wr-deck").value));
   if (!wrDeckObj) return;
   wrQueue = [...(wrDeckObj.content.cards || [])].sort(() => Math.random() - .5).map(c => ({ ...c, tried: false }));
   wrTotal = wrQueue.length;
@@ -3300,7 +3378,7 @@ function slEffStyle() {
 }
 // font + accent CSS variables and the theme classes each slide root carries
 const _FB_TF = "'Instrument Serif',Georgia,serif", _FB_BF = "'Hanken Grotesk',system-ui,sans-serif";
-function slVars(s) { return `--acc:${s.accent}; --tf:${s.tf || _FB_TF}; --bf:${s.bf || _FB_BF};`; }
+function slVars(s) { return `--acc:${s.accent}; --tf:${s.tf || _FB_TF}; --bf:${s.bf || _FB_BF}; --sbg:${s.bg}; --sfg:${s.fg};`; }
 function slDecoCls(s) { return `th-${s.head || "serif"} deco-${s.deco || "dots"}`; }
 
 let slStyle = "auto", slDeck = null;
@@ -3398,25 +3476,35 @@ DESIGN LAWS (follow all):
 1. ONE idea per slide. One clear message, one takeaway. Never mix multiple topics on a slide.
 ${law2}
 3. Deeper explanation and anything extra goes in "notes" (the speaker's script).
-4. SHOW RELATIONSHIPS, don't just list. Prefer timeline / steps / compare / stat layouts over plain bullets whenever the content fits — that is what makes a deck feel designed.
+4. SHOW RELATIONSHIPS, don't just list. Prefer timeline / steps / compare / cards / stat layouts over plain bullets whenever the content fits — that is what makes a deck feel designed.
 5. Use section dividers before each major new topic.
-6. The VERY LAST slide must be a "takeaways" slide summarizing the 3 most important points.
+6. LAYOUT VARIETY IS THE POINT. Never use the same "type" on two slides in a row, and never let one type cover more than about a third of the deck. A deck of identical bullet slides is a failure no matter how good the words are. Use at least FIVE different types across the deck.
+7. The VERY LAST slide must be a "takeaways" slide summarizing the 3 most important points.
 
 Slide types — choose each to FIT its content, do NOT make them all the same:
 ${bulletsType}
+- {"type":"cards","heading":"...","cards":[{"label":"1-2 word tag","title":"2-4 word title","text":"one concise clause of 8-14 words"}],"notes":"..."}  (EXACTLY 3 or 4 cards — for parallel items: features, causes, categories, pillars, types)
 - {"type":"timeline","heading":"...","events":[{"when":"year/label","what":"short phrase or brief clause"}],"image":true,"imgqueries":["subject1","subject2"],"notes":"..."}  (chronological content)
 - {"type":"steps","heading":"...","steps":[{"title":"step name (2-4 words)","detail":"brief point or short clause"}],"image":true,"imgqueries":["subject1","subject2"],"notes":"..."}  (a process/sequence)
 - {"type":"compare","heading":"...","left":{"title":"...","points":["brief point"]},"right":{"title":"...","points":["brief point"]},"notes":"..."}  (contrast two things)
-- {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"a short phrase","notes":"..."}  (spotlight one striking fact)
+- {"type":"stat","heading":"optional label","big":"the number or key fact","caption":"a short phrase","notes":"..."}  (spotlight ONE striking fact)
+- {"type":"stats","heading":"...","stats":[{"value":"73%","label":"3-6 word label"}],"notes":"..."}  (EXACTLY 2 or 3 related numbers side by side — only with real figures from the material)
+- {"type":"hero","heading":"a short punchy line (2-6 words)","sub":"one supporting sentence","imgquery":"a specific photo subject","notes":"..."}  (a full-bleed photo slide that opens a big idea — use ONCE or twice, early)
+- {"type":"quote","quote":"a real quotation or a sharp defining statement from the material","attribution":"who said it, or the source","notes":"..."}  (a pull quote — only when the material genuinely contains one)
 - {"type":"section","heading":"section title","imgquery":"a specific photo subject for this section's topic"}  (divider before a major new topic; the image becomes a dimmed background)
 - {"type":"takeaways","heading":"Key Takeaways","bullets":["one-line takeaway","one-line takeaway","one-line takeaway"],"notes":"..."}  (the final slide; here bullets may be a full short sentence each)
 
-Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 2 non-bullet relationship layouts (timeline/steps/compare/stat) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" slide a single "imgquery". (Only "compare", "stat" and "takeaways" go without images.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."}` },
+Any "bullets", "timeline", "steps" or "cards" slide MAY also carry "callout": "one short high-value line — a warning, a why-it-matters, or the number that anchors the slide" (roughly 10-18 words). Use it on about a third of slides, never on two slides in a row.
+
+Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 3 non-bullet layouts (cards/timeline/steps/compare/stat/stats/hero/quote) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" and "hero" slide a single "imgquery". (Only "compare", "stat", "stats", "cards", "quote" and "takeaways" go without images — those layouts are designed to carry the slide on their own.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."} Also give EVERY slide a "transition": one short spoken sentence (under 12 words) that hands off to the next slide — the last slide's transition closes the talk instead.` },
       { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 12000) }
-    ], true, Math.min(4600, 1400 + n * 230));
+    ], true, Math.min(6000, 1700 + n * 300));
     const d = parseAIJson(raw);
-    d.slides = (d.slides || []).filter(s => s.heading);
+    // a slide is real if it carries SOMETHING to show — quote and stat slides
+    // legitimately have no heading, so don't judge them all by that one field
+    d.slides = (d.slides || []).filter(s => s && (s.heading || s.quote || s.big));
     if (!d.slides.length) throw new Error("Couldn't build slides from that — try more material.");
+    slNormalizeDeck(d);
     slDeck = d;
     slDeck.theme = SL_THEMES[(d.theme || "").toLowerCase()] ? (d.theme || "").toLowerCase() : undefined;
     slDeck.themeVar = undefined;                  // pick a fresh random theme variant for this deck
@@ -3435,8 +3523,143 @@ Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count).
   $("sl-go").disabled = false;
 }
 
+// ============ DESIGN-QUALITY PASS ============
+// The model is asked for varied, uncrowded slides — but asking isn't guaranteeing.
+// This pass is the guarantee: it caps how much can land on one slide, breaks up runs
+// of one layout, alternates image sides, and stamps each slide with the animation
+// personality Present mode uses. Everything here is deterministic, so a deck can't
+// come back as fifteen identical bullet slides no matter how the model behaves.
+const SL_MAX = { bullets: 5, tk: 4, cards: 4, stats: 3, steps: 5, events: 5, points: 4 };
+function slTidyText(t, max) {
+  let v = String(t == null ? "" : t).replace(/\s+/g, " ").trim();
+  if (v.length <= max) return v;
+  const cut = v.slice(0, max);
+  const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("; "));
+  if (stop > max * 0.55) return cut.slice(0, stop + 1).trim();
+  return cut.slice(0, cut.lastIndexOf(" ") > 0 ? cut.lastIndexOf(" ") : max).replace(/[,;:—-]+$/, "").trim() + "…";
+}
+// "**Lead term** — the explanation" is the shape our bullets already use, which maps
+// exactly onto a card. That's what lets a run of bullet slides become a card grid.
+function slBulletToCard(b) {
+  const raw = String(b || "").trim();
+  const m = raw.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*([\s\S]*)$/);
+  if (m && m[1]) return { label: "", title: slTidyText(m[1], 34), text: slTidyText(m[2], 120) };
+  const parts = raw.replace(/\*\*/g, "").split(/\s+[—–]\s+|:\s+/);
+  if (parts.length > 1 && parts[0].length <= 34) return { label: "", title: slTidyText(parts[0], 34), text: slTidyText(parts.slice(1).join(" "), 120) };
+  const words = raw.replace(/\*\*/g, "").split(/\s+/);
+  return { label: "", title: slTidyText(words.slice(0, 3).join(" "), 34), text: slTidyText(words.slice(3).join(" "), 120) };
+}
+function slCardsFromBullets(sl) {
+  const bs = (sl.bullets || []).filter(Boolean).slice(0, SL_MAX.cards);
+  if (bs.length < 3) return false;                       // 1-2 cards looks broken, not designed
+  const leads = bs.filter(b => /^\*\*.+?\*\*/.test(String(b)) || /\s[—–]\s|:\s/.test(String(b))).length;
+  if (leads < Math.ceil(bs.length / 2)) return false;    // no lead-term shape → nothing to split on
+  sl.cards = bs.map(slBulletToCard);
+  sl.type = "cards";
+  delete sl.bullets;
+  slNoSideImage(sl);       // a card grid wants the full width, not 60% of it
+  return true;
+}
+// Layouts that fill the canvas themselves never take the side photo slot — squeezing
+// four cards into 60% of the width is exactly the crowding this pass exists to prevent.
+const SL_FULLWIDTH = ["cards", "stats", "compare", "takeaways", "quote", "stat"];
+function slNoSideImage(sl) { sl.image = false; delete sl.imgs; delete sl.img; delete sl.imgqueries; }
+function slNormalizeDeck(d) {
+  const slides = d.slides || [];
+  const arr = (v, n) => (Array.isArray(v) ? v.filter(Boolean).slice(0, n) : []);
+  slides.forEach((sl, i) => {
+    sl.type = String(sl.type || "bullets").toLowerCase();
+    // a demotion must not create a new repetition — check what it would sit between
+    const nearStat = t => (i > 0 && /^stats?$/.test(slides[i - 1].type)) || (i + 1 < slides.length && /^stats?$/.test(String(slides[i + 1].type || "").toLowerCase()));
+    sl.heading = slTidyText(sl.heading, 72);
+    if (sl.callout) sl.callout = slTidyText(sl.callout, 150);
+    if (sl.transition) sl.transition = slTidyText(sl.transition, 120);
+    // cap every collection so no slide can be overcrowded
+    if (sl.bullets) sl.bullets = arr(sl.bullets, sl.type === "takeaways" ? SL_MAX.tk : SL_MAX.bullets).map(b => slTidyText(b, 170));
+    if (sl.cards) sl.cards = arr(sl.cards, SL_MAX.cards).map(c => (typeof c === "string" ? slBulletToCard(c) : {
+      label: slTidyText(c.label, 18), title: slTidyText(c.title, 34), text: slTidyText(c.text, 130),
+    })).filter(c => c.title || c.text);
+    if (sl.stats) sl.stats = arr(sl.stats, SL_MAX.stats).map(x => ({ value: slTidyText(x.value, 12), label: slTidyText(x.label, 46) })).filter(x => x.value);
+    if (sl.steps) sl.steps = arr(sl.steps, SL_MAX.steps).map(x => ({ title: slTidyText(x.title, 40), detail: slTidyText(x.detail, 150) }));
+    if (sl.events) sl.events = arr(sl.events, SL_MAX.events).map(x => ({ when: slTidyText(x.when, 26), what: slTidyText(x.what, 150) }));
+    [sl.left, sl.right].forEach(c => { if (c) { c.title = slTidyText(c.title, 40); c.points = arr(c.points, SL_MAX.points).map(p => slTidyText(p, 130)); } });
+    if (sl.quote) { sl.quote = slTidyText(sl.quote, 210); sl.attribution = slTidyText(sl.attribution, 60); }
+    if (sl.big) sl.big = slTidyText(sl.big, 22);
+    if (sl.caption) sl.caption = slTidyText(sl.caption, 110);
+    if (sl.sub) sl.sub = slTidyText(sl.sub, 130);
+    // demote layouts that came back too thin to look designed
+    if (sl.type === "cards" && (!sl.cards || sl.cards.length < 2)) {
+      // one card is not a grid. A short one becomes the centred statement layout
+      // (which is a real design), a long one folds back into bullets.
+      const one = (sl.cards || [])[0];
+      if (one && String(one.title || "").length <= 28 && !nearStat()) { sl.big = one.title; sl.caption = one.text || sl.caption; sl.type = "stat"; }
+      else { sl.bullets = (sl.cards || []).map(c => "**" + c.title + "** — " + c.text); sl.type = "bullets"; }
+      delete sl.cards;
+    }
+    if (sl.type === "stats" && (!sl.stats || sl.stats.length < 2)) {
+      const one = (sl.stats || [])[0];
+      if (one) { sl.big = one.value; sl.caption = one.label; sl.type = "stat"; } else sl.type = "bullets";
+      delete sl.stats;
+    }
+    if (sl.type === "quote" && !sl.quote) sl.type = "bullets";
+    if (sl.type === "hero" && !sl.heading) sl.type = "bullets";
+    if (SL_FULLWIDTH.indexOf(sl.type) >= 0) slNoSideImage(sl);
+  });
+  // never the same layout twice in a row where we can help it. Bullets whose points
+  // have the "**lead** — explanation" shape re-cut cleanly into a card grid; a repeated
+  // card grid folds back the other way. Anything that can't convert cleanly is left
+  // alone — a slightly repeated layout beats a mangled one.
+  for (let i = 1; i < slides.length; i++) {
+    const prev = slides[i - 1], cur = slides[i];
+    if (prev.type !== cur.type) continue;
+    if (cur.type === "bullets") { slCardsFromBullets(cur); continue; }
+    if (cur.type === "cards" && cur.cards) { cur.bullets = cur.cards.map(x => "**" + x.title + "** — " + x.text); cur.type = "bullets"; delete cur.cards; }
+  }
+  // if the deck is still mostly one layout, convert the qualifying bullet slides to cards
+  const count = t => slides.filter(s => s.type === t).length;
+  for (let i = 0; i < slides.length && count("bullets") > Math.ceil(slides.length / 2.5); i++) {
+    if (slides[i].type === "bullets" && (i === 0 || slides[i - 1].type !== "cards")) slCardsFromBullets(slides[i]);
+  }
+  // callouts are a spice, not a seasoning — never two in a row, and never on a slide
+  // that is already at its content cap (measured: max bullets + a callout fills the
+  // 1280x720 export frame to within a couple of pixels, so a two-line heading would spill)
+  slides.forEach((sl, i) => {
+    if (!sl.callout) return;
+    const dense = (sl.bullets || []).length >= SL_MAX.bullets || (sl.events || []).length >= SL_MAX.events ||
+      (sl.steps || []).length >= SL_MAX.steps;
+    if (dense || (i && slides[i - 1].callout)) delete sl.callout;
+  });
+  // the deck has to land: last slide is the summary
+  const last = slides[slides.length - 1];
+  if (last && last.type !== "takeaways") {
+    const pts = slides.filter(s => s.heading && s.type !== "section").slice(-3).map(s => s.heading);
+    if (pts.length) slides.push({ type: "takeaways", heading: "Key Takeaways", bullets: pts, notes: last.notes || "" });
+  }
+  // alternate which side the picture sits on across the slides that actually have one,
+  // and stamp the reveal personality each layout animates with
+  const ANIM = { cards: "rise", stats: "zoom", timeline: "slide", steps: "rise", compare: "zoom", takeaways: "rise", bullets: "fade" };
+  let imgN = 0;
+  slides.forEach((sl, i) => {
+    if (sl.image || (sl.imgs && sl.imgs.length)) sl.imgSide = (imgN++ % 2) ? "left" : "right";
+    sl.anim = sl.anim || ANIM[sl.type] || (i % 2 ? "rise" : "fade");
+  });
+  return d;
+}
+// Roughly how long a slide takes to present, from its notes (≈150 spoken words/min).
+function slSpeakSecs(sl) {
+  const n = String((sl && sl.notes) || "").split(/\s+/).filter(Boolean).length;
+  return Math.max(15, Math.round((n / 150) * 60 / 5) * 5);
+}
+
 function slBold(t, accent) { return esc(String(t || "")).replace(/\*\*(.+?)\*\*/g, '<b style="color:' + accent + '">$1</b>'); }
-function slNotesHtml(sl, wantNotes) { return (wantNotes && sl.notes) ? `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes)}</div>` : ""; }
+function slNotesHtml(sl, wantNotes) {
+  if (!wantNotes || (!sl.notes && !sl.transition)) return "";
+  const meta = [];
+  if (sl.transition) meta.push(`<em>Then:</em> ${esc(sl.transition)}`);
+  if (sl.notes) meta.push(`<em>~${slSpeakSecs(sl)}s</em> on this slide`);
+  return `<div class="sl-notes"><b>Speaker notes:</b> ${esc(sl.notes || "")}` +
+    (meta.length ? `<span class="sl-nmeta">${meta.join(" &nbsp;·&nbsp; ")}</span>` : "") + `</div>`;
+}
 function slImgSlot(sl, i, s) {
   const imgs = (sl.imgs && sl.imgs.length) ? sl.imgs : (sl.img ? [sl.img] : []);
   if (imgs.length > 1) {
@@ -3450,20 +3673,41 @@ function slImgSlot(sl, i, s) {
 function slSlideHtml(sl, i, s, wantNotes, section) {
   const num = `<span class="sl-num" style="color:${s.fg};">${i + 2}</span>`;
   const type = sl.type || "bullets";
+  const anim = "anim-" + (sl.anim || "fade");
+  // ---- hero: one photo, one line, nothing else competing with it ----
+  if (type === "hero") {
+    const cov = sl.img
+      ? `<div class="sl-cover" style="background-image:url('${sl.img}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
+      : "";
+    return `<div class="slide hero-slide ${anim} ${slDecoCls(s)}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; ${slVars(s)}">${cov}
+        <div class="hero-body">
+          <div class="hero-rule"></div>
+          <h2 ${CE} data-e="heading">${esc(sl.heading || "")}</h2>
+          ${sl.sub ? `<div class="hero-sub" ${CE} data-e="sub">${esc(sl.sub)}</div>` : ""}
+        </div>${num}</div>` + slNotesHtml(sl, wantNotes);
+  }
+  // ---- pull quote: the line is the design ----
+  if (type === "quote") {
+    return `<div class="slide quote-slide ${anim} ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">
+        <div class="qt-mark" aria-hidden="true">&ldquo;</div>
+        <div class="qt-text" data-reveal ${CE} data-e="quote">${esc(sl.quote || "")}</div>
+        ${sl.attribution ? `<div class="qt-attr" data-reveal><span ${CE} data-e="attribution">${esc(sl.attribution)}</span></div>` : ""}
+      </div>${num}</div>` + slNotesHtml(sl, wantNotes);
+  }
   if (type === "section")
     { const cov = sl.img
         ? `<div class="sl-cover" style="background-image:url('${sl.img}')"></div><div class="sl-cover-veil" style="--tbg:${s.titleBg};"></div>`
         : "";
-      return `<div class="slide section-slide sl-sec${i % 4} ${slDecoCls(s)}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; ${slVars(s)}">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
+      return `<div class="slide section-slide sl-sec${i % 4} ${anim} ${slDecoCls(s)}${sl.img ? " has-cover" : ""}" data-si="${i}" style="background-color:${s.titleBg}; color:${s.titleFg}; ${slVars(s)}">${cov}<div class="sec-kicker">Section</div><h2 class="sl-big" ${CE} data-e="sec-heading">${esc(sl.heading || "")}</h2><div class="sec-rule"></div>${num}</div>` + slNotesHtml(sl, wantNotes); }
   if (type === "stat")
-    return `<div class="slide stat-slide ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}">
+    return `<div class="slide stat-slide ${anim} ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}">
         <div class="sl-stat" ${CE} data-e="stat-big" style="color:${s.accent};">${esc(sl.big || "")}</div>
         ${sl.heading ? `<h3 class="sl-stat-h" ${CE} data-e="stat-heading">${esc(sl.heading)}</h3>` : ""}
         ${sl.caption ? `<p class="sl-cap" ${CE} data-e="stat-caption">${esc(sl.caption)}</p>` : ""}${num}</div>` + slNotesHtml(sl, wantNotes);
   if (type === "takeaways") {
     const items = (sl.bullets || []).map((b, k) =>
       `<li class="tk-item" data-reveal><span class="tk-check" style="background:${s.accent}; color:${s.bg};">&#10003;</span><span ${CE} data-e="tk" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("");
-    return `<div class="slide tk-slide ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">
+    return `<div class="slide tk-slide ${anim} ${slDecoCls(s)}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">
         <div class="sl-eyebrow" style="color:${s.accent};">Summary</div>
         <h2 ${CE} data-e="heading" style="color:${s.accent};">${esc(sl.heading || "Key Takeaways")}</h2>
         <ul class="tk-list">${items}</ul></div>${num}</div>` + slNotesHtml(sl, wantNotes);
@@ -3480,12 +3724,29 @@ function slSlideHtml(sl, i, s, wantNotes, section) {
   } else if (type === "compare") {
     const col = (c, side) => `<div class="cmp-col" data-reveal style="border-color:${s.accent}55;"><b ${CE} data-e="cmp-title" data-side="${side}" style="color:${s.accent};">${esc((c && c.title) || "")}</b><ul>${((c && c.points) || []).map((p, k) => `<li><span ${CE} data-e="cmp-point" data-side="${side}" data-i="${k}">${slBold(p, s.accent)}</span></li>`).join("")}</ul></div>`;
     body = `<div class="cmp">${col(sl.left, "left")}${col(sl.right, "right")}</div>`;
+  } else if (type === "cards") {
+    const cds = sl.cards || [];
+    body = `<div class="cards-grid${cds.length > 3 ? " c4" : ""}">` + cds.map((c, k) =>
+      `<div class="sl-card" data-reveal><span class="cd-badge">${k + 1}</span>` +
+      (c.label ? `<div class="cd-label" ${CE} data-e="cd-label" data-i="${k}">${esc(c.label)}</div>` : "") +
+      `<div class="cd-title" ${CE} data-e="cd-title" data-i="${k}">${esc(c.title || "")}</div>` +
+      (c.text ? `<div class="cd-text" ${CE} data-e="cd-text" data-i="${k}">${esc(c.text)}</div>` : "") +
+      `</div>`).join("") + `</div>`;
+  } else if (type === "stats") {
+    body = `<div class="stats-row">` + (sl.stats || []).map((x, k) =>
+      `<div class="sr-card" data-reveal><div class="sr-val" ${CE} data-e="sr-val" data-i="${k}">${esc(x.value || "")}</div>` +
+      `<div class="sr-label" ${CE} data-e="sr-label" data-i="${k}">${esc(x.label || "")}</div></div>`).join("") + `</div>`;
   } else {
     body = `<ul class="sl-bullets">${(sl.bullets || []).map((b, k) => `<li data-reveal style="color:${s.fg};"><span class="sl-dot" style="color:${s.accent};">&#9656;</span><span ${CE} data-e="bullet" data-i="${k}">${slBold(b, s.accent)}</span></li>`).join("")}</ul>`;
   }
+  const callout = sl.callout
+    ? `<div class="sl-callout" data-reveal><span class="co-key">Key</span><span ${CE} data-e="callout">${slBold(sl.callout, s.accent)}</span></div>`
+    : "";
   const slot = slImgSlot(sl, i, s);
-  const imgLeft = slot && (i % 2 === 1);
-  return `<div class="slide sl-content ${slDecoCls(s)}${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">${heading}${body}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
+  // alternate across the slides that ACTUALLY carry a picture (index parity would
+  // land two neighbouring image slides on the same side whenever a text slide sits between)
+  const imgLeft = slot && (sl.imgSide ? sl.imgSide === "left" : i % 2 === 1);
+  return `<div class="slide sl-content ${anim} ${slDecoCls(s)}${slot ? " with-img" : ""}${imgLeft ? " img-left" : ""}" data-si="${i}" style="background-color:${s.bg}; color:${s.fg}; ${slVars(s)}"><div class="sl-body">${heading}${body}${callout}</div>${slot}${num}</div>` + slNotesHtml(sl, wantNotes);
 }
 function slTitleHtml(s) {
   const hasCover = !!slDeck.cover;
@@ -3544,6 +3805,15 @@ function slEditSync(el) {
   else if (f === "cmp-point") { const c = col(); if (c && c.points) c.points[k] = withBold(); }
   else if (f === "stat-big") sl.big = plain();
   else if (f === "stat-caption") sl.caption = plain();
+  else if (f === "cd-label") { if (sl.cards && sl.cards[k]) sl.cards[k].label = plain(); }
+  else if (f === "cd-title") { if (sl.cards && sl.cards[k]) sl.cards[k].title = plain(); }
+  else if (f === "cd-text") { if (sl.cards && sl.cards[k]) sl.cards[k].text = plain(); }
+  else if (f === "sr-val") { if (sl.stats && sl.stats[k]) sl.stats[k].value = plain(); }
+  else if (f === "sr-label") { if (sl.stats && sl.stats[k]) sl.stats[k].label = plain(); }
+  else if (f === "quote") sl.quote = plain();
+  else if (f === "attribution") sl.attribution = plain();
+  else if (f === "sub") sl.sub = plain();
+  else if (f === "callout") sl.callout = withBold();
 }
 function slRender() {
   const s = slEffStyle();
@@ -3678,14 +3948,16 @@ async function slAutoImages() {
   for (const sl of deck.slides) {
     if (slDeck !== deck) break;
     if (sl.img || (sl.imgs && sl.imgs.length)) continue;
-    const isSection = sl.type === "section";
-    const wants = sl.image || (isSection && (sl.imgquery || (sl.imgqueries && sl.imgqueries.length)));
+    // section AND hero slides use ONE photo full-bleed behind the type; everything
+    // else gets the 2-3 picture collage beside the text
+    const isCover = sl.type === "section" || sl.type === "hero";
+    const wants = sl.image || (isCover && (sl.imgquery || (sl.imgqueries && sl.imgqueries.length) || sl.heading));
     if (!wants) continue;
     // collect the slide's image search terms (2-3 for content slides -> a small collage)
     let qs = Array.isArray(sl.imgqueries) ? sl.imgqueries.filter(Boolean) : [];
     if (sl.imgquery) qs.unshift(sl.imgquery);
     if (!qs.length && sl.heading) qs = [clean(sl.heading) + " " + topic];
-    qs = qs.slice(0, isSection ? 1 : 3);
+    qs = qs.slice(0, isCover ? 1 : 3);
     const headTopic = sl.heading ? clean(sl.heading) + " " + topic : "";
     const imgs = [];
     // fill each collage slot with a DISTINCT, not-yet-used photo
@@ -3700,7 +3972,7 @@ async function slAutoImages() {
       if (u && !imgs.includes(u)) imgs.push(u);
     }
     if (imgs.length && slDeck === deck) {
-      if (isSection) sl.img = imgs[0];
+      if (isCover) sl.img = imgs[0];
       else { sl.imgs = imgs; sl.img = imgs[0]; }
       any = true;
     }
@@ -3766,14 +4038,37 @@ async function slExportPptx() {
         sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 7.5, fill: { color: hex(s.titleBg), transparency: 26 }, line: { type: "none" } });
       } catch (e) {} }
       sd.addText(strip(sl.heading), { x: 0.8, y: 3, w: 11.7, h: 1.6, fontSize: 44, bold: true, italic: true, align: "center", color: hex(s.titleFg), fontFace: headFont });
-      if (sl.notes) sd.addNotes(sl.notes);
+      if (sl.notes || sl.transition) sd.addNotes((sl.notes || "") + (sl.transition ? "\n\nThen: " + sl.transition : ""));
+      return;
+    }
+    // hero: the photo IS the slide, headline over a tinted scrim
+    if (type === "hero") {
+      sd.background = { color: hex(s.titleBg) };
+      if (sl.img) { try {
+        sd.addImage({ data: sl.img, x: 0, y: 0, w: 13.33, h: 7.5, sizing: { type: "cover", w: 13.33, h: 7.5 } });
+        sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 7.5, fill: { color: hex(s.titleBg), transparency: 30 }, line: { type: "none" } });
+      } catch (e) {} }
+      try { sd.addShape(p.ShapeType.rect, { x: 0.85, y: 4.25, w: 1.4, h: 0.09, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
+      sd.addText(strip(sl.heading), { x: 0.85, y: 4.5, w: 11.6, h: 1.4, fontSize: 46, bold: true, color: hex(s.titleFg), fontFace: headFont });
+      if (sl.sub) sd.addText(strip(sl.sub), { x: 0.85, y: 5.9, w: 10.5, h: 0.9, fontSize: 20, color: hex(s.titleFg), fontFace: "Arial" });
+      if (sl.notes) sd.addNotes(sl.notes + (sl.transition ? "\n\nThen: " + sl.transition : ""));
+      return;
+    }
+    // pull quote: oversized italic line, attribution under an accent rule
+    if (type === "quote") {
+      sd.background = { color: hex(s.bg) };
+      sd.addText("“", { x: 0.9, y: 1.0, w: 3, h: 1.6, fontSize: 96, color: hex(s.accent), transparency: 65, fontFace: headFont });
+      sd.addText(strip(sl.quote), { x: 1.5, y: 2.2, w: 10.4, h: 2.8, fontSize: 32, italic: true, color: hex(s.fg), fontFace: headFont, valign: "middle" });
+      try { sd.addShape(p.ShapeType.rect, { x: 1.5, y: 5.3, w: 0.6, h: 0.05, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
+      if (sl.attribution) sd.addText(strip(sl.attribution).toUpperCase(), { x: 2.3, y: 5.05, w: 9, h: 0.5, fontSize: 13, bold: true, charSpacing: 2, color: hex(s.fg), fontFace: "Arial" });
+      if (sl.notes) sd.addNotes(sl.notes + (sl.transition ? "\n\nThen: " + sl.transition : ""));
       return;
     }
     sd.background = { color: hex(s.bg) };
     try { sd.addShape(p.ShapeType.rect, { x: 0, y: 0, w: 0.16, h: 7.5, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
     if (sl.heading) sd.addText(strip(sl.heading), { x: 0.7, y: 0.45, w: 12, h: 1.1, fontSize: 34, bold: true, italic: true, color: hex(s.accent), fontFace: headFont });
     const wide = !!sl.img;
-    const imgLeft = wide && (idx % 2 === 1);
+    const imgLeft = wide && (sl.imgSide ? sl.imgSide === "left" : idx % 2 === 1);
     const txX = wide ? (imgLeft ? 6.9 : 0.9) : 0.9;
     const imgX = imgLeft ? 0.7 : 7.9;
     const W = wide ? 6.6 : 11.7;
@@ -3788,6 +4083,28 @@ async function slExportPptx() {
       const colTx = c => [{ text: strip((c && c.title) || ""), options: { bold: true, color: hex(s.accent), fontSize: 20, paraSpaceAfter: 10 } }].concat(((c && c.points) || []).map(pt => ({ text: strip(pt), options: { bullet: { code: "2022" }, color: hex(s.fg), fontSize: 15, paraSpaceAfter: 8 } })));
       sd.addText(colTx(sl.left), { x: 0.7, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
       sd.addText(colTx(sl.right), { x: 6.9, y: 1.7, w: 5.7, h: 5, valign: "top", fontFace: "Arial" });
+    } else if (type === "cards") {
+      // real rounded cards, evenly divided across the width — not a bullet list in disguise
+      const cds = (sl.cards || []).slice(0, 4), n2 = cds.length || 1;
+      const gap = 0.32, left = 0.85, span = 11.63, cw = (span - gap * (n2 - 1)) / n2;
+      cds.forEach((c, k) => {
+        const x = left + k * (cw + gap);
+        try { sd.addShape(p.ShapeType.roundRect, { x, y: 2.0, w: cw, h: 3.5, rectRadius: 0.12, fill: { color: hex(s.accent), transparency: 92 }, line: { color: hex(s.accent), width: 1, transparency: 60 } }); } catch (e) {}
+        try { sd.addShape(p.ShapeType.roundRect, { x: x + 0.28, y: 2.28, w: 0.42, h: 0.42, rectRadius: 0.1, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
+        sd.addText(String(k + 1), { x: x + 0.28, y: 2.28, w: 0.42, h: 0.42, fontSize: 14, bold: true, align: "center", valign: "middle", color: hex(s.bg), fontFace: "Arial" });
+        if (c.label) sd.addText(strip(c.label).toUpperCase(), { x: x + 0.28, y: 2.85, w: cw - 0.56, h: 0.3, fontSize: 10, bold: true, charSpacing: 2, color: hex(s.accent), fontFace: "Arial" });
+        sd.addText(strip(c.title), { x: x + 0.28, y: c.label ? 3.15 : 2.9, w: cw - 0.56, h: 0.6, fontSize: 17, bold: true, color: hex(s.fg), fontFace: "Arial" });
+        if (c.text) sd.addText(strip(c.text), { x: x + 0.28, y: c.label ? 3.75 : 3.5, w: cw - 0.56, h: 1.5, fontSize: 13, color: hex(s.fg), fontFace: "Arial", valign: "top" });
+      });
+    } else if (type === "stats") {
+      const st = (sl.stats || []).slice(0, 3), n3 = st.length || 1;
+      const gap = 0.4, left = 1.2, span = 10.93, cw = (span - gap * (n3 - 1)) / n3;
+      st.forEach((x2, k) => {
+        const x = left + k * (cw + gap);
+        try { sd.addShape(p.ShapeType.roundRect, { x, y: 2.3, w: cw, h: 2.9, rectRadius: 0.12, fill: { color: hex(s.accent), transparency: 91 }, line: { color: hex(s.accent), width: 1, transparency: 60 } }); } catch (e) {}
+        sd.addText(strip(x2.value), { x, y: 2.7, w: cw, h: 1.2, fontSize: 46, bold: true, align: "center", color: hex(s.accent), fontFace: headFont });
+        sd.addText(strip(x2.label), { x: x + 0.2, y: 3.9, w: cw - 0.4, h: 1.0, fontSize: 14, align: "center", color: hex(s.fg), fontFace: "Arial", valign: "top" });
+      });
     } else if (type === "takeaways") {
       sd.addText((sl.bullets || []).map(b => ({ text: strip(b), options: { bullet: { code: "2713" }, color: hex(s.fg), fontSize: 22, bold: true, paraSpaceAfter: 18 } })), { x: 1.1, y: 1.9, w: 11.1, h: 4.6, valign: "middle", fontFace: "Arial" });
     } else {
@@ -3796,8 +4113,14 @@ async function slExportPptx() {
     // ONE image, sized with "contain" so PowerPoint AND Google Slides keep the aspect
     // ratio (Google ignores crop-based "cover" and stretches — this avoids that).
     { const pic = (sl.imgs && sl.imgs.length) ? sl.imgs[0] : sl.img;
-      if (pic) { try { sd.addImage({ data: pic, x: imgX, y: 1.9, w: 4.7, h: 3.6, sizing: { type: "contain", w: 4.7, h: 3.6 } }); } catch (e) {} } }
-    if (sl.notes) sd.addNotes(sl.notes);
+      // card and stat grids fill the whole canvas — an image there would sit on top of them
+      if (pic && type !== "cards" && type !== "stats") { try { sd.addImage({ data: pic, x: imgX, y: 1.9, w: 4.7, h: 3.6, sizing: { type: "contain", w: 4.7, h: 3.6 } }); } catch (e) {} } }
+    if (sl.callout) {
+      try { sd.addShape(p.ShapeType.roundRect, { x: 0.85, y: 6.0, w: 11.6, h: 0.85, rectRadius: 0.1, fill: { color: hex(s.accent), transparency: 92 }, line: { type: "none" } }); } catch (e) {}
+      try { sd.addShape(p.ShapeType.rect, { x: 0.85, y: 6.0, w: 0.07, h: 0.85, fill: { color: hex(s.accent) }, line: { type: "none" } }); } catch (e) {}
+      sd.addText(strip(sl.callout), { x: 1.15, y: 6.0, w: 11.1, h: 0.85, fontSize: 14, bold: true, color: hex(s.fg), fontFace: "Arial", valign: "middle" });
+    }
+    if (sl.notes || sl.transition) sd.addNotes((sl.notes || "") + (sl.transition ? "\n\nThen: " + sl.transition : ""));
   });
   const name = (slDeck.title || "Notiq deck").replace(/[^\w \-]+/g, "").slice(0, 60) || "Notiq deck";
   p.writeFile({ fileName: name + ".pptx" });
@@ -3891,18 +4214,64 @@ function voReset() {
   setStatus("vo-status", "");
 }
 
+// ---- how long a slide is allowed to be talked over ----
+// A slide stays on screen for exactly as long as its narration, so the narration
+// length IS the slide's screen time. Budget it from how much is actually ON the
+// slide: a three-word section divider gets a handful of words, a dense slide gets
+// more. Without this the model happily wrote 60 words over a three-word slide and
+// started explaining the NEXT topic while that slide was still up.
+function voWordBudget(s, i, lenMode) {
+  const mult = lenMode === "short" ? 0.62 : lenMode === "detailed" ? 1.45 : 1;
+  if (i === 0) return Math.round(42 * mult);                 // title / opening
+  if (!s) return 40;
+  if (s.type === "section") return Math.max(6, Math.round(13 * mult));   // just a transition
+  let w = 0;
+  const add = t => { w += String(t == null ? "" : t).trim().split(/\s+/).filter(Boolean).length; };
+  add(s.heading);
+  (s.bullets || []).forEach(add);
+  (s.events || []).forEach(e => { add(e.when); add(e.what); });
+  (s.steps || []).forEach(e => { add(e.title); add(e.detail); });
+  (s.cards || []).forEach(c => { add(c.label); add(c.title); add(c.text); });
+  (s.stats || []).forEach(x => { add(x.value); add(x.label); });
+  [s.left, s.right].filter(Boolean).forEach(c => { add(c.title); (c.points || []).forEach(add); });
+  add(s.big); add(s.caption); add(s.sub); add(s.quote); add(s.callout);
+  return Math.max(16, Math.min(95, Math.round((14 + w * 1.6) * mult)));
+}
+// Cut a segment down to its budget on a sentence boundary so it still sounds finished.
+function voFitWords(text, max) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  if (words.length <= max) return String(text || "");
+  const sentences = String(text).match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [String(text)];
+  let out = "", n = 0;
+  for (const sen of sentences) {
+    const c = sen.trim().split(/\s+/).filter(Boolean).length;
+    if (n && n + c > max * 1.2) break;
+    out += sen; n += c;
+    if (n >= max) break;
+  }
+  out = out.trim();
+  if (!out) out = words.slice(0, max).join(" ").replace(/[,;:—-]+$/, "") + ".";
+  return out;
+}
+
 // ---- grounded, teacher-style narration script ----
 async function voScriptGen() {
   const deck = slDeck;
-  const lenMode = $("vo-length").value;
+  const lenMode = "auto";   // narration length is derived from each slide's own content
   const slidesText = deck.slides.map((s, i) => {
     const b = [];
+    b.push("Narration budget: at most " + voWordBudget(s, i + 1, lenMode) + " spoken words");
     if (s.heading) b.push("Heading: " + s.heading);
     if (s.bullets) b.push("Points: " + s.bullets.map(x => String(x).replace(/\*\*/g, "")).join(" | "));
     if (s.events) b.push("Timeline: " + s.events.map(e => e.when + ": " + e.what).join(" | "));
     if (s.steps) b.push("Steps: " + s.steps.map(e => e.title + ": " + e.detail).join(" | "));
+    if (s.cards) b.push("Cards: " + s.cards.map(c => [c.label, c.title, c.text].filter(Boolean).join(" — ")).join(" | "));
+    if (s.stats) b.push("Figures: " + s.stats.map(x => x.value + " " + (x.label || "")).join(" | "));
     if (s.left || s.right) b.push("Compare: " + [s.left, s.right].filter(Boolean).map(c => (c.title || "") + " (" + ((c.points || []).join(", ")) + ")").join(" vs "));
     if (s.big) b.push("Key fact: " + s.big + (s.caption ? (" — " + s.caption) : ""));
+    if (s.quote) b.push("Quote: “" + s.quote + "”" + (s.attribution ? " — " + s.attribution : ""));
+    if (s.sub) b.push("Supporting line: " + s.sub);
+    if (s.callout) b.push("Callout: " + s.callout);
     if (s.notes) b.push("Notes: " + s.notes);
     return "SLIDE " + (i + 1) + " [" + (s.type || "bullets") + "]\n" + b.join("\n");
   }).join("\n\n");
@@ -3919,6 +4288,7 @@ HOW TO SPEAK:
 - CRITICAL — each segment narrates ONLY its own slide. NEVER describe, preview, or lead into the NEXT slide's content. The viewer is looking at THIS slide while you speak, so everything you say must be about what is on screen right now. A light connector at the very end ("Now…", "But there's a catch…") is fine, but do not start explaining the next topic.
 - NEVER read or enumerate bullet points; blend a slide's points into one flowing thought.
 - A "section" divider slide (just a short title, no body) gets only a SHORT spoken transition — announce the new section in a handful of words and stop (e.g. "Next, the causes." or "Now, how it actually works."). Never pad it; it must be read quickly and move on.
+- TIMING IS STRICT: each slide stays on screen for exactly as long as its narration takes to speak. Every slide below lists a "Narration budget" in words — your segment for that slide MUST fit inside it. A sparse slide with three words on it gets a short line, or the viewer stares at three words while you talk. Never borrow the next slide's content to fill time.
 - Sound like a real person talking: natural rhythm, plain words. Not stiff, not a script being read.
 - ${lenNote}
 - GROUND every sentence ONLY in the provided slide content and notes — never invent facts, names, or numbers; if a slide is thin, keep it to a few words.
@@ -3929,21 +4299,59 @@ HOW TO SPEAK:
   let segs = (Array.isArray(d.segments) ? d.segments : []).map(s => String(s || "").replace(/\s+/g, " ").trim());
   if (segs.length > need) segs = segs.slice(0, need);
   while (segs.length < need) segs.push("");
-  return segs;
+  // Enforce the budget ourselves — the model overruns it on sparse slides, and an
+  // overrun becomes dead screen time on a slide that has nothing left to look at.
+  return segs.map((s, i) => voFitWords(s, voWordBudget(i === 0 ? null : deck.slides[i - 1], i, lenMode)));
 }
 
-// ---- one TTS call for the whole narration (keeps us well under free-tier limits) ----
+// ---- one TTS call per slide, so each slide's audio matches its own screen time ----
+// Errors carry the provider's status so the caller can tell "wait for the quota to
+// refill" apart from "this is broken" — they need very different retry behaviour.
 async function voSynth(text, vObj, actx) {
   const r = await fetch("/api/tts", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text: text.slice(0, 7000), voice: vObj.gemini, ovoice: vObj.openai }),
   });
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || "Narration engine unavailable. Make sure GEMINI_API_KEY is set in Vercel."); }
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    const err = new Error(e.error || "Narration engine unavailable. Make sure GEMINI_API_KEY is set in Vercel.");
+    err.status = e.status || r.status;
+    err.rateLimited = err.status === 429 || /quota|rate.?limit|too many requests|resource.?exhausted/i.test(err.message);
+    throw err;
+  }
   const j = await r.json();
   const bin = atob(String(j.audio || "").split(",")[1] || "");
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return await actx.decodeAudioData(bytes.buffer);
+  return voTrimSilence(await actx.decodeAudioData(bytes.buffer), actx);
+}
+
+// Gemini TTS pads its output with silence — sometimes several seconds of it, and
+// more on a short line than a long one. Because a slide holds for its narration's
+// full duration, that padding was pure dead air with the slide frozen on screen.
+// Trim it (in 20ms windows so a stray sample doesn't fool us) so a slide lasts as
+// long as its speech and no longer.
+function voTrimSilence(buf, actx) {
+  try {
+    const sr = buf.sampleRate, n = buf.length, data = buf.getChannelData(0);
+    const win = Math.max(1, Math.round(sr * 0.02)), thr = 0.008;
+    const loud = w => {
+      const end = Math.min(n, (w + 1) * win);
+      for (let i = w * win; i < end; i++) if (Math.abs(data[i]) > thr) return true;
+      return false;
+    };
+    const wins = Math.ceil(n / win);
+    let a = 0, b = wins - 1;
+    while (a < wins && !loud(a)) a++;
+    while (b > a && !loud(b)) b--;
+    if (a >= b) return buf;                                     // all silence — leave it alone
+    let s = Math.max(0, a * win - Math.round(sr * 0.06));       // small lead-in
+    let e = Math.min(n, (b + 1) * win + Math.round(sr * 0.18)); // let the last word breathe
+    if (e - s >= n - Math.round(sr * 0.12)) return buf;         // nothing worth trimming
+    const out = actx.createBuffer(buf.numberOfChannels, e - s, sr);
+    for (let c = 0; c < buf.numberOfChannels; c++) out.getChannelData(c).set(buf.getChannelData(c).subarray(s, e));
+    return out;
+  } catch (err) { return buf; }
 }
 
 // ---- rasterize each slide (with the real theme) to a 1280x720 canvas ----
@@ -4037,9 +4445,14 @@ async function voRender(imgs, buffers, durs, says, burn, actx, onProgress) {
   buffers.forEach((b, i) => { if (!b) return; const src = actx.createBufferSource(); src.buffer = b; src.connect(dest); src.connect(actx.destination); src.start(t0 + starts[i]); });
   rec.start();
   await new Promise(resolve => {
+    let done = false, raf = 0, iv = 0, lastDraw = -1, lastPr = -1;
+    const stop = () => { if (done) return; done = true; cancelAnimationFrame(raf); clearInterval(iv); resolve(); };
     function frame() {
+      if (done) return;
       const now = actx.currentTime - t0;
-      if (now >= total) { resolve(); return; }
+      if (now >= total) { stop(); return; }
+      if (now - lastDraw < 0.011) return;    // rAF and the timer both drive this; don't draw twice
+      lastDraw = now;
       // current slide = the last one whose start time has passed
       let idx = 0;
       for (let i = 0; i < starts.length; i++) { if (now >= starts[i]) idx = i; else break; }
@@ -4055,10 +4468,16 @@ async function voRender(imgs, buffers, durs, says, burn, actx, onProgress) {
       }
       // caption shows only while this slide is actually being narrated
       if (burn && intoGap <= 0) voDrawCaption(ctx, says[idx] || "", W, H);
-      if (onProgress) onProgress(now / total);
-      requestAnimationFrame(frame);
+      if (onProgress && now - lastPr > 0.25) { lastPr = now; onProgress(now / total); }
     }
-    requestAnimationFrame(frame);
+    function loop() { if (done) return; frame(); raf = requestAnimationFrame(loop); }
+    raf = requestAnimationFrame(loop);
+    // requestAnimationFrame stops firing the moment the tab is hidden or the window
+    // is covered — but the narration is scheduled on the audio clock and keeps going.
+    // That froze the picture on one slide while the voice moved on to the next ones.
+    // Filming makes the tab audible, so its timers stay unthrottled: this interval
+    // keeps frames flowing (and the slides on time) even when the tab isn't visible.
+    iv = setInterval(frame, Math.round(1000 / FPS));
   });
   try { rec.stop(); } catch (e) {}
   return await finished;
@@ -4099,25 +4518,58 @@ async function voGenerate() {
       const h = (s.heading || "").trim();
       if (s.type === "section") return h || "Next section.";
       if (s.type === "takeaways") return "In short: " + (s.bullets || []).slice(0, 3).map(x => String(x).replace(/\*\*/g, "")).join(". ");
+      if (s.type === "quote") return (s.attribution ? s.attribution + " put it this way. " : "") + String(s.quote || "");
+      if (s.type === "hero") return [h, s.sub].filter(Boolean).join(". ");
+      if (s.cards && s.cards.length) return [h, s.cards.slice(0, 3).map(c => c.title).filter(Boolean).join(", ")].filter(Boolean).join(": ");
+      if (s.stats && s.stats.length) return [h, s.stats.map(x => x.value + " " + (x.label || "")).join(", ")].filter(Boolean).join(": ");
       if (s.big) return (h ? h + ". " : "") + String(s.big) + (s.caption ? ". " + s.caption : "");
       const pts = (s.bullets || []).slice(0, 2).map(x => String(x).replace(/\*\*/g, "")).join(". ");
       return [h, pts].filter(Boolean).join(". ") || h || "This slide.";
     };
     const buffers = [];
+    let paceMs = 220;   // grows once the provider pushes back, so we stop hammering it
     for (let i = 0; i < says.length; i++) {
-      setStatus("vo-status", "Recording narration… (" + (i + 1) + "/" + says.length + ")", false, true);
-      const text = ((says[i] || "").trim()) || slideFallback(i);
+      const label = "Recording narration… (" + (i + 1) + "/" + says.length + ")";
+      setStatus("vo-status", label, false, true);
+      // never send an empty string to the TTS API (it 400s, which would now abort the
+      // whole render) — a thin slide still gets something sayable
+      const text = ((says[i] || "").trim()) || (slideFallback(i) || "").trim() || (slDeck.title || "Next.");
       says[i] = text;   // keep captions + transcript aligned with what's actually spoken
-      if (!text) { buffers.push(null); continue; }
-      let buf = null;
-      for (let a = 0; a < 3 && !buf; a++) {
+      let buf = null, lastErr = null;
+      // The free TTS tier limits requests PER MINUTE. Quick successive retries all
+      // land inside the same window and all fail, which is how a video used to end up
+      // with narration that stops partway and silent slides after it. On a quota error
+      // wait past the window instead — and count down so it doesn't look frozen.
+      for (let a = 0; a < 4 && !buf; a++) {
         try { buf = await voSynth(text, vObj, actx); }
-        catch (e) { if (a === 2 && i === 0) throw e; if (a < 2) await new Promise(r => setTimeout(r, 1300)); }
+        catch (e) {
+          lastErr = e;
+          if (a === 3) break;
+          if (e.rateLimited) {
+            paceMs = Math.max(paceMs, 7000);
+            for (let s = [15, 30, 45][a] || 45; s > 0; s--) {
+              setStatus("vo-status", label + " — free narration quota is full, retrying in " + s + "s…", false, true);
+              await new Promise(r => setTimeout(r, 1000));
+            }
+          } else await new Promise(r => setTimeout(r, 1500 * (a + 1)));
+          setStatus("vo-status", label, false, true);
+        }
       }
+      // A silent slide makes the whole video wrong, so stop and say why rather than
+      // filming a deck the voice abandons halfway through.
+      if (!buf) throw new Error("Narration stopped at slide " + (i + 1) + " of " + says.length + ". " +
+        ((lastErr && lastErr.message) || "The narration engine didn't respond.") +
+        (lastErr && lastErr.rateLimited ? " Wait a minute for the quota to refill, then hit Generate again." : ""));
       buffers.push(buf);
-      await new Promise(r => setTimeout(r, 180));   // gentle pacing to respect free-tier limits
+      await new Promise(r => setTimeout(r, paceMs));
     }
-    const durs = buffers.map(b => b ? b.duration : 1.8);
+    // Screen time per slide = its narration, with a floor so a very short line
+    // (a section divider, a one-clause slide) doesn't flash past before it's read.
+    const durs = buffers.map((b, i) => {
+      const type = i === 0 ? "title" : ((slDeck.slides[i - 1] || {}).type || "bullets");
+      const floor = i === 0 ? 3 : type === "section" ? 1.9 : 2.6;
+      return Math.max(floor, b ? b.duration : 2);
+    });
     voScriptSegs = says; voMeta = says.map((s, i) => ({ say: s, seconds: durs[i] }));
     setStatus("vo-status", "Filming the video — this plays through in real time, hang tight…", false, true);
     const blob = await voRender(imgs, buffers, durs, says, burn, actx, pr => setStatus("vo-status", "Filming… " + Math.round(pr * 100) + "%", false, true));
@@ -5221,6 +5673,20 @@ function gateResources(statusId) {
 }
 
 // ================= VIEWS & PANELS =================
+// The games read their deck list from rvDecks, which is only fetched when Smart review
+// runs. Open a game first in a fresh session and the picker had nothing in it, so the
+// Start button had nothing to start — fetch on demand instead of assuming.
+async function ensureDecks() { if (!rvDecks.length) { try { await loadReviewDecks(); } catch (e) {} } }
+const VIEW_SETUP = {
+  write:  async () => { await ensureDecks(); renderWriteDecks(); wrReset(); },
+  match:  async () => { await ensureDecks(); renderMatchDecks(); mtReset(); },
+  blitz:  async () => { await ensureDecks(); renderArcadeDecks(); bzReset(); },
+  sprint: async () => { await ensureDecks(); renderArcadeDecks(); spReset(); },
+};
+// resolves once the current view's setup has finished — callers that need to touch the
+// view's controls (e.g. preselecting a deck) await this instead of racing the fetch
+let viewReady = null;
+
 function showView(name) {
   ttsStop();
   const ws = document.getElementById("nqhome");
@@ -5242,6 +5708,12 @@ function showView(name) {
   if (name === "video") setTimeout(voOpenTool, 0);
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   const tgt = $("view-" + name); if (tgt) tgt.classList.remove("hidden");
+  // A view's setup runs HERE, so it happens no matter which route opened it — a
+  // dashboard tile, the Study modes chooser, or a back link. Sprint was reachable
+  // only through the chooser, which calls showView() directly and skipped
+  // openSprint(), so its deck picker was never filled and "Start sprint" did nothing.
+  const setup = VIEW_SETUP[name];
+  if (setup) { try { viewReady = setup(); } catch (e) { viewReady = null; } }
   const rb = $("rb-home"); if (rb) rb.classList.toggle("active", name === "dashboard");
   closePanels();
   window.scrollTo({ top: 0 });
@@ -6906,14 +7378,11 @@ function renderMatchDecks() {
     if (cur && rvDecks.some(d => d.id === cur)) $("mt-deck").value = cur;
   }
 }
-function openMatch() {
-  showView("match");
-  renderMatchDecks();
-  mtReset();
-}
-function matchFromItem(id) {
+function openMatch() { showView("match"); }   // setup runs from VIEW_SETUP
+async function matchFromItem(id) {
   closeItemModal();
   openMatch();
+  await viewReady;               // the picker is filled asynchronously — don't race it
   $("mt-deck").value = id;
 }
 function mtReset() {
@@ -6923,7 +7392,7 @@ function mtReset() {
   $("mt-done").classList.add("hidden");
 }
 function mtStart() {
-  const deck = rvDecks.find(d => d.id === $("mt-deck").value);
+  const deck = rvDecks.find(d => String(d.id) === String($("mt-deck").value));
   if (!deck) return;
   mtDeckObj = deck;
   const cards = deck.content.cards || [];
@@ -6997,7 +7466,7 @@ function renderArcadeDecks() {
   if (sp.length) $("sp-deck").innerHTML = sp.map(d =>
     `<option value="${d.id}">${esc(d.title)} (${(d.content.cards || []).length} cards)</option>`).join("");
 }
-function openBlitz() { showView("blitz"); renderArcadeDecks(); bzReset(); }
+function openBlitz() { showView("blitz"); }   // setup runs from VIEW_SETUP
 function bzReset() {
   clearInterval(bzTimer); bzTimer = null;
   $("bz-setup").classList.remove("hidden");
@@ -7005,7 +7474,7 @@ function bzReset() {
   $("bz-done").classList.add("hidden");
 }
 function bzStart() {
-  bzDeck = rvDecks.find(d => d.id === $("bz-deck").value);
+  bzDeck = rvDecks.find(d => String(d.id) === String($("bz-deck").value));
   if (!bzDeck) return;
   const cards = bzDeck.content.cards || [];
   const n = Math.min(+$("bz-rounds").value, cards.length);
@@ -7083,7 +7552,7 @@ function bzFinish() {
 // ================= SPRINT =================
 let spDeck = null, spScore = 0, spTimer = null, spEnd = 0, spTruth = true;
 
-function openSprint() { showView("sprint"); renderArcadeDecks(); spReset(); }
+function openSprint() { showView("sprint"); }   // setup runs from VIEW_SETUP
 function spReset() {
   clearInterval(spTimer); spTimer = null;
   $("sp-setup").classList.remove("hidden");
@@ -7091,8 +7560,14 @@ function spReset() {
   $("sp-done").classList.add("hidden");
 }
 function spStart() {
-  spDeck = rvDecks.find(d => d.id === $("sp-deck").value);
-  if (!spDeck || (spDeck.content.cards || []).length < 2) return;
+  // compare as strings — a <select> value is always a string, so a numeric deck id
+  // would never match under ===, and the button would just quietly do nothing
+  spDeck = rvDecks.find(d => String(d.id) === String($("sp-deck").value));
+  if (!spDeck || (spDeck.content.cards || []).length < 2) {
+    $("sp-empty").classList.remove("hidden");   // say why instead of failing silently
+    return;
+  }
+  $("sp-empty").classList.add("hidden");
   spScore = 0;
   spEnd = Date.now() + 60000;
   $("sp-score").textContent = "0";
