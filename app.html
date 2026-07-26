@@ -1171,6 +1171,111 @@
   .res-option:hover { border-color: color-mix(in srgb, var(--amber) 50%, transparent); }
   .res-option input { accent-color: var(--coral); width: 16px; height: 16px; }
   .res-option .rdate { margin-left: auto; font-size: 12px; color: var(--muted); flex: none; }
+
+  /* ============ TOOL PAGES ============
+     One layout every generator page shares: a sparkle chip, the serif headline, one
+     short line of copy, and an animated illustration made from the same mini-art the
+     Create buttons use. Below that, cards lead with an icon + question instead of a
+     bare label, resources are pickable rows, and the action is one full-width CTA. */
+  :root { --spark: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M11 1.8l1.9 5.9 5.9 1.9-5.9 1.9-1.9 5.9-1.9-5.9L3.2 9.6l5.9-1.9z'/><path d='M18.6 14.2l.85 2.55 2.55.85-2.55.85-.85 2.55-.85-2.55L15.2 17.6l2.55-.85z'/></svg>"); }
+  .tool-hero { display: flex; align-items: center; gap: 30px; margin-bottom: 28px; }
+  .tool-hero-txt { flex: 1; min-width: 0; }
+  .tool-hero .page-sub { margin-bottom: 0; max-width: 44ch; }
+  .tool-hero h1.page-title { margin: 12px 0 8px; }
+
+  /* the eyebrow is now a chip with a twinkling sparkle */
+  .eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 11.5px; letter-spacing: .17em;
+    padding: 7px 15px 7px 12px; border-radius: 999px;
+    background: color-mix(in srgb, var(--coral) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--coral) 15%, transparent); }
+  .eyebrow::before { content: ""; flex: none; width: 15px; height: 15px; background: currentColor;
+    -webkit-mask: var(--spark) center/contain no-repeat; mask: var(--spark) center/contain no-repeat;
+    animation: twinkle 3.6s ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: .75; transform: scale(.9) rotate(0deg); } 50% { opacity: 1; transform: scale(1.08) rotate(12deg); } }
+
+  /* hero illustration — the Create-button art, enlarged over a soft drifting blob */
+  .tool-art { flex: none; width: 200px; height: 152px; position: relative; display: grid; place-items: center; }
+  .tool-art::before { content: ""; position: absolute; inset: 6px; animation: blobDrift 11s ease-in-out infinite;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--orb2) 17%, transparent), color-mix(in srgb, var(--orb2) 4%, transparent)); }
+  .tool-art .nqmini { position: relative; top: auto; right: auto; transform: scale(2.5); }
+  @keyframes blobDrift {
+    0%, 100% { border-radius: 46% 54% 58% 42% / 52% 44% 56% 48%; transform: rotate(0deg) scale(1); }
+    50%      { border-radius: 58% 42% 44% 56% / 44% 58% 42% 56%; transform: rotate(8deg) scale(1.04); }
+  }
+  /* a page hero has nothing to hover, so each illustration plays its move on a loop */
+  .tool-art .nqm-lines i:nth-child(2) { animation: artLine 4.2s ease-in-out infinite; }
+  .tool-art .nqm-lines i:nth-child(3) { animation: artLine2 4.2s ease-in-out infinite; }
+  @keyframes artLine  { 0%, 100% { width: 66%; } 50% { width: 100%; } }
+  @keyframes artLine2 { 0%, 100% { width: 86%; } 50% { width: 58%; } }
+  .tool-art .nqm-deck i:nth-child(1) { animation: artDeckL 4.6s ease-in-out infinite; }
+  .tool-art .nqm-deck i:nth-child(3) { animation: artDeckR 4.6s ease-in-out infinite; }
+  @keyframes artDeckL { 0%, 100% { transform: rotate(-8deg) translateX(-5px); } 50% { transform: rotate(-15deg) translateX(-11px) translateY(-2px); } }
+  @keyframes artDeckR { 0%, 100% { transform: rotate(7deg) translateX(5px); } 50% { transform: rotate(13deg) translateX(11px) translateY(-2px); } }
+  .tool-art .nqm-opts i.pick::after { animation: artCheck 4s ease-in-out infinite; }
+  @keyframes artCheck { 0%, 55%, 100% { transform: rotate(45deg) scale(.5); opacity: 0; } 70%, 90% { transform: rotate(45deg) scale(1); opacity: 1; } }
+  .tool-art .nqm-test i:nth-child(1)::before { animation: artTick 4.4s ease-in-out infinite; }
+  .tool-art .nqm-test i:nth-child(2)::before { animation: artTick 4.4s ease-in-out .18s infinite; }
+  .tool-art .nqm-test i:nth-child(3)::before { animation: artTick 4.4s ease-in-out .36s infinite; }
+  @keyframes artTick { 0%, 25%, 100% { background: color-mix(in srgb, var(--orb2) 20%, transparent); } 45%, 80% { background: var(--orb2); } }
+  .tool-art .nqm-slide .bar::after { animation: artBar 4.8s ease-in-out infinite; }
+  @keyframes artBar { 0%, 100% { width: 34%; } 55% { width: 82%; } }
+  .tool-art .nqm-video i::after { animation: artPlay 3.4s ease-in-out infinite; }
+  @keyframes artPlay { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-45%, -50%) scale(1.16); } }
+
+  /* card header: icon tile + the question it's asking + a quiet hint under it */
+  .card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .card-head .ch-ic { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+    color: var(--orb2); background: color-mix(in srgb, var(--orb2) 12%, transparent); }
+  .card-head .ch-ic svg { width: 23px; height: 23px; }
+  .card-head .ch-txt { min-width: 0; }
+  .card-head .ch-txt b { display: block; font-size: 17px; font-weight: 800; letter-spacing: -.2px; line-height: 1.2; }
+  .card-head .ch-txt span { display: block; font-size: 13.5px; color: var(--muted); margin-top: 3px; }
+  .surface .card-head + .res-picker { margin-bottom: 4px; }
+  /* a card with two sections (study guide: date, then material) separates them */
+  .surface .card-head:not(:first-child) { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
+
+  /* pickable resource rows */
+  .surface .res-picker { gap: 10px; max-height: 270px; padding: 2px; }
+  .surface .res-option { gap: 13px; padding: 13px 15px; border-radius: 14px; font-size: 14.5px; font-weight: 600;
+    transition: border-color .14s ease, background .14s ease, transform .14s ease; }
+  .surface .res-option:hover { border-color: color-mix(in srgb, var(--orb2) 45%, transparent); transform: translateY(-1px); }
+  .surface .res-option:has(input:checked) { border-color: var(--orb2); background: color-mix(in srgb, var(--orb2) 6%, var(--field)); }
+  .surface .res-option input { appearance: none; -webkit-appearance: none; flex: none; width: 23px; height: 23px; border-radius: 7px;
+    border: 2px solid color-mix(in srgb, var(--ink) 20%, transparent); background: var(--card1); position: relative; cursor: pointer;
+    transition: background .14s ease, border-color .14s ease; }
+  .surface .res-option input:checked { background: var(--orb2); border-color: var(--orb2); }
+  .surface .res-option input::after { content: ""; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px;
+    border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) scale(.3); opacity: 0; transition: transform .16s ease, opacity .16s ease; }
+  .surface .res-option input:checked::after { transform: rotate(45deg) scale(1); opacity: 1; }
+  .res-option .rico { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    color: var(--orb2); background: color-mix(in srgb, var(--orb2) 11%, transparent); }
+  .res-option .rico svg { width: 17px; height: 17px; }
+  .res-option .rname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* the one action on the card */
+  .btn-cta { width: 100%; display: flex; align-items: center; justify-content: center; gap: 11px; border: 0; cursor: pointer;
+    color: #fff; font-family: inherit; font-weight: 800; font-size: 16px; letter-spacing: -.1px; padding: 17px 28px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--g1), var(--g2)); position: relative; overflow: hidden;
+    box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--g2) 75%, transparent), inset 0 1px 0 rgba(255,255,255,.28);
+    transition: transform .14s ease, box-shadow .14s ease, filter .14s ease; }
+  .btn-cta::before { content: ""; width: 19px; height: 19px; flex: none; background: #fff;
+    -webkit-mask: var(--spark) center/contain no-repeat; mask: var(--spark) center/contain no-repeat; }
+  .btn-cta::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); transition: transform .6s ease;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent); }
+  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 20px 36px -14px color-mix(in srgb, var(--g2) 80%, transparent), inset 0 1px 0 rgba(255,255,255,.28); }
+  .btn-cta:hover::after { transform: translateX(120%); }
+  .btn-cta:disabled { filter: grayscale(.35) brightness(.95); cursor: default; transform: none; }
+  .btn-cta:disabled::after { display: none; }
+  .cta-row { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+
+  /* in the narrow Create panel the hero art has no room — the copy carries it */
+  #nq-viewer-body .tool-art { display: none; }
+  #nq-viewer-body .tool-hero { display: block; margin-bottom: 22px; }
+  @media (max-width: 820px) { .tool-art { display: none; } .tool-hero { display: block; } }
+  @media (prefers-reduced-motion: reduce) {
+    .tool-art::before, .tool-art .nqmini i, .tool-art .nqmini i::after, .tool-art .nqmini i::before,
+    .tool-art .nqm-slide .bar::after, .eyebrow::before { animation: none !important; }
+  }
   .btn-primary {
     border: 0; cursor: pointer; color: #fff;
     background: linear-gradient(180deg, var(--g1), var(--g2));
@@ -2197,12 +2302,20 @@
     <!-- SLIDES -->
     <div class="view hidden" id="view-slides">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">From notes to deck</span>
-      <h1 class="page-title">Slide <em>deck.</em></h1>
-      <p class="page-sub">Pick your material, a style, and how long you'll present — the AI builds a designed deck, not a bullet list: a cover-image title slide, full-bleed photo slides, card grids, pull quotes, stat rows, timelines and a Key Takeaways summary, with the detail tucked into speaker notes. No two slides in a row share a layout. Export to PowerPoint, PDF or Google Slides.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">From notes to deck</span>
+          <h1 class="page-title">Slide <em>deck.</em></h1>
+          <p class="page-sub">A designed deck, not a bullet list — photo slides, card grids, quotes and stat rows. Export to PowerPoint, PDF or Google Slides.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-slide"><i class="fr"></i><i class="bar"></i></span></div>
+      </div>
 
       <div class="surface" id="sl-setup">
-        <label class="field-label">Build from</label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+          <span class="ch-txt"><b>What's the deck about?</b><span>Select from your Resources, or paste material below</span></span>
+        </div>
         <div class="res-picker" id="sl-resources"></div>
         <label class="field-label">Or paste / type the material</label>
         <textarea class="paste-area" id="sl-text" maxlength="20000" placeholder="Paste notes here (optional if you picked a resource above)." style="min-height:110px;"></textarea>
@@ -2222,7 +2335,7 @@
             <select id="sl-notes"><option value="yes" selected>Include them</option><option value="no">No notes</option></select>
           </div>
         </div>
-        <div style="margin-top:20px;"><button class="btn-primary" id="sl-go" onclick="slGenerate()">Build my deck</button></div>
+        <div class="cta-row"><button class="btn-cta" id="sl-go" onclick="slGenerate()">Build my deck</button></div>
         <div class="status-line" id="sl-status"></div>
       </div>
 
@@ -2264,17 +2377,26 @@
     <!-- VIDEO OVERVIEW (tool) -->
     <div class="view hidden" id="view-video">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Video Overview</span>
-      <h1 class="page-title">Turn a deck into a <em>narrated video.</em></h1>
-      <p class="page-sub">Pick one of your saved slide decks. Notiq writes a teacher-style script grounded in it, narrates it with an AI voice, and films your animated slides into a shareable video with captions.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Video Overview</span>
+          <h1 class="page-title">Turn a deck into a <em>narrated video.</em></h1>
+          <p class="page-sub">An AI voice walks through one of your saved decks, with motion and captions.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-video"><i></i></span></div>
+      </div>
 
       <div class="surface" id="vo-empty" style="display:none; max-width:620px;">
         <p style="font-size:15.5px; line-height:1.6; margin:0;"><b>Save a slide deck first.</b> Video Overview works from a deck you've saved to a folder. <a href="#" onclick="showView('slides'); return false;" style="color:var(--coral); font-weight:800;">Build &amp; save a deck</a>, then come back here.</p>
       </div>
 
-      <div id="vo-form" style="display:none; max-width:560px;">
+      <div class="surface" id="vo-form" style="display:none; max-width:620px;">
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="13.5" height="13" rx="2.5"/><path d="M21.5 8.5v7l-5.5-3.5z"/></svg></span>
+          <span class="ch-txt"><b>Which deck should it narrate?</b><span>Pick one of your saved slide decks</span></span>
+        </div>
         <div class="vo-row">
-          <label class="field-label">Choose a saved deck</label>
+          <label class="field-label" style="margin-top:0;">Choose a saved deck</label>
           <select class="txt-input" id="vo-deck"></select>
         </div>
         <div class="vo-row">
@@ -2282,7 +2404,7 @@
           <select class="txt-input" id="vo-voice"></select>
         </div>
         <label class="vo-check"><input type="checkbox" id="vo-captions" checked> Burn in captions</label>
-        <button class="btn-primary vo-go" id="vo-go" onclick="voGenerate()">&#9654;&nbsp; Generate video</button>
+        <div class="cta-row"><button class="btn-cta" id="vo-go" onclick="voGenerate()">Generate video</button></div>
         <div class="vo-status" id="vo-status"></div>
       </div>
 
@@ -2437,15 +2559,23 @@
     <!-- FLASHCARDS -->
     <div class="view hidden" id="view-flashcards">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Bite-sized studying</span>
-      <h1 class="page-title">Generate <em>flashcards.</em></h1>
-      <p class="page-sub">Choose what to study from your imported resources. When the deck is ready, name it and pick a folder to save it in.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Bite-sized studying</span>
+          <h1 class="page-title">Generate <em>flashcards.</em></h1>
+          <p class="page-sub">Cards straight from your material — flip them, edit them, save the deck.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-deck"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What should the flashcards be about? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></span>
+          <span class="ch-txt"><b>What should the flashcards be about?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="fc-resources"></div>
         <label class="field-label">How many cards</label>
         <select id="fc-count"><option>10</option><option selected>15</option><option>20</option><option>30</option></select>
-        <div style="margin-top:22px;"><button class="btn-primary" id="fc-generate">Generate flashcards</button></div>
+        <div class="cta-row"><button class="btn-cta" id="fc-generate">Generate flashcards</button></div>
         <div class="status-line" id="fc-status"></div>
       </div>
       <div class="hidden" id="fc-output">
@@ -2495,15 +2625,23 @@
     <!-- QUIZ -->
     <div class="view hidden" id="view-quiz">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Test your knowledge</span>
-      <h1 class="page-title">Generate a <em>quiz.</em></h1>
-      <p class="page-sub">Multiple-choice questions built straight from your material.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Test your knowledge</span>
+          <h1 class="page-title">Generate a <em>quiz.</em></h1>
+          <p class="page-sub">Multiple-choice questions built straight from your material.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-opts"><i></i><i class="pick"></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What should the quiz cover? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10.5a3 3 0 1 1 4 2.8c-.9.4-1 .8-1 1.7"/><circle cx="12" cy="18.4" r=".8" fill="currentColor" stroke="none"/></svg></span>
+          <span class="ch-txt"><b>What should the quiz cover?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="qz-resources"></div>
         <label class="field-label">Number of questions</label>
         <select id="qz-count"><option>5</option><option selected>10</option><option>15</option></select>
-        <div style="margin-top:22px;"><button class="btn-primary" id="qz-generate">Generate quiz</button></div>
+        <div class="cta-row"><button class="btn-cta" id="qz-generate">Generate quiz</button></div>
         <div class="status-line" id="qz-status"></div>
       </div>
       <div class="hidden" id="qz-output">
@@ -2531,18 +2669,29 @@
     <!-- STUDY GUIDE -->
     <div class="view hidden" id="view-study">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Prepare for a test</span>
-      <h1 class="page-title">Build your <em>study guide.</em></h1>
-      <p class="page-sub">Pick the day of your exam and what you need to study — Notiq plans every day between now and then.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Prepare for a test</span>
+          <h1 class="page-title">Build your <em>study guide.</em></h1>
+          <p class="page-sub">Pick your exam day and your material — Notiq plans every day until then.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-test"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">When is your exam?</label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>
+          <span class="ch-txt"><b>When is your exam?</b><span>Pick the day on the calendar</span></span>
+        </div>
         <div class="exam-pick">
           <div class="cal" id="sg-cal"></div>
           <div class="exam-chosen" id="sg-chosen">No date selected yet.<br>Pick your exam day on the calendar.</div>
         </div>
-        <label class="field-label">What do you need to study? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="ch-txt"><b>What do you need to study?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="sg-resources"></div>
-        <div style="margin-top:22px;"><button class="btn-primary" id="sg-generate">Generate study guide</button></div>
+        <div class="cta-row"><button class="btn-cta" id="sg-generate">Generate study guide</button></div>
         <div class="status-line" id="sg-status"></div>
       </div>
       <div class="hidden" id="sg-output">
@@ -2561,13 +2710,21 @@
     <!-- NOTES -->
     <div class="view hidden" id="view-notes">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Detailed notes for any resource</span>
-      <h1 class="page-title">Upgrade your <em>notes.</em></h1>
-      <p class="page-sub">Select a resource and get clean, detailed, beautifully structured notes — better than what you started with.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Detailed notes for any resource</span>
+          <h1 class="page-title">Upgrade your <em>notes.</em></h1>
+          <p class="page-sub">Pick a resource and get clean, structured notes — better than what you started with.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-lines"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What should the notes cover? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h6M8 17h4"/></svg></span>
+          <span class="ch-txt"><b>What should the notes cover?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="nt-resources"></div>
-        <div style="margin-top:22px;"><button class="btn-primary" id="nt-generate">Generate notes</button></div>
+        <div class="cta-row"><button class="btn-cta" id="nt-generate">Generate notes</button></div>
         <div class="status-line" id="nt-status"></div>
       </div>
       <div class="hidden" id="nt-output">
@@ -2586,11 +2743,19 @@
     <!-- TEST -->
     <div class="view hidden" id="view-test">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">The full exam experience</span>
-      <h1 class="page-title">Sit a real <em>test.</em></h1>
-      <p class="page-sub">Three sections, just like the classroom: multiple choice, fill in the blank, then essays. Essays get graded with real feedback.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">The full exam experience</span>
+          <h1 class="page-title">Sit a real <em>test.</em></h1>
+          <p class="page-sub">Multiple choice, fill in the blank, then essays — graded with real feedback.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-test"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What's the test on? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+          <span class="ch-txt"><b>What's the test on?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="ts-resources"></div>
         <label class="field-label">Test length</label>
         <select id="ts-len">
@@ -2598,7 +2763,7 @@
           <option value="m" selected>Standard — 6 MCQ, 5 blanks, 2 essays</option>
           <option value="l">Long — 8 MCQ, 6 blanks, 3 essays</option>
         </select>
-        <div style="margin-top:22px;"><button class="btn-primary" id="ts-generate">Generate test</button></div>
+        <div class="cta-row"><button class="btn-cta" id="ts-generate">Generate test</button></div>
         <div class="status-line" id="ts-status"></div>
       </div>
       <div class="hidden" id="ts-output">
@@ -2626,13 +2791,21 @@
     <!-- TEACH IT BACK -->
     <div class="view hidden" id="view-teach">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">The Feynman technique</span>
-      <h1 class="page-title">Teach it <em>back.</em></h1>
-      <p class="page-sub">The fastest way to find your gaps: explain it like you're the teacher. Notiq picks a concept, you explain, it grades.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">The Feynman technique</span>
+          <h1 class="page-title">Teach it <em>back.</em></h1>
+          <p class="page-sub">Explain it like you're the teacher. Notiq picks a concept and grades you.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-modes"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What should Notiq test you on? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5z"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/></svg></span>
+          <span class="ch-txt"><b>What should Notiq test you on?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="tb-resources"></div>
-        <div style="margin-top:22px;"><button class="btn-primary" id="tb-generate">Ask me a question</button></div>
+        <div class="cta-row"><button class="btn-cta" id="tb-generate">Ask me a question</button></div>
         <div class="status-line" id="tb-status"></div>
       </div>
       <div class="hidden" id="tb-output">
@@ -2650,13 +2823,21 @@
     <!-- CRAM MODE -->
     <div class="view hidden" id="view-cram">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
-      <span class="eyebrow">Exam tomorrow?</span>
-      <h1 class="page-title">Cram <em>mode.</em></h1>
-      <p class="page-sub">One ruthless page: the ideas, terms and likely questions that actually earn marks. Read it, sleep, walk in ready.</p>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">Exam tomorrow?</span>
+          <h1 class="page-title">Cram <em>mode.</em></h1>
+          <p class="page-sub">One ruthless page: the ideas, terms and questions that actually earn marks.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-lines"><i></i><i></i><i></i></span></div>
+      </div>
       <div class="surface">
-        <label class="field-label">What's the exam on? <small>— select from your Resources</small></label>
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg></span>
+          <span class="ch-txt"><b>What's the exam on?</b><span>Select from your Resources</span></span>
+        </div>
         <div class="res-picker" id="cr-resources"></div>
-        <div style="margin-top:22px;"><button class="btn-primary" id="cr-generate">Make my cram sheet</button></div>
+        <div class="cta-row"><button class="btn-cta" id="cr-generate">Make my cram sheet</button></div>
         <div class="status-line" id="cr-status"></div>
       </div>
       <div class="hidden" id="cr-output">
@@ -6404,7 +6585,8 @@ function renderResPicker(prefix) {
   const el = $(prefix + "-resources");
   el.innerHTML = resources.length
     ? resources.map(r => `<label class="res-option"><input type="checkbox" value="${r.id}">
-        ${esc(r.name)}<span class="rdate">${new Date(r.created_at).toLocaleDateString()}</span></label>`).join("")
+        <span class="rico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span class="rname">${esc(r.name)}</span><span class="rdate">${new Date(r.created_at).toLocaleDateString()}</span></label>`).join("")
     : `<p class="empty-hint">Your library is empty. <a href="#" onclick="showView('import'); return false;" style="color:var(--coral); font-weight:800;">Add material or learn a topic</a> first.</p>`;
 }
 
