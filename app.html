@@ -1877,9 +1877,9 @@
   .nqtool.nqwide { grid-column: span 2; display: flex; align-items: center; gap: 12px; } .nqtool.nqwide .nqic { margin-bottom: 0; }
   /* every Create tool icon shares ONE colour that matches the logo orb and
      follows the selected palette (orb2 -> orb4, same hues as the .nqorb logo) */
-  .nqt1, .nqt2, .nqt3, .nqt4, .nqt5, .nqt6, .nqt7, .nqt8 { --tc: var(--orb2); }
-  .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
-  .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic, .nqt8 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .nqt1, .nqt2, .nqt3, .nqt4, .nqt5, .nqt6, .nqt7, .nqt8, .nqt9 { --tc: var(--orb2); }
+  .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic, .nqt5 .nqic,
+  .nqt6 .nqic, .nqt7 .nqic, .nqt8 .nqic, .nqt9 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
   /* Illustrations in each Create tool button: a layered little product shot on a soft
      tinted plate, cropped by the card's right edge so it reads bigger than the space it
@@ -1973,6 +1973,27 @@
     width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px;
     border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
   .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.16); }
+
+  /* Summary — a full page with the short version pulled out of it. Deliberately a
+     different silhouette from Notes, which is also a sheet of lines. */
+  .nqm-sum i:nth-child(1) { position: absolute; left: 0; top: 0; width: 43px; height: 40px; border-radius: 7px;
+    border: 1px solid var(--line); transform: rotate(-5deg); transition: transform .24s ease;
+    box-shadow: 0 7px 14px -8px color-mix(in srgb, var(--g2) 45%, transparent);
+    background:
+      linear-gradient(var(--ln), var(--ln)) 7px 8px / 28px 3px no-repeat,
+      linear-gradient(var(--ln), var(--ln)) 7px 15px / 22px 3px no-repeat,
+      linear-gradient(var(--ln), var(--ln)) 7px 22px / 29px 3px no-repeat,
+      linear-gradient(var(--ln), var(--ln)) 7px 29px / 18px 3px no-repeat,
+      var(--card1);
+    --ln: color-mix(in srgb, var(--ink) 14%, transparent); }
+  .nqm-sum i:nth-child(2) { position: absolute; right: 0; bottom: 1px; width: 36px; height: 17px; border-radius: 6px;
+    background: linear-gradient(150deg, var(--orb2), var(--orb4)); transition: transform .24s ease;
+    box-shadow: 0 8px 15px -7px color-mix(in srgb, var(--orb4) 80%, transparent);
+    background-image: linear-gradient(rgba(255,255,255,.85), rgba(255,255,255,.85)), linear-gradient(rgba(255,255,255,.6), rgba(255,255,255,.6)), linear-gradient(150deg, var(--orb2), var(--orb4));
+    background-size: 20px 2.5px, 14px 2.5px, 100% 100%;
+    background-position: 7px 5px, 7px 10px, 0 0; background-repeat: no-repeat; }
+  .nqtool:hover .nqm-sum i:nth-child(1) { transform: rotate(-10deg) translate(-3px, -2px); }
+  .nqtool:hover .nqm-sum i:nth-child(2) { transform: translate(3px, 2px); }
 
   /* Concept map — two nodes bracketed into a third */
   .nqm-map i { position: absolute; border-radius: 5px; background: var(--card1); border: 1px solid var(--line);
@@ -2114,12 +2135,13 @@
         </button>
         <div class="nqtools">
           <button class="nqtool nqt1" onclick="nqOpenTool('notes')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><span class="nqmini nqm-lines" aria-hidden="true"><i></i><i></i><i></i></span><b>Notes</b><span>Rewrite into notes</span></button>
+          <button class="nqtool nqt9" onclick="nqOpenTool('summary')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h16"/><path d="M4 19.5h16"/><path d="M12 7v3.6"/><path d="M9.6 8.6 12 11l2.4-2.4"/><path d="M12 17v-3.6"/><path d="M9.6 15.4 12 13l2.4 2.4"/></svg></div><span class="nqmini nqm-sum" aria-hidden="true"><i></i><i></i></span><b>Summary</b><span>The short version</span></button>
           <button class="nqtool nqt2" onclick="nqOpenTool('flashcards')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div><span class="nqmini nqm-deck" aria-hidden="true"><i></i><i></i><i></i></span><b>Flashcards</b><span>Flip to learn</span></button>
           <button class="nqtool nqt3" onclick="nqOpenTool('quiz')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11a3 3 0 1 1 4 2.8c-.9.4-1 .8-1 1.7"/><circle cx="12" cy="18" r=".7" fill="currentColor"/></svg></div><span class="nqmini nqm-opts" aria-hidden="true"><i></i><i class="pick"></i><i></i></span><b>Quiz</b><span>Multiple choice</span></button>
           <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><span class="nqmini nqm-test" aria-hidden="true"><i></i><i></i><i></i></span><b>Test</b><span>Exam-style</span></button>
           <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="nqmini nqm-slide" aria-hidden="true"><i class="fr"></i><i class="bar"></i></span><b>Slides</b><span>A designed deck</span></button>
           <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><span class="nqmini nqm-video" aria-hidden="true"><i></i></span><b>Video</b><span>Narrated overview</span></button>
-          <button class="nqtool nqt8 nqwide" onclick="openConceptMap()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="6.5" height="5" rx="1.4"/><rect x="14.5" y="9.5" width="6.5" height="5" rx="1.4"/><rect x="3" y="15.5" width="6.5" height="5" rx="1.4"/><path d="M9.5 6h3a2 2 0 0 1 2 2v1.5"/><path d="M9.5 18h3a2 2 0 0 0 2-2v-1.5"/></svg></div><div><b>Concept map</b><span>Boxes and arrows on your board</span></div><span class="nqmini nqm-map" aria-hidden="true"><i></i><i></i><i></i></span></button>
+          <button class="nqtool nqt8" onclick="openConceptMap()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="6.5" height="5" rx="1.4"/><rect x="14.5" y="9.5" width="6.5" height="5" rx="1.4"/><rect x="3" y="15.5" width="6.5" height="5" rx="1.4"/><path d="M9.5 6h3a2 2 0 0 1 2 2v1.5"/><path d="M9.5 18h3a2 2 0 0 0 2-2v-1.5"/></svg></div><b>Concept map</b><span>Boxes and arrows</span><span class="nqmini nqm-map" aria-hidden="true"><i></i><i></i><i></i></span></button>
           <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div><span class="nqmini nqm-modes" aria-hidden="true"><i></i><i></i><i></i></span></button>
         </div>
         <div class="nqclabel" style="margin-top:2px;"><span class="nqdot"></span> Saved</div>
@@ -2927,6 +2949,45 @@
       </div>
     </div>
 
+    <!-- SUMMARY -->
+    <div class="view hidden" id="view-summary">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <div class="tool-hero">
+        <div class="tool-hero-txt">
+          <span class="eyebrow">The short version</span>
+          <h1 class="page-title">Summarise <em>anything.</em></h1>
+          <p class="page-sub">Pick your material and get the gist — the main ideas, in order, with nothing padded.</p>
+        </div>
+        <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-sum"><i></i><i></i></span></div>
+      </div>
+      <div class="surface">
+        <div class="card-head">
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h16"/><path d="M4 19.5h16"/><path d="M12 7v3.6"/><path d="M9.6 8.6 12 11l2.4-2.4"/><path d="M12 17v-3.6"/><path d="M9.6 15.4 12 13l2.4 2.4"/></svg></span>
+          <span class="ch-txt"><b>What should I summarise?</b><span>Select from your Resources</span></span>
+        </div>
+        <div class="res-picker" id="sm-resources"></div>
+        <label class="field-label">How short?</label>
+        <select id="sm-len">
+          <option value="tight">Tight — the gist in a few lines</option>
+          <option value="standard" selected>Standard — the main ideas</option>
+          <option value="full">Detailed — section by section</option>
+        </select>
+        <div class="cta-row"><button class="btn-cta" id="sm-generate">Generate summary</button></div>
+        <div class="status-line" id="sm-status"></div>
+      </div>
+      <div class="hidden" id="sm-output">
+        <div class="save-bar">
+          <input class="txt-input" id="sm-title" maxlength="80" placeholder="Summary name (e.g. Chapter 4 — the short version)">
+          <select class="save-folder" id="sm-folder" title="Folder to save into"></select>
+          <button class="btn-primary" id="sm-save">Save</button>
+          <button class="btn-ghost" onclick="ttsToggle(this, stripMd(smResult ? smResult.markdown : ''))">Listen</button>
+          <button class="btn-ghost" onclick="printMarkdown($('sm-title').value.trim() || 'Summary', smResult ? smResult.markdown : '')">Print / PDF</button>
+          <span class="save-note" id="sm-save-note"></span>
+        </div>
+        <div class="md-out" id="sm-md"></div>
+      </div>
+    </div>
+
     <!-- TEST -->
     <div class="view hidden" id="view-test">
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
@@ -3294,7 +3355,7 @@ let currentFolderId = null;
 let fcDeck = null, fcIndex = 0;
 let qzData = null;
 let sgResult = null;
-let ntResult = null;
+let ntResult = null, smResult = null;
 let sgExamDate = null;
 let calCursor = new Date();
 
@@ -5298,7 +5359,9 @@ async function wbSaveBoard() {
   const name = $("wb-name").value.trim() || "Untitled board";
   if (!wb.objs.length) { setStatus("wb-status", "Draw something first.", true); return; }
   if (!wb.boardId && PLANS_ENABLED && userPlan !== "pro" && wbBoards.length >= FREE_LIMITS.boards) {
-    limitMsg($("wb-status"), `You've hit the free plan's ${FREE_LIMITS.boards}-whiteboard limit.`);
+    limitMsg($("wb-status"), FREE_LIMITS.boards === 1
+      ? "Free accounts can keep one saved whiteboard — boards are large, so they're a Pro perk beyond that."
+      : `You've hit the free plan's ${FREE_LIMITS.boards}-whiteboard limit.`);
     return;
   }
   const snap = wbSnapshot();
@@ -6042,7 +6105,7 @@ try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is p
 // NOTIQ_PLANS_ENABLED switch at the top — flip BOTH when plans return.)
 const PLANS_ENABLED = true;
 let userPlan = "free", genToday = 0;
-const FREE_LIMITS = { gens: 10, resources: 10, folders: 3, saved: 10, boards: 2 };
+const FREE_LIMITS = { gens: 10, resources: 10, folders: 3, saved: 10, boards: 1 };
 
 async function loadPlan() {
   try {
@@ -6270,8 +6333,8 @@ function nqRenderTip() {
 
 // ---- Open a Create tool INSIDE the Create pane (expand instead of full-screen) ----
 let nqCurrentTool = null;
-const NQ_TOOL_VIEW = { notes: "notes", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study", import: "import" };
-const NQ_TOOL_TITLE = { notes: "Notes", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
+const NQ_TOOL_VIEW = { notes: "notes", summary: "summary", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study", import: "import" };
+const NQ_TOOL_TITLE = { notes: "Notes", summary: "Summary", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
 let nqAddBaseCount = 0;
 function nqOpenTool(name) {
   const create = document.getElementById("nqcreate");
@@ -6796,8 +6859,8 @@ function renderAll() {
   renderPanelFolders();
   renderResList();
   updateDashStats();
-  ["fc", "qz", "sg", "nt", "tb", "cr", "ts"].forEach(p => renderResPicker(p));
-  ["fc", "qz", "sg", "nt", "cr", "ts"].forEach(p => renderFolderSelect(p));
+  ["fc", "qz", "sg", "nt", "sm", "tb", "cr", "ts"].forEach(p => renderResPicker(p));
+  ["fc", "qz", "sg", "nt", "sm", "cr", "ts"].forEach(p => renderFolderSelect(p));
 }
 
 function folderHue(name) {
@@ -7228,6 +7291,40 @@ $("nt-generate").addEventListener("click", async () => {
 });
 $("nt-save").addEventListener("click", () =>
   saveItem("notes", $("nt-title").value.trim(), ntResult, $("nt-folder").value, "nt-save-note"));
+
+// ================= SUMMARY =================
+// Same shape as Notes, but the job is the opposite: Notes expands the material into
+// better notes, this compresses it to the ideas that carry the meaning.
+const SM_LENGTHS = {
+  tight:    { label: "a very short summary", spec: "Around 120-180 words total. One short intro line, then 3-5 bullets — only the ideas the whole thing rests on. No sections." },
+  standard: { label: "a summary", spec: "Around 300-450 words. A one-paragraph overview, then '## Key points' with 5-8 bullets, then a one-line bottom line. Skip minor detail." },
+  full:     { label: "a detailed summary", spec: "Around 600-900 words. A short overview, then a '##' section per major part of the material with 2-4 bullets each, then '## Bottom line'. Still a summary — compress, never transcribe." },
+};
+$("sm-generate").addEventListener("click", async () => {
+  const ids = pickedResources("sm");
+  if (!ids.length) { setStatus("sm-status", "Select at least one resource.", true); return; }
+  if (!gateGenerate("sm-status")) return;
+  const mode = SM_LENGTHS[$("sm-len").value] || SM_LENGTHS.standard;
+  $("sm-generate").disabled = true;
+  setStatus("sm-status", "Reading it all and cutting it down...", false, true);
+  try {
+    const material = await getMaterial(ids);
+    const md = await groq([
+      { role: "system", content: "You are Notiq AI, an expert at summarising study material for a student. You compress without distorting: the summary must stand on its own, keep the material's own order and emphasis, and never invent facts, numbers or names that are not in the source. Respond in clean Markdown only." },
+      { role: "user", content: `Write ${mode.label} of this material in Markdown.\n\nLength and shape: ${mode.spec}\n\nRules: start with a '# ' title naming the subject; **bold** the handful of terms that matter most; keep every date, figure and name that changes the meaning, and drop the rest; write in plain sentences a student can read once and understand; do not add opinions, study tips or anything absent from the material.\n\n${material}` }
+    ], false);
+    smResult = { markdown: md };
+    $("sm-md").innerHTML = marked.parse(md);
+    $("sm-output").classList.remove("hidden");
+    $("sm-save-note").textContent = "";
+    setStatus("sm-status", "");
+    logActivity("generate");
+    $("sm-output").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { setStatus("sm-status", e.message, true); }
+  $("sm-generate").disabled = false;
+});
+$("sm-save").addEventListener("click", () =>
+  saveItem("summary", $("sm-title").value.trim(), smResult, $("sm-folder").value, "sm-save-note"));
 
 // ================= FOCUS TIMER =================
 let focusEndAt = null, focusTick = null, focusHiddenAt = null;
@@ -8073,7 +8170,7 @@ function spFinish() {
 }
 
 // ================= FOLDER VIEW & ITEM VIEWER =================
-const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", cram: "Cram sheet", test: "Test", slides: "Slide deck" };
+const TYPE_LABEL = { flashcards: "Flashcards", quiz: "Quiz", study_guide: "Study guide", notes: "Notes", summary: "Summary", cram: "Cram sheet", test: "Test", slides: "Slide deck" };
 
 let curFolder = null;
 
