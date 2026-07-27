@@ -2223,7 +2223,7 @@
             <div class="stat"><b id="stat-saved">0</b><span>things created</span></div>
             <div class="stat"><b id="stat-folders">0</b><span>folders</span></div>
             <div class="stat exam" id="stat-exam-wrap" style="display:none;"><b id="stat-exam">–</b><span id="exam-label">days until your exam</span></div>
-            <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used today"><b id="stat-gens">0/10</b><span>AI today</span></div>
+            <div class="stat hidden" id="stat-gens-wrap" title="Free plan: AI generations used in the last 12 hours"><b id="stat-gens">0/5</b><span>AI / 12h</span></div>
           </div>
           <div style="margin-top:18px;">
             <button class="learn-cta" onclick="showView('import')"><span class="plus">+</span>Add material — or learn something <em>new.</em></button>
@@ -3432,10 +3432,10 @@ async function logActivity(action) {
     if (error) { activityBroken = true; return; }
     activityDays[day] = (activityDays[day] || 0) + 1;
     if (action === "generate") {
-      genToday++;
+      genTimes.push(Date.now());
       updateGenStat();
-      if (PLANS_ENABLED && userPlan !== "pro" && genToday === FREE_LIMITS.gens) {
-        showLimitToast(`<b>That was your last free generation for today</b> — you've used all ${FREE_LIMITS.gens}. They reset tomorrow, or go unlimited for $8.99/mo.`);
+      if (PLANS_ENABLED && userPlan !== "pro" && genUsed() === FREE_LIMITS.gens) {
+        showLimitToast(`<b>That was your last free generation for now</b> — you've used all ${FREE_LIMITS.gens} for this 12 hours. The next one frees up in ${fmtWait(genResetInMs())}, or go unlimited for $8.99/mo.`);
       }
     }
     renderStreak();
@@ -6104,8 +6104,29 @@ try { localStorage.removeItem("notiq_donate_hide"); } catch (e) {}   // bar is p
 // button, the gen counter and the pricing page. (pricing.html has a matching
 // NOTIQ_PLANS_ENABLED switch at the top — flip BOTH when plans return.)
 const PLANS_ENABLED = true;
-let userPlan = "free", genToday = 0;
-const FREE_LIMITS = { gens: 10, resources: 10, folders: 3, saved: 10, boards: 1 };
+let userPlan = "free";
+const FREE_LIMITS = { gens: 5, resources: 8, folders: 3, saved: 8, boards: 1 };
+// Generations are capped over a ROLLING 12 hours, not a calendar day, so we keep the
+// timestamps rather than a count — entries age out while the tab stays open, and this
+// stays exact without another round trip. The free cap is 5, so the list is tiny.
+const GEN_WINDOW_MS = 12 * 60 * 60 * 1000;
+let genTimes = [];
+function genUsed() {
+  const cut = Date.now() - GEN_WINDOW_MS;
+  genTimes = genTimes.filter(t => t > cut);
+  return genTimes.length;
+}
+function genResetInMs() {
+  const cut = Date.now() - GEN_WINDOW_MS;
+  const live = genTimes.filter(t => t > cut).sort((a, b) => a - b);
+  return live.length ? Math.max(0, live[0] + GEN_WINDOW_MS - Date.now()) : 0;
+}
+function fmtWait(ms) {
+  const mins = Math.max(1, Math.round(ms / 60000));
+  if (mins < 60) return mins + " min";
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return h + "h" + (m ? " " + m + "m" : "");
+}
 
 async function loadPlan() {
   try {
@@ -6119,10 +6140,12 @@ async function loadPlan() {
     if (userPlan === "pro" && data.plan_until && new Date(data.plan_until) < new Date()) userPlan = "free";
   } catch (e) { userPlan = "free"; }   // profiles table not created yet -> treat as free
   try {
-    const { count } = await sb.from("activity").select("id", { count: "exact", head: true })
-      .eq("day", dayISO(0)).eq("action", "generate");
-    genToday = count || 0;
-  } catch (e) {}
+    const since = new Date(Date.now() - GEN_WINDOW_MS).toISOString();
+    const { data } = await sb.from("activity").select("created_at")
+      .eq("action", "generate").gte("created_at", since)
+      .order("created_at", { ascending: false }).limit(60);
+    genTimes = (data || []).map(r => new Date(r.created_at).getTime()).filter(t => !isNaN(t));
+  } catch (e) { genTimes = []; }
   updateProUI();
 }
 function updateProUI() {
@@ -6153,8 +6176,10 @@ function updateGenStat() {
   wrap.classList.toggle("hidden", !PLANS_ENABLED || userPlan === "pro");
   if (!PLANS_ENABLED || userPlan === "pro") return;
   const el = $("stat-gens");
-  el.textContent = Math.min(genToday, FREE_LIMITS.gens) + "/" + FREE_LIMITS.gens;
-  el.style.color = genToday >= FREE_LIMITS.gens ? "#a33520" : "";
+  const used = genUsed();
+  el.textContent = Math.min(used, FREE_LIMITS.gens) + "/" + FREE_LIMITS.gens;
+  el.style.color = used >= FREE_LIMITS.gens ? "#a33520" : "";
+  el.title = used >= FREE_LIMITS.gens ? "Next generation in " + fmtWait(genResetInMs()) : FREE_LIMITS.gens + " generations per 12 hours";
 }
 let toastTimer = null;
 function showLimitToast(text) {
@@ -6171,8 +6196,8 @@ function limitMsg(el, text) {
 }
 function gateGenerate(statusId) {
   if (!PLANS_ENABLED || userPlan === "pro") return true;
-  if (genToday >= FREE_LIMITS.gens) {
-    limitMsg($(statusId), `You've used all ${FREE_LIMITS.gens} free AI generations for today.`);
+  if (genUsed() >= FREE_LIMITS.gens) {
+    limitMsg($(statusId), `You've used all ${FREE_LIMITS.gens} free AI generations for this 12 hours — the next one frees up in ${fmtWait(genResetInMs())}.`);
     return false;
   }
   return true;
