@@ -1786,8 +1786,33 @@
       radial-gradient(circle, rgba(255,255,255,.55) 42%, transparent 45%) 67% 72%/2px 2px no-repeat,
       radial-gradient(circle, rgba(255,255,255,.7) 42%, transparent 45%) 78% 34%/2.5px 2.5px no-repeat,
       radial-gradient(circle, rgba(255,255,255,.4) 42%, transparent 45%) 88% 62%/2px 2px no-repeat,
-      radial-gradient(circle, rgba(255,255,255,.5) 42%, transparent 45%) 47% 78%/2px 2px no-repeat,
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120' preserveAspectRatio='none'><path d='M-10 96 C 80 46 150 108 236 62 S 360 22 410 34' fill='none' stroke='white' stroke-opacity='.13' stroke-width='2.5'/><path d='M-10 112 C 90 70 160 118 250 80 S 370 46 410 56' fill='none' stroke='white' stroke-opacity='.07' stroke-width='2'/></svg>") right bottom/72% 100% no-repeat; }
+      radial-gradient(circle, rgba(255,255,255,.5) 42%, transparent 45%) 47% 78%/2px 2px no-repeat; }
+
+  /* Two swells drifting under the greeting. Each path is drawn twice as wide as the
+     viewBox and slid by exactly one pattern length, so the loop is seamless — no jump,
+     no visible start. Crest heights alternate (7, 5, 4, 6 units) instead of repeating a
+     single sine, which is what keeps it reading as water rather than a moving rope.
+     The drift is linear on purpose: easing a continuous loop makes it visibly stall at
+     each cycle. The ease-in-out lives on the vertical swell, which does reverse. The two
+     lines run at different periods and offsets, so they never line up. */
+  /* higher specificity than ".nqchath > *", which would otherwise force position:relative */
+  .nqchat .nqchath .nqwaves { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+    /* fade in from the left so the swells live on the open right side and never wash
+       across the greeting or the stat labels */
+    -webkit-mask-image: linear-gradient(90deg, transparent 4%, rgba(0,0,0,.25) 32%, #000 68%);
+    mask-image: linear-gradient(90deg, transparent 4%, rgba(0,0,0,.25) 32%, #000 68%); }
+  .nqwaves path { fill: none; stroke: #fff; vector-effect: non-scaling-stroke; }
+  .nqwaves .wv { transform-box: view-box; transform-origin: 50% 50%; }
+  .nqwaves .wv1 path { stroke-opacity: .15; stroke-width: 2.4; animation: waveDrift 20s linear infinite; }
+  .nqwaves .wv2 path { stroke-opacity: .085; stroke-width: 2; animation: waveDrift 26s linear infinite; animation-delay: -9s; }
+  .nqwaves .wv1 { animation: waveSwellA 12s ease-in-out infinite; }
+  .nqwaves .wv2 { animation: waveSwellB 16s ease-in-out infinite; animation-delay: -6s; }
+  @keyframes waveDrift { from { transform: translateX(0); } to { transform: translateX(-400px); } }
+  /* ~3px of rise and fall, plus a touch of vertical scale so the crests swell rather
+     than the whole line sliding up and down */
+  @keyframes waveSwellA { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(3.5px) scaleY(1.16); } }
+  @keyframes waveSwellB { 0%, 100% { transform: translateY(1px) scaleY(1.08); } 50% { transform: translateY(-2.5px) scaleY(.9); } }
+  @media (prefers-reduced-motion: reduce) { .nqwaves .wv, .nqwaves .wv path { animation: none; } }
   .nqchat .nqchath > * { position: relative; z-index: 1; }
   .nqchat .nqchath .nqcxorb { width: 30px; height: 30px; border-radius: 9px; background: radial-gradient(120% 120% at 30% 25%, var(--orb1), var(--orb2) 55%, var(--orb4)); flex: none; }
   .nqchat .nqchath .t { font-weight: 800; font-size: 15px; color: #fff; } .nqchat .nqchath .s { font-size: 12.5px; color: rgba(255,255,255,.8); }
@@ -1852,9 +1877,9 @@
   .nqtool.nqwide { grid-column: span 2; display: flex; align-items: center; gap: 12px; } .nqtool.nqwide .nqic { margin-bottom: 0; }
   /* every Create tool icon shares ONE colour that matches the logo orb and
      follows the selected palette (orb2 -> orb4, same hues as the .nqorb logo) */
-  .nqt1, .nqt2, .nqt3, .nqt4, .nqt5, .nqt6, .nqt7 { --tc: var(--orb2); }
+  .nqt1, .nqt2, .nqt3, .nqt4, .nqt5, .nqt6, .nqt7, .nqt8 { --tc: var(--orb2); }
   .nqt1 .nqic, .nqt2 .nqic, .nqt3 .nqic, .nqt4 .nqic,
-  .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .nqt5 .nqic, .nqt6 .nqic, .nqt7 .nqic, .nqt8 .nqic { background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
 
   /* Illustrations in each Create tool button: a layered little product shot on a soft
      tinted plate, cropped by the card's right edge so it reads bigger than the space it
@@ -1949,6 +1974,25 @@
     border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
   .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.16); }
 
+  /* Concept map — two nodes bracketed into a third */
+  .nqm-map i { position: absolute; border-radius: 5px; background: var(--card1); border: 1px solid var(--line);
+    box-shadow: 0 5px 10px -6px color-mix(in srgb, var(--g2) 50%, transparent); transition: transform .24s ease; }
+  .nqm-map i:nth-child(1) { left: 0; top: 3px; width: 25px; height: 14px; }
+  .nqm-map i:nth-child(2) { left: 0; bottom: 3px; width: 25px; height: 14px; }
+  .nqm-map i:nth-child(3) { right: 0; top: 50%; margin-top: -9px; width: 27px; height: 18px; border: 0;
+    background: linear-gradient(150deg, var(--orb2), var(--orb4));
+    box-shadow: 0 7px 13px -7px color-mix(in srgb, var(--orb4) 75%, transparent); }
+  .nqm-map i:nth-child(1)::after, .nqm-map i:nth-child(2)::after, .nqm-map i:nth-child(3)::before {
+    content: ""; position: absolute; top: 50%; margin-top: -1px; width: 9px; height: 2px; border-radius: 2px;
+    background: color-mix(in srgb, var(--orb2) 50%, transparent); }
+  .nqm-map i:nth-child(1)::after, .nqm-map i:nth-child(2)::after { left: 100%; }
+  .nqm-map i:nth-child(3)::before { right: 100%; width: 8px; }
+  .nqm-map::after { content: ""; position: absolute; left: 34px; top: 10px; bottom: 10px; width: 2px; border-radius: 2px;
+    background: color-mix(in srgb, var(--orb2) 50%, transparent); }
+  .nqtool:hover .nqm-map i:nth-child(3) { transform: translateX(3px); }
+  .nqtool:hover .nqm-map i:nth-child(1) { transform: translateX(-2px); }
+  .nqtool:hover .nqm-map i:nth-child(2) { transform: translateX(-2px); }
+
   /* Study modes — a target you keep hitting */
   .nqm-modes { top: 50%; right: 14px; width: 46px; height: 46px; transform: translateY(-50%) scale(.86); transform-origin: 100% 50%; }
   .nqm-modes i { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%;
@@ -1987,6 +2031,14 @@
   .nqfolders .nqfrow .nqfic { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
   .nqfolders .nqfrow .nqfic svg { width: 15px; height: 15px; }
   .nqfolders .nqfrow .nqfnm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* make a folder without leaving the panel */
+  .nqfnew { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 9px 10px; border-radius: 11px;
+    border: 1.5px dashed color-mix(in srgb, var(--coral) 26%, transparent); background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--coral); transition: .14s; }
+  .nqfnew:hover { background: color-mix(in srgb, var(--coral) 8%, transparent); border-color: var(--coral); }
+  .nqfnew .nqfnew-ic { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--coral) 12%, transparent); }
+  .nqfnew .nqfnew-ic svg { width: 15px; height: 15px; }
   .nqfolders .nqfrow .nqftag { flex: none; font-size: 10px; font-weight: 800; color: var(--muted); background: color-mix(in srgb, var(--coral) 9%, transparent); padding: 2px 7px; border-radius: 999px; }
   .nqfolders .nqfempty { font-size: 12px; color: var(--muted); padding: 6px 10px; }
 
@@ -2025,6 +2077,10 @@
     <!-- MAIN: CHAT (the app's real chat is moved in here at init) -->
     <section class="nqpanel nqchat">
       <div class="nqchath">
+        <svg class="nqwaves" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <g class="wv wv1"><path d="M0 74 C 33 67, 67 67, 100 74 C 133 81, 167 81, 200 74 C 233 70, 267 70, 300 74 C 333 80, 367 80, 400 74 C 433 67, 467 67, 500 74 C 533 81, 567 81, 600 74 C 633 70, 667 70, 700 74 C 733 80, 767 80, 800 74"/></g>
+          <g class="wv wv2"><path d="M0 95 C 33 100, 67 100, 100 95 C 133 88, 167 88, 200 95 C 233 100, 267 100, 300 95 C 333 89, 367 89, 400 95 C 433 100, 467 100, 500 95 C 533 88, 567 88, 600 95 C 633 100, 667 100, 700 95 C 733 89, 767 89, 800 95"/></g>
+        </svg>
         <div class="nqgreet-wrap">
           <div class="nqgreet" id="nq-greet">Welcome back.</div>
           <div class="nqstats" id="nq-stats">
@@ -2063,10 +2119,15 @@
           <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><span class="nqmini nqm-test" aria-hidden="true"><i></i><i></i><i></i></span><b>Test</b><span>Exam-style</span></button>
           <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="nqmini nqm-slide" aria-hidden="true"><i class="fr"></i><i class="bar"></i></span><b>Slides</b><span>A designed deck</span></button>
           <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><span class="nqmini nqm-video" aria-hidden="true"><i></i></span><b>Video</b><span>Narrated overview</span></button>
+          <button class="nqtool nqt8 nqwide" onclick="openConceptMap()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="6.5" height="5" rx="1.4"/><rect x="14.5" y="9.5" width="6.5" height="5" rx="1.4"/><rect x="3" y="15.5" width="6.5" height="5" rx="1.4"/><path d="M9.5 6h3a2 2 0 0 1 2 2v1.5"/><path d="M9.5 18h3a2 2 0 0 0 2-2v-1.5"/></svg></div><div><b>Concept map</b><span>Boxes and arrows on your board</span></div><span class="nqmini nqm-map" aria-hidden="true"><i></i><i></i><i></i></span></button>
           <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div><span class="nqmini nqm-modes" aria-hidden="true"><i></i><i></i><i></i></span></button>
         </div>
         <div class="nqclabel" style="margin-top:2px;"><span class="nqdot"></span> Saved</div>
         <div class="nqfolders" id="nq-folders"></div>
+        <button class="nqfnew" onclick="openPanel('folder')">
+          <span class="nqfnew-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          New folder
+        </button>
         <div class="nqtip-c" id="nq-tip" title="A new study tip every day">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg>
           <span><span class="nqtip-lbl">Tip </span><span id="nq-tip-text">Loading today's tip…</span></span>
@@ -5345,14 +5406,26 @@ function wbClear() {
   wbDraw();
 }
 
+function wbRoundPath(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
 function wbArrowHead(ctx, x1, y1, x2, y2, w) {
-  const a = Math.atan2(y2 - y1, x2 - x1), s = 8 + w * 2.4;
+  // a filled head reads cleaner than two open strokes, especially at small sizes
+  const a = Math.atan2(y2 - y1, x2 - x1), s = 7 + w * 2.2, spread = 0.38;
   ctx.beginPath();
   ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - s * Math.cos(a - 0.45), y2 - s * Math.sin(a - 0.45));
-  ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - s * Math.cos(a + 0.45), y2 - s * Math.sin(a + 0.45));
-  ctx.stroke();
+  ctx.lineTo(x2 - s * Math.cos(a - spread), y2 - s * Math.sin(a - spread));
+  ctx.lineTo(x2 - s * 0.72 * Math.cos(a), y2 - s * 0.72 * Math.sin(a));
+  ctx.lineTo(x2 - s * Math.cos(a + spread), y2 - s * Math.sin(a + spread));
+  ctx.closePath();
+  ctx.fill();
 }
 function wbDrawObj(ctx, o) {
   ctx.strokeStyle = o.color; ctx.fillStyle = o.color;
@@ -5383,27 +5456,60 @@ function wbDrawObj(ctx, o) {
   } else if (o.type === "math") {
     // rendered as a KaTeX overlay node (see wbSyncMath) — nothing to paint here
   } else if (o.type === "card") {
+    // every card is drawn at the same fixed size; anything that doesn't fit gets the
+    // "See all" button instead of stretching the box
+    const R = 13;
+    ctx.save();
+    ctx.shadowColor = "rgba(20,32,64,.16)"; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5;
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(o.x, o.y, o.wd, o.ht);
-    ctx.strokeRect(o.x, o.y, o.wd, o.ht);
+    wbRoundPath(ctx, o.x, o.y, o.wd, o.ht, R); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = o.color;
+    wbRoundPath(ctx, o.x, o.y, o.wd, o.ht, R); ctx.stroke();
+    // a slim accent bar down the left edge ties the card to the map's colour
+    ctx.save();
+    wbRoundPath(ctx, o.x, o.y, o.wd, o.ht, R); ctx.clip();
+    ctx.fillStyle = o.color; ctx.fillRect(o.x, o.y, 4, o.ht);
+    ctx.restore();
     ctx.textBaseline = "top";
     ctx.fillStyle = "#241d18";
-    ctx.font = "600 15px 'Hanken Grotesk', sans-serif";
-    ctx.fillText(o.name.length > 34 ? o.name.slice(0, 32) + "\u2026" : o.name, o.x + 12, o.y + 10);
-    let ty = o.y + 31;
+    ctx.font = "700 15px 'Hanken Grotesk', sans-serif";
+    const nameLines = wbWrapText(ctx, o.name, o.wd - 30, 1);
+    ctx.fillText(nameLines[0] || "", o.x + 16, o.y + 11);
+    let ty = o.y + 32;
     if (o.date) {
       ctx.fillStyle = o.color;
-      ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
-      ctx.fillText(String(o.date), o.x + 12, ty);
-      ty += 20;
+      ctx.font = "700 12px 'Hanken Grotesk', sans-serif";
+      ctx.fillText(String(o.date), o.x + 16, ty);
+      ty += 19;
     }
     ctx.fillStyle = "#5a5148";
     ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
-    const lines = wbWrapText(ctx, o.desc, o.wd - 24, 2);
-    lines.forEach((ln, li) => ctx.fillText(ln, o.x + 12, ty + li * 17));
-    ctx.fillStyle = o.color;
-    ctx.font = "600 11px 'Hanken Grotesk', sans-serif";
-    ctx.fillText("Click for more \u2192", o.x + 12, o.y + o.ht - 19);
+    const lines = wbWrapText(ctx, o.desc, o.wd - 32, 2);
+    lines.forEach((ln, li) => ctx.fillText(ln, o.x + 16, ty + li * 16));
+    // only offer the button when there is genuinely more to read
+    const shown = lines.join(" ").replace(/\u2026$/, "");
+    const more = !!o.detail || String(o.desc || "").length > shown.length + 1 ||
+      (nameLines[0] || "").indexOf("\u2026") >= 0;
+    if (more) {
+      ctx.font = "800 11px 'Hanken Grotesk', sans-serif";
+      const label = "See all", bw = ctx.measureText(label).width + 34, bh = 22;
+      const bx = o.x + o.wd - bw - 12, by = o.y + o.ht - bh - 11;
+      ctx.fillStyle = o.color; ctx.globalAlpha = 0.12;
+      wbRoundPath(ctx, bx, by, bw, bh, bh / 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = o.color;
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, bx + 12, by + bh / 2 + 0.5);
+      // a small chevron so it reads as an action, not a label
+      ctx.beginPath();
+      ctx.lineWidth = 1.8;
+      ctx.moveTo(bx + bw - 16, by + bh / 2 - 3.2);
+      ctx.lineTo(bx + bw - 12.5, by + bh / 2);
+      ctx.lineTo(bx + bw - 16, by + bh / 2 + 3.2);
+      ctx.stroke();
+      ctx.textBaseline = "top";
+    }
   } else if (o.type === "text") {
     ctx.font = `600 ${o.size}px 'Hanken Grotesk', sans-serif`;
     ctx.textBaseline = "top";
