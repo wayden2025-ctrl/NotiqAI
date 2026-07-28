@@ -1192,6 +1192,123 @@
   .res-option input { accent-color: var(--coral); width: 16px; height: 16px; }
   .res-option .rdate { margin-left: auto; font-size: 12px; color: var(--muted); flex: none; }
 
+  /* ============ ANALYTICS ============
+     Built only from data the app already records: activity rows (action +
+     created_at), saved items (type + created_at) and boards. Nothing here needs a
+     new table or a background job. */
+  .nqanalytics { display: flex; align-items: center; gap: 11px; width: 100%; margin-top: 10px; padding: 11px 12px;
+    border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(150deg, var(--card1), var(--card2));
+    cursor: pointer; font-family: inherit; text-align: left; color: var(--ink); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .nqanalytics:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--orb2) 40%, transparent);
+    box-shadow: 0 14px 26px -18px color-mix(in srgb, var(--g2) 70%, transparent); }
+  .nqanalytics .nqa-ic { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center;
+    color: #fff; background: linear-gradient(150deg, var(--orb2), var(--orb4)); }
+  .nqanalytics .nqa-ic svg { width: 17px; height: 17px; }
+  .nqanalytics .nqa-txt { flex: 1; min-width: 0; }
+  .nqanalytics .nqa-txt b { display: block; font-size: 13.5px; font-weight: 800; }
+  .nqanalytics .nqa-txt span { display: block; font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .nqanalytics .nqa-go { flex: none; width: 16px; height: 16px; color: var(--muted); transition: transform .15s ease; }
+  .nqanalytics:hover .nqa-go { transform: translateX(3px); color: var(--orb2); }
+
+  .an-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
+  .an-range { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .an-rbtn { border: 0; background: transparent; cursor: pointer; font-family: inherit; font-size: 12.5px; font-weight: 700;
+    color: var(--muted); padding: 8px 15px; border-radius: 999px; transition: .15s; white-space: nowrap; }
+  .an-rbtn:hover { color: var(--ink); }
+  .an-rbtn.active { background: var(--card1); color: var(--ink); box-shadow: 0 4px 12px -6px rgba(20,32,64,.35); }
+
+  .an-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .an-card { background: var(--card1); border: 1px solid var(--line); border-radius: 20px; padding: 20px 20px 18px;
+    box-shadow: 0 16px 32px -28px rgba(20,32,64,.6); transition: transform .18s ease, box-shadow .18s ease;
+    animation: anRise .45s cubic-bezier(.2,.7,.3,1) both; }
+  .an-card:nth-child(2) { animation-delay: .05s; } .an-card:nth-child(3) { animation-delay: .1s; } .an-card:nth-child(4) { animation-delay: .15s; }
+  .an-card:hover { transform: translateY(-3px); box-shadow: 0 22px 38px -26px rgba(20,32,64,.65); }
+  .an-card .ac-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .an-card .ac-ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center;
+    color: var(--orb2); background: color-mix(in srgb, var(--orb2) 11%, transparent); }
+  .an-card .ac-ic svg { width: 18px; height: 18px; }
+  .an-trend { font-size: 11.5px; font-weight: 800; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .an-trend.up { color: #17795a; background: color-mix(in srgb, #17795a 11%, transparent); }
+  .an-trend.down { color: #a33520; background: color-mix(in srgb, #a33520 10%, transparent); }
+  .an-trend.flat { color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .an-card .ac-val { font-size: 32px; font-weight: 800; letter-spacing: -1.2px; line-height: 1; }
+  .an-card .ac-val small { font-size: 17px; font-weight: 700; letter-spacing: -.3px; margin-left: 2px; }
+  .an-card .ac-lbl { font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: 7px; }
+  @keyframes anRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .an-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .an-panel { background: var(--card1); border: 1px solid var(--line); border-radius: 20px; padding: 20px 22px 18px;
+    box-shadow: 0 16px 32px -28px rgba(20,32,64,.6); animation: anRise .45s cubic-bezier(.2,.7,.3,1) .1s both; min-width: 0; }
+  .an-ph { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .an-ph b { font-size: 15.5px; font-weight: 800; letter-spacing: -.2px; }
+  .an-ph span { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+  /* line chart (inline SVG, no library) */
+  .an-chart { position: relative; }
+  .an-chart svg { display: block; width: 100%; height: 190px; overflow: visible; }
+  .an-chart .an-line { fill: none; stroke: var(--orb2); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: anDraw 1.1s cubic-bezier(.4,0,.2,1) .15s forwards; }
+  @keyframes anDraw { to { stroke-dashoffset: 0; } }
+  .an-chart .an-area { fill: url(#anGrad); opacity: 0; animation: anFade .6s ease .7s forwards; }
+  @keyframes anFade { to { opacity: 1; } }
+  .an-chart .an-grid-l { stroke: var(--line); stroke-width: 1; }
+  .an-chart .an-dot { fill: var(--card1); stroke: var(--orb2); stroke-width: 2.2; opacity: 0; transition: opacity .14s ease, r .14s ease; }
+  .an-chart .an-hit:hover + .an-dot, .an-chart .an-dot.on { opacity: 1; }
+  .an-chart .an-hit { fill: transparent; cursor: crosshair; }
+  .an-chart .an-xl { font-size: 10.5px; fill: var(--muted); font-weight: 600; }
+  .an-tip { position: absolute; pointer-events: none; opacity: 0; transform: translate(-50%, -100%);
+    background: var(--tipbg); color: var(--tipfg); border-radius: 10px; padding: 7px 11px; font-size: 12px; font-weight: 600;
+    white-space: nowrap; box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); transition: opacity .12s ease; z-index: 3; }
+  .an-tip b { display: block; font-size: 11px; opacity: .72; font-weight: 700; margin-bottom: 2px; }
+  .an-tip.on { opacity: 1; }
+
+  /* donut */
+  .an-donut-wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .an-donut { flex: none; position: relative; width: 138px; height: 138px; }
+  .an-donut svg { transform: rotate(-90deg); overflow: visible; }
+  .an-donut circle { fill: none; stroke-width: 17; stroke-linecap: butt; transition: stroke-width .16s ease; }
+  .an-donut circle:hover { stroke-width: 20; }
+  .an-donut .an-dtotal { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .an-donut .an-dtotal b { display: block; font-size: 25px; font-weight: 800; letter-spacing: -.8px; line-height: 1; }
+  .an-donut .an-dtotal span { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+  .an-legend { flex: 1; min-width: 130px; display: flex; flex-direction: column; gap: 9px; }
+  .an-lrow { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; }
+  .an-lrow i { flex: none; width: 9px; height: 9px; border-radius: 3px; }
+  .an-lrow span { flex: 1; color: var(--muted); }
+  .an-lrow b { font-weight: 800; }
+
+  /* timeline */
+  .an-timeline { display: flex; flex-direction: column; }
+  .an-titem { display: flex; gap: 13px; padding-bottom: 15px; position: relative; }
+  .an-titem::before { content: ""; position: absolute; left: 15px; top: 30px; bottom: 0; width: 2px;
+    background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  .an-titem:last-child { padding-bottom: 0; } .an-titem:last-child::before { display: none; }
+  .an-titem .ti-ic { flex: none; width: 32px; height: 32px; border-radius: 11px; display: grid; place-items: center; z-index: 1;
+    color: var(--orb2); background: color-mix(in srgb, var(--orb2) 11%, transparent); }
+  .an-titem .ti-ic svg { width: 16px; height: 16px; }
+  .an-titem .ti-txt { min-width: 0; padding-top: 2px; }
+  .an-titem .ti-txt b { display: block; font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .an-titem .ti-txt span { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+  /* insights */
+  .an-insights { display: flex; flex-direction: column; gap: 11px; }
+  .an-ins { display: flex; gap: 12px; align-items: flex-start; padding: 14px 15px; border-radius: 15px;
+    background: color-mix(in srgb, var(--orb2) 6%, transparent); border: 1px solid color-mix(in srgb, var(--orb2) 14%, transparent);
+    font-size: 13.5px; line-height: 1.5; }
+  .an-ins .in-ic { flex: none; width: 17px; height: 17px; color: var(--orb2); margin-top: 1px; }
+  .an-insights .an-ins b { font-weight: 800; display: inline; }   /* outranks .nqmode b, which is display:block */
+  .an-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 26px 12px; line-height: 1.6; }
+
+  @media (max-width: 1050px) { .an-cards { grid-template-columns: 1fr 1fr; } .an-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .an-cards { grid-template-columns: 1fr; } }
+  #nq-viewer-body .an-cards { grid-template-columns: 1fr 1fr; }
+  #nq-viewer-body .an-grid { grid-template-columns: 1fr; }
+  @media (prefers-reduced-motion: reduce) {
+    .an-card, .an-panel { animation: none; }
+    .an-chart .an-line { animation: none; stroke-dashoffset: 0; }
+    .an-chart .an-area { animation: none; opacity: 1; }
+  }
+
   /* ============ TOOL PAGES ============
      One layout every generator page shares: a sparkle chip, the serif headline, one
      short line of copy, and an animated illustration made from the same mini-art the
@@ -2154,6 +2271,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg>
           <span><span class="nqtip-lbl">Tip </span><span id="nq-tip-text">Loading today's tip…</span></span>
         </div>
+        <button class="nqanalytics" onclick="nqOpenTool('analytics')">
+          <span class="nqa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V10"/><path d="M10 19.5V4.5"/><path d="M16 19.5v-6"/><path d="M21 19.5H3"/></svg></span>
+          <span class="nqa-txt"><b>Analytics</b><span>Your progress and habits</span></span>
+          <svg class="nqa-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
       </div>
       <!-- in-panel tool viewer: the app's real tool views get moved in here -->
       <div class="nqviewer" id="nq-viewer">
@@ -2946,6 +3068,46 @@
           <span class="save-note" id="nt-save-note"></span>
         </div>
         <div class="md-out" id="nt-md"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view hidden" id="view-analytics">
+      <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
+      <div class="an-head">
+        <div>
+          <h1 class="page-title">Analytics</h1>
+          <p class="page-sub" style="margin-bottom:0;">Track your study progress and learning habits.</p>
+        </div>
+        <div class="an-range" id="an-range">
+          <button class="an-rbtn active" data-days="7">Last 7 days</button>
+          <button class="an-rbtn" data-days="30">Last 30 days</button>
+          <button class="an-rbtn" data-days="0">All time</button>
+        </div>
+      </div>
+
+      <div class="an-cards" id="an-cards"></div>
+
+      <div class="an-grid">
+        <section class="an-panel an-chart-panel">
+          <div class="an-ph"><b>Study activity</b><span id="an-chart-sub">Minutes a day</span></div>
+          <div class="an-chart" id="an-chart"></div>
+        </section>
+        <section class="an-panel">
+          <div class="an-ph"><b>What you've made</b><span>By type</span></div>
+          <div class="an-donut-wrap" id="an-donut"></div>
+        </section>
+      </div>
+
+      <div class="an-grid">
+        <section class="an-panel">
+          <div class="an-ph"><b>Recent activity</b><span>Latest first</span></div>
+          <div class="an-timeline" id="an-timeline"></div>
+        </section>
+        <section class="an-panel">
+          <div class="an-ph"><b>Study insights</b><span>From your own activity</span></div>
+          <div class="an-insights" id="an-insights"></div>
+        </section>
       </div>
     </div>
 
@@ -5008,6 +5170,7 @@ async function voGenerate() {
     setStatus("vo-status", "Filming the video — this plays through in real time, hang tight…", false, true);
     const blob = await voRender(imgs, buffers, durs, says, burn, actx, pr => setStatus("vo-status", "Filming… " + Math.round(pr * 100) + "%", false, true));
     try { actx.close(); } catch (e) {}
+    logActivity("made:video");   // videos download rather than save, so this is the only trace
     voBlob = blob; if (voURL) URL.revokeObjectURL(voURL); voURL = URL.createObjectURL(blob);
     $("vo-video").src = voURL;
     $("vo-form").style.display = "none"; $("vo-result").classList.remove("hidden");
@@ -6005,6 +6168,7 @@ async function wbMapGenerate() {
     wbPushUndo();
     wbDrawTimeline(g.title || "Concept map", steps);
     logActivity("generate");
+    logActivity("made:map");
     $("wb-map-pop").classList.remove("open");
     setStatus("wb-map-status", "");
   } catch (e) {
@@ -6214,6 +6378,7 @@ function gateResources(statusId) {
 // Start button had nothing to start — fetch on demand instead of assuming.
 async function ensureDecks() { if (!rvDecks.length) { try { await loadReviewDecks(); } catch (e) {} } }
 const VIEW_SETUP = {
+  analytics: async () => { await anOpen(); },
   write:  async () => { await ensureDecks(); renderWriteDecks(); wrReset(); },
   match:  async () => { await ensureDecks(); renderMatchDecks(); mtReset(); },
   blitz:  async () => { await ensureDecks(); renderArcadeDecks(); bzReset(); },
@@ -6358,8 +6523,8 @@ function nqRenderTip() {
 
 // ---- Open a Create tool INSIDE the Create pane (expand instead of full-screen) ----
 let nqCurrentTool = null;
-const NQ_TOOL_VIEW = { notes: "notes", summary: "summary", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study", import: "import" };
-const NQ_TOOL_TITLE = { notes: "Notes", summary: "Summary", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
+const NQ_TOOL_VIEW = { analytics: "analytics", notes: "notes", summary: "summary", flashcards: "flashcards", quiz: "quiz", test: "test", slides: "slides", video: "video", study: "study", import: "import" };
+const NQ_TOOL_TITLE = { analytics: "Analytics", notes: "Notes", summary: "Summary", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
 let nqAddBaseCount = 0;
 function nqOpenTool(name) {
   const create = document.getElementById("nqcreate");
@@ -6379,6 +6544,7 @@ function nqOpenTool(name) {
   nqCurrentTool = name;
   body.scrollTop = 0;
   // tools that need to (re)initialise their view when opened
+  if (name === "analytics") setTimeout(() => { try { anOpen(); } catch (e) {} }, 0);
   if (name === "slides") setTimeout(() => { try { openSlides(); } catch (e) {} }, 0);
   else if (name === "video") setTimeout(() => { try { voOpenTool(); } catch (e) {} }, 0);
 }
@@ -7191,6 +7357,7 @@ function quizCheck() {
     if (quizPicks[qi] === q.answer) score++;
   });
   const pct = Math.round(100 * score / qzData.length);
+  logActivity("quiz:" + pct);        // the only record of a score — nothing else stores it
   $("qz-score").textContent = `You scored ${score} / ${qzData.length} (${pct}%)`;
   $("qz-score").classList.remove("hidden");
   $("qz-check").classList.add("hidden");
@@ -7351,6 +7518,294 @@ $("sm-generate").addEventListener("click", async () => {
 $("sm-save").addEventListener("click", () =>
   saveItem("summary", $("sm-title").value.trim(), smResult, $("sm-folder").value, "sm-save-note"));
 
+// ================= ANALYTICS =================
+// Everything here is derived from rows the app already writes: activity (action +
+// created_at), saved_items (type + created_at) and boards. No new tables, no jobs.
+// Study time is SESSIONISED from activity timestamps — events less than 30 minutes
+// apart count as one sitting — which means it works retroactively over history that
+// already exists, instead of only from the day tracking was added.
+const AN_GAP_MS = 30 * 60 * 1000;   // idle gap that ends a sitting
+const AN_MIN_SESSION = 4;           // a lone event still represents a few minutes of work
+let anRangeDays = 7, anData = null, anLoading = false;
+const AN_TYPE_LABEL = { notes: "Notes", summary: "Summaries", flashcards: "Flashcards", quiz: "Quizzes",
+  test: "Tests", study_guide: "Study guides", cram: "Cram sheets", slides: "Slide decks",
+  video: "Videos", map: "Concept maps", board: "Whiteboards" };
+
+async function anOpen() {
+  anBindRange();
+  if (!anData && !anLoading) await anLoad();
+  anRender();
+}
+function anBindRange() {
+  const wrap = $("an-range"); if (!wrap || wrap._bound) return;
+  wrap._bound = true;
+  wrap.addEventListener("click", (e) => {
+    const b = e.target.closest(".an-rbtn"); if (!b) return;
+    wrap.querySelectorAll(".an-rbtn").forEach(x => x.classList.toggle("active", x === b));
+    anRangeDays = parseInt(b.dataset.days, 10) || 0;
+    anRender();
+  });
+}
+async function anLoad() {
+  anLoading = true;
+  const out = { acts: [], items: [], boards: 0 };
+  try {
+    const [a, i, b] = await Promise.all([
+      sb.from("activity").select("action, created_at").order("created_at", { ascending: false }).limit(3000),
+      sb.from("saved_items").select("type, title, created_at").order("created_at", { ascending: false }).limit(500),
+      sb.from("boards").select("id", { count: "exact", head: true }),
+    ]);
+    out.acts = (a.data || []).map(r => ({ action: r.action || "", t: new Date(r.created_at).getTime() }))
+      .filter(r => !isNaN(r.t)).sort((x, y) => x.t - y.t);
+    out.items = (i.data || []).map(r => ({ type: r.type, title: r.title, t: new Date(r.created_at).getTime() }))
+      .filter(r => !isNaN(r.t));
+    out.boards = b.count || 0;
+  } catch (e) { /* a missing table just means empty analytics, not a broken page */ }
+  anData = out; anLoading = false;
+}
+// group timestamps into sittings and total their minutes
+function anMinutes(times) {
+  if (!times.length) return 0;
+  const t = [...times].sort((a, b) => a - b);
+  let total = 0, start = t[0], last = t[0];
+  for (let k = 1; k < t.length; k++) {
+    if (t[k] - last > AN_GAP_MS) { total += Math.max(AN_MIN_SESSION, (last - start) / 60000); start = t[k]; }
+    last = t[k];
+  }
+  return Math.round(total + Math.max(AN_MIN_SESSION, (last - start) / 60000));
+}
+function anSessions(times) {
+  if (!times.length) return [];
+  const t = [...times].sort((a, b) => a - b);
+  const out = []; let start = t[0], last = t[0];
+  for (let k = 1; k < t.length; k++) {
+    if (t[k] - last > AN_GAP_MS) { out.push(Math.max(AN_MIN_SESSION, (last - start) / 60000)); start = t[k]; }
+    last = t[k];
+  }
+  out.push(Math.max(AN_MIN_SESSION, (last - start) / 60000));
+  return out;
+}
+function anFmtMins(m) {
+  if (!m) return { v: "0", u: "m" };
+  if (m < 60) return { v: String(Math.round(m)), u: "m" };
+  return { v: (Math.round(m / 6) / 10).toFixed(1).replace(/\.0$/, ""), u: "h" };
+}
+function anTrend(now, prev) {
+  if (!prev) return null;
+  const pct = Math.round(100 * (now - prev) / prev);
+  if (!isFinite(pct) || Math.abs(pct) < 1) return { cls: "flat", txt: "no change" };
+  return { cls: pct > 0 ? "up" : "down", txt: (pct > 0 ? "+" : "") + pct + "%" };
+}
+function anStreak() {
+  let n = 0;
+  while (activityDays[dayISO(-n)]) n++;
+  return n;
+}
+function anRender() {
+  if (!anData) return;
+  const now = Date.now(), days = anRangeDays;
+  const from = days ? now - days * 86400000 : 0;
+  const prevFrom = days ? from - days * 86400000 : 0;
+  const inRange = (t) => t >= from;
+  const inPrev = (t) => days && t >= prevFrom && t < from;
+
+  const acts = anData.acts, items = anData.items;
+  const quizOf = (a) => a.action.startsWith("quiz:") ? parseInt(a.action.slice(5), 10) : null;
+
+  // ---- cards ----
+  const mins = anMinutes(acts.filter(a => inRange(a.t)).map(a => a.t));
+  const prevMins = days ? anMinutes(acts.filter(a => inPrev(a.t)).map(a => a.t)) : 0;
+  const made = items.filter(i => inRange(i.t)).length +
+    acts.filter(a => inRange(a.t) && (a.action === "made:video" || a.action === "made:map")).length;
+  const prevMade = days ? items.filter(i => inPrev(i.t)).length +
+    acts.filter(a => inPrev(a.t) && (a.action === "made:video" || a.action === "made:map")).length : 0;
+  const quizzes = acts.filter(a => inRange(a.t) && quizOf(a) !== null).map(quizOf);
+  const prevQuiz = days ? acts.filter(a => inPrev(a.t) && quizOf(a) !== null).map(quizOf) : [];
+  const avg = (arr) => arr.length ? Math.round(arr.reduce((x, y) => x + y, 0) / arr.length) : null;
+  const streak = anStreak();
+  const t = anFmtMins(mins);
+  const IC = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const card = (ic, val, unit, lbl, tr) => `<div class="an-card">
+      <div class="ac-top"><span class="ac-ic">${ic}</span>${tr ? `<span class="an-trend ${tr.cls}">${tr.txt}</span>` : ""}</div>
+      <div class="ac-val">${val}${unit ? `<small>${unit}</small>` : ""}</div>
+      <div class="ac-lbl">${lbl}</div></div>`;
+  $("an-cards").innerHTML =
+    card(IC('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/>'), t.v, t.u, "Study time", anTrend(mins, prevMins)) +
+    card(IC('<path d="M12 2.6 2.6 7.3 12 12l9.4-4.7z"/><path d="M2.6 16.7 12 21.4l9.4-4.7"/><path d="M2.6 12 12 16.7 21.4 12"/>'), made, "", "Resources created", anTrend(made, prevMade)) +
+    card(IC('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'), streak, streak === 1 ? " day" : " days", "Current streak", null) +
+    card(IC('<path d="M9 11.5 11.5 14 16 8.5"/><rect x="3.5" y="4" width="17" height="16.5" rx="3"/>'),
+      avg(quizzes) === null ? "&mdash;" : avg(quizzes), avg(quizzes) === null ? "" : "%", "Quiz average",
+      avg(quizzes) !== null && avg(prevQuiz) !== null ? anTrend(avg(quizzes), avg(prevQuiz)) : null);
+
+  anRenderChart(acts, days);
+  anRenderDonut(items, acts);
+  anRenderTimeline(items, acts);
+  anRenderInsights(items, acts, mins, prevMins, days);
+}
+// ---- daily study-time line, drawn as inline SVG so there's no chart library ----
+function anRenderChart(acts, days) {
+  const host = $("an-chart"); if (!host) return;
+  const span = days || Math.min(30, Math.max(7, Math.ceil((Date.now() - (acts[0] ? acts[0].t : Date.now())) / 86400000) + 1));
+  const buckets = [];
+  for (let d = span - 1; d >= 0; d--) {
+    const key = dayISO(-d);
+    const start = new Date(key + "T00:00:00").getTime(), end = start + 86400000;
+    buckets.push({ key, mins: anMinutes(acts.filter(a => a.t >= start && a.t < end).map(a => a.t)) });
+  }
+  $("an-chart-sub").textContent = "Minutes a day · last " + span + " days";
+  if (!buckets.some(b => b.mins > 0)) {
+    host.innerHTML = `<div class="an-empty">No study activity in this range yet.<br>Generate something or open a study mode and it'll show up here.</div>`;
+    return;
+  }
+  const W = 720, H = 190, PL = 34, PR = 10, PT = 14, PB = 26;
+  const max = Math.max(30, Math.ceil(Math.max(...buckets.map(b => b.mins)) / 15) * 15);
+  const x = (i) => PL + (buckets.length === 1 ? (W - PL - PR) / 2 : i * (W - PL - PR) / (buckets.length - 1));
+  const y = (v) => PT + (1 - v / max) * (H - PT - PB);
+  const pts = buckets.map((b, i) => [x(i), y(b.mins)]);
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const area = line + ` L${x(buckets.length - 1).toFixed(1)} ${H - PB} L${x(0).toFixed(1)} ${H - PB} Z`;
+  const gridY = [0, max / 2, max].map(v =>
+    `<line class="an-grid-l" x1="${PL}" y1="${y(v).toFixed(1)}" x2="${W - PR}" y2="${y(v).toFixed(1)}"/>
+     <text class="an-xl" x="${PL - 8}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end">${Math.round(v)}</text>`).join("");
+  // label a handful of days so the axis never crowds
+  const every = Math.ceil(buckets.length / 6);
+  const xLabels = buckets.map((b, i) => (i % every === 0 || i === buckets.length - 1)
+    ? `<text class="an-xl" x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">${new Date(b.key + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}</text>` : "").join("");
+  const bw = (W - PL - PR) / Math.max(1, buckets.length - 1);
+  const hits = buckets.map((b, i) => `<g>
+      <rect class="an-hit" x="${(x(i) - bw / 2).toFixed(1)}" y="${PT}" width="${bw.toFixed(1)}" height="${H - PT - PB}"
+        data-i="${i}" data-x="${x(i).toFixed(1)}" data-y="${y(b.mins).toFixed(1)}"
+        data-d="${new Date(b.key + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}"
+        data-m="${b.mins}"></rect>
+      <circle class="an-dot" cx="${x(i).toFixed(1)}" cy="${y(b.mins).toFixed(1)}" r="4.5"></circle></g>`).join("");
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs><linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--orb2)" stop-opacity=".22"/>
+        <stop offset="100%" stop-color="var(--orb2)" stop-opacity="0"/></linearGradient></defs>
+      ${gridY}<path class="an-area" d="${area}"/><path class="an-line" d="${line}"/>${xLabels}${hits}
+    </svg><div class="an-tip" id="an-tip"></div>`;
+  const svg = host.querySelector("svg"), tip = host.querySelector("#an-tip");
+  svg.querySelector(".an-line").style.setProperty("--len", Math.round(svg.querySelector(".an-line").getTotalLength()));
+  host.querySelectorAll(".an-hit").forEach(r => {
+    r.addEventListener("mouseenter", () => {
+      const box = host.getBoundingClientRect(), sb = svg.getBoundingClientRect();
+      const px = sb.left - box.left + (+r.dataset.x / W) * sb.width;
+      const py = sb.top - box.top + (+r.dataset.y / H) * sb.height;
+      const m = +r.dataset.m;
+      tip.innerHTML = `<b>${r.dataset.d}</b>${m ? anFmtMins(m).v + (anFmtMins(m).u === "h" ? " hours" : " min") + " studied" : "no activity"}`;
+      tip.style.left = px + "px"; tip.style.top = (py - 12) + "px";
+      tip.classList.add("on");
+    });
+    r.addEventListener("mouseleave", () => tip.classList.remove("on"));
+  });
+}
+// ---- what you've made, as a donut ----
+function anRenderDonut(items, acts) {
+  const host = $("an-donut"); if (!host) return;
+  const counts = {};
+  items.forEach(i => { counts[i.type] = (counts[i.type] || 0) + 1; });
+  const vids = acts.filter(a => a.action === "made:video").length;
+  const maps = acts.filter(a => a.action === "made:map").length;
+  if (vids) counts.video = vids;
+  if (maps) counts.map = maps;
+  if (anData.boards) counts.board = anData.boards;
+  const rows = Object.entries(counts).map(([k, v]) => ({ k, v, label: AN_TYPE_LABEL[k] || k }))
+    .filter(r => r.v > 0).sort((a, b) => b.v - a.v);
+  const total = rows.reduce((a, r) => a + r.v, 0);
+  if (!total) {
+    host.innerHTML = `<div class="an-empty" style="width:100%">Nothing saved yet — what you create will break down here.</div>`;
+    return;
+  }
+  // one hue family, stepped in lightness, so it stays on-brand instead of a rainbow
+  const shade = (i) => `color-mix(in srgb, var(--orb2) ${Math.max(16, 100 - i * 15)}%, var(--card1))`;
+  const C = 2 * Math.PI * 52;
+  let off = 0;
+  const arcs = rows.map((r, i) => {
+    const len = (r.v / total) * C;
+    const el = `<circle r="52" cx="69" cy="69" stroke="${shade(i)}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"><title>${esc(r.label)}: ${r.v}</title></circle>`;
+    off += len; return el;
+  }).join("");
+  host.innerHTML = `<div class="an-donut"><svg viewBox="0 0 138 138" width="138" height="138">${arcs}</svg>
+      <div class="an-dtotal"><div><b>${total}</b><span>${total === 1 ? "item" : "items"}</span></div></div></div>
+    <div class="an-legend">${rows.map((r, i) =>
+      `<div class="an-lrow"><i style="background:${shade(i)}"></i><span>${esc(r.label)}</span><b>${r.v}</b></div>`).join("")}</div>`;
+}
+// ---- recent activity: saved items carry titles, so they lead ----
+function anRenderTimeline(items, acts) {
+  const host = $("an-timeline"); if (!host) return;
+  const IC = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const DOC = IC('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>');
+  const rows = items.map(i => ({ t: i.t, ic: DOC, txt: "Created " + (i.title || AN_TYPE_LABEL[i.type] || "an item"),
+      sub: AN_TYPE_LABEL[i.type] || i.type }))
+    .concat(acts.filter(a => a.action.startsWith("quiz:")).map(a => ({ t: a.t,
+      ic: IC('<path d="M9 11.5 11.5 14 16 8.5"/><rect x="3.5" y="4" width="17" height="16.5" rx="3"/>'),
+      txt: "Finished a quiz", sub: "Scored " + a.action.slice(5) + "%" })))
+    .concat(acts.filter(a => a.action.startsWith("focus:")).map(a => ({ t: a.t,
+      ic: IC('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/>'),
+      txt: "Focus session", sub: a.action.slice(6) + " minutes" })))
+    .concat(acts.filter(a => a.action === "made:video").map(a => ({ t: a.t,
+      ic: IC('<rect x="2.5" y="5.5" width="13.5" height="13" rx="2.5"/><path d="M21.5 8.5v7l-5.5-3.5z"/>'),
+      txt: "Made a video overview", sub: "Video" })))
+    .concat(acts.filter(a => a.action === "made:map").map(a => ({ t: a.t,
+      ic: IC('<rect x="3" y="3.5" width="6.5" height="5" rx="1.4"/><rect x="14.5" y="9.5" width="6.5" height="5" rx="1.4"/><path d="M9.5 6h3a2 2 0 0 1 2 2v1.5"/>'),
+      txt: "Drew a concept map", sub: "Whiteboard" })))
+    .sort((a, b) => b.t - a.t).slice(0, 7);
+  if (!rows.length) { host.innerHTML = `<div class="an-empty">Nothing yet — your latest work will appear here.</div>`; return; }
+  host.innerHTML = rows.map(r => `<div class="an-titem"><span class="ti-ic">${r.ic}</span>
+      <div class="ti-txt"><b>${esc(r.txt)}</b><span>${esc(r.sub)} · ${anAgo(r.t)}</span></div></div>`).join("");
+}
+function anAgo(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60);
+  if (h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const d = Math.round(h / 24);
+  if (d < 30) return d + (d === 1 ? " day ago" : " days ago");
+  return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+// ---- insights: only ones the data can actually support ----
+function anRenderInsights(items, acts, mins, prevMins, days) {
+  const host = $("an-insights"); if (!host) return;
+  const from = days ? Date.now() - days * 86400000 : 0;
+  const out = [];
+  const SPARK = '<svg class="in-ic" viewBox="0 0 24 24" fill="currentColor"><path d="M11 1.8l1.9 5.9 5.9 1.9-5.9 1.9-1.9 5.9-1.9-5.9L3.2 9.6l5.9-1.9z"/></svg>';
+  // 1. what they make most
+  const counts = {};
+  items.filter(i => i.t >= from).forEach(i => { counts[i.type] = (counts[i.type] || 0) + 1; });
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const totalItems = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (top && totalItems >= 4 && top[1] >= 2 && top[1] / totalItems >= 0.34) {
+    out.push(`Most of what you make is <b>${esc((AN_TYPE_LABEL[top[0]] || top[0]).toLowerCase())}</b> — ${top[1]} of your ${totalItems} items in this range.`);
+  }
+  // 2. week on week, only when there's a previous period to compare
+  if (days && prevMins > 0 && mins > 0) {
+    const pct = Math.round(100 * (mins - prevMins) / prevMins);
+    if (Math.abs(pct) >= 5) {
+      out.push(`You studied <b>${Math.abs(pct)}% ${pct > 0 ? "more" : "less"}</b> than the previous ${days} days.`);
+    }
+  }
+  // 3. typical sitting length
+  const sess = anSessions(acts.filter(a => a.t >= from).map(a => a.t));
+  const real = sess.filter(m2 => m2 > AN_MIN_SESSION);
+  if (real.length >= 3) {
+    out.push(`Your average study session lasts <b>${Math.round(real.reduce((a, b) => a + b, 0) / real.length)} minutes</b>.`);
+  }
+  // 4. best day of the week
+  if (acts.length >= 12) {
+    const byDow = [0, 0, 0, 0, 0, 0, 0];
+    acts.filter(a => a.t >= from).forEach(a => { byDow[new Date(a.t).getDay()]++; });
+    const best = byDow.indexOf(Math.max(...byDow));
+    if (byDow[best] >= 3) {
+      const name = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"][best];
+      out.push(`You get the most done on <b>${name}</b>.`);
+    }
+  }
+  host.innerHTML = out.length
+    ? out.slice(0, 3).map(x => `<div class="an-ins">${SPARK}<span>${x}</span></div>`).join("")
+    : `<div class="an-empty">Keep studying for a few days and patterns will show up here.</div>`;
+}
+
 // ================= FOCUS TIMER =================
 let focusEndAt = null, focusTick = null, focusHiddenAt = null;
 
@@ -7413,7 +7868,7 @@ function focusToggle() {
       focusReset("");
       focusMsg(`Session complete — ${mins} minutes of real focus. That counts.`, "win");
       celebrate($("focus-time"));
-      logActivity("focus");
+      logActivity("focus:" + mins);   // minutes ride along so Analytics can total study time
       return;
     }
     const s = Math.ceil(left / 1000);
