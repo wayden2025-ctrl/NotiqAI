@@ -7526,14 +7526,20 @@ $("sm-save").addEventListener("click", () =>
 // already exists, instead of only from the day tracking was added.
 const AN_GAP_MS = 30 * 60 * 1000;   // idle gap that ends a sitting
 const AN_MIN_SESSION = 4;           // a lone event still represents a few minutes of work
-let anRangeDays = 7, anData = null, anLoading = false;
+let anRangeDays = 7, anData = null, anLoadPromise = null, anLoadedAt = 0;
 const AN_TYPE_LABEL = { notes: "Notes", summary: "Summaries", flashcards: "Flashcards", quiz: "Quizzes",
   test: "Tests", study_guide: "Study guides", cram: "Cram sheets", slides: "Slide decks",
   video: "Videos", map: "Concept maps", board: "Whiteboards" };
 
 async function anOpen() {
   anBindRange();
-  if (!anData && !anLoading) await anLoad();
+  // Share one in-flight load. Opening twice quickly used to let the second call
+  // render before any data existed, leaving the page permanently blank.
+  const stale = !anData || Date.now() - anLoadedAt > 60000;
+  if (stale) {
+    if (!anLoadPromise) anLoadPromise = anLoad().finally(() => { anLoadPromise = null; });
+    await anLoadPromise;
+  }
   anRender();
 }
 function anBindRange() {
@@ -7546,22 +7552,28 @@ function anBindRange() {
     anRender();
   });
 }
+const AN_ACT_CAP = 5000;
 async function anLoad() {
-  anLoading = true;
-  const out = { acts: [], items: [], boards: 0 };
-  try {
-    const [a, i, b] = await Promise.all([
-      sb.from("activity").select("action, created_at").order("created_at", { ascending: false }).limit(3000),
-      sb.from("saved_items").select("type, title, created_at").order("created_at", { ascending: false }).limit(500),
-      sb.from("boards").select("id", { count: "exact", head: true }),
-    ]);
-    out.acts = (a.data || []).map(r => ({ action: r.action || "", t: new Date(r.created_at).getTime() }))
-      .filter(r => !isNaN(r.t)).sort((x, y) => x.t - y.t);
-    out.items = (i.data || []).map(r => ({ type: r.type, title: r.title, t: new Date(r.created_at).getTime() }))
-      .filter(r => !isNaN(r.t));
-    out.boards = b.count || 0;
-  } catch (e) { /* a missing table just means empty analytics, not a broken page */ }
-  anData = out; anLoading = false;
+  // Every table here can legitimately be missing or unreadable for a given account:
+  // `boards` isn't even in SETUP.md, and an older `activity` table may predate
+  // created_at. Each query is settled independently so one gap can't blank the page.
+  const out = { acts: [], items: [], boards: 0, actsOk: true, capped: false };
+  const q = (p) => Promise.resolve(p).then(r => r, () => ({ data: null, error: true, count: 0 }));
+  const [a, i, b] = await Promise.all([
+    q(sb.from("activity").select("action, created_at").order("created_at", { ascending: false }).limit(AN_ACT_CAP)),
+    q(sb.from("saved_items").select("type, title, created_at").order("created_at", { ascending: false }).limit(500)),
+    q(sb.from("boards").select("id", { count: "exact", head: true })),
+  ]);
+  // a NULL created_at parses to epoch 0, not NaN — drop those rather than plot 1970
+  const stamp = (v) => { const t = v ? new Date(v).getTime() : NaN; return (!isNaN(t) && t > 0) ? t : NaN; };
+  out.actsOk = !(a && a.error);
+  out.acts = (a && a.data || []).map(r => ({ action: String(r.action || ""), t: stamp(r.created_at) }))
+    .filter(r => !isNaN(r.t)).sort((x, y) => x.t - y.t);
+  out.capped = (a && a.data || []).length >= AN_ACT_CAP;
+  out.items = (i && i.data || []).map(r => ({ type: r.type, title: r.title, t: stamp(r.created_at) }))
+    .filter(r => !isNaN(r.t));
+  out.boards = (b && b.count) || 0;
+  anData = out; anLoadedAt = Date.now();
 }
 // group timestamps into sittings and total their minutes
 function anMinutes(times) {
@@ -7610,7 +7622,11 @@ function anRender() {
   const inPrev = (t) => days && t >= prevFrom && t < from;
 
   const acts = anData.acts, items = anData.items;
-  const quizOf = (a) => a.action.startsWith("quiz:") ? parseInt(a.action.slice(5), 10) : null;
+  const quizOf = (a) => {
+    if (!a.action.startsWith("quiz:")) return null;
+    const v = parseInt(a.action.slice(5), 10);
+    return isNaN(v) ? null : Math.max(0, Math.min(100, v));
+  };
 
   // ---- cards ----
   const mins = anMinutes(acts.filter(a => inRange(a.t)).map(a => a.t));
@@ -7623,7 +7639,7 @@ function anRender() {
   const prevQuiz = days ? acts.filter(a => inPrev(a.t) && quizOf(a) !== null).map(quizOf) : [];
   const avg = (arr) => arr.length ? Math.round(arr.reduce((x, y) => x + y, 0) / arr.length) : null;
   const streak = anStreak();
-  const t = anFmtMins(mins);
+  const t = anData.actsOk ? anFmtMins(mins) : { v: "&mdash;", u: "" };
   const IC = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const card = (ic, val, unit, lbl, tr) => `<div class="an-card">
       <div class="ac-top"><span class="ac-ic">${ic}</span>${tr ? `<span class="an-trend ${tr.cls}">${tr.txt}</span>` : ""}</div>
@@ -7652,7 +7668,11 @@ function anRenderChart(acts, days) {
     const start = new Date(key + "T00:00:00").getTime(), end = start + 86400000;
     buckets.push({ key, mins: anMinutes(acts.filter(a => a.t >= start && a.t < end).map(a => a.t)) });
   }
-  $("an-chart-sub").textContent = "Minutes a day · last " + span + " days";
+  $("an-chart-sub").textContent = "Minutes a day · last " + span + " days" + (anData.capped && !days ? " · recent history" : "");
+  if (!anData.actsOk) {
+    host.innerHTML = `<div class="an-empty">Study activity isn't available on this account yet.<br>It starts recording as soon as your activity log is set up.</div>`;
+    return;
+  }
   if (!buckets.some(b => b.mins > 0)) {
     host.innerHTML = `<div class="an-empty">No study activity in this range yet.<br>Generate something or open a study mode and it'll show up here.</div>`;
     return;
@@ -7685,7 +7705,9 @@ function anRenderChart(acts, days) {
       ${gridY}<path class="an-area" d="${area}"/><path class="an-line" d="${line}"/>${xLabels}${hits}
     </svg><div class="an-tip" id="an-tip"></div>`;
   const svg = host.querySelector("svg"), tip = host.querySelector("#an-tip");
-  svg.querySelector(".an-line").style.setProperty("--len", Math.round(svg.querySelector(".an-line").getTotalLength()));
+  const lineEl = svg.querySelector(".an-line");
+  try { lineEl.style.setProperty("--len", Math.round(lineEl.getTotalLength())); }
+  catch (e) { lineEl.style.animation = "none"; lineEl.style.strokeDashoffset = "0"; }
   host.querySelectorAll(".an-hit").forEach(r => {
     r.addEventListener("mouseenter", () => {
       const box = host.getBoundingClientRect(), sb = svg.getBoundingClientRect();
