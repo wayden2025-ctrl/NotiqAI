@@ -5056,8 +5056,12 @@ async function voGenerate() {
   voHalt();
   voDeck = voDecks[+$("vo-deck").value || 0];
   $("vo-go").disabled = true;
-  setStatus("vo-status", "Writing a narration for every slide…", false, true);
   try {
+    // saved decks drop their images to stay small — refill them so the video shows pictures
+    setStatus("vo-status", "Loading the slide images…", false, true);
+    const prevDeck = slDeck;
+    try { slDeck = voDeck.content; await slAutoImages(); } catch (e) { /* images optional */ } finally { slDeck = prevDeck; }
+    setStatus("vo-status", "Writing a narration for every slide…", false, true);
     voSegs = await voScript();
     voIdx = 0;
     $("vo-player").classList.remove("hidden");
