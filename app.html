@@ -138,6 +138,9 @@
     aspect-ratio: 16 / 9; border-radius: 12px; padding: 42px 54px; margin-bottom: 16px;
     box-shadow: 0 16px 34px -20px rgba(60,40,30,.4); overflow: hidden; position: relative;
     display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,.06);
+    /* size text relative to the slide itself (cqw), so it's big & consistent in the
+       preview, the video and the PDF; --fit is nudged down only if a slide overflows */
+    container-type: inline-size;
     /* faint dot-grid texture so no slide reads as blank white */
     background-image: radial-gradient(circle, color-mix(in srgb, var(--acc) 8%, transparent) 1.5px, transparent 1.6px);
     background-size: 26px 26px; background-position: 3px 3px;
@@ -260,24 +263,24 @@
   .sl-stat-h { font-size: 20px; margin-top: 8px; }
   .sl-cap { font-size: 16px; opacity: .85; margin-top: 8px; max-width: 70%; }
   .sl-bullets { list-style: none; margin: 0; }
-  .sl-bullets li { display: flex; gap: 11px; font-size: clamp(15px, 1.85vw, 21px); line-height: 1.4; padding: 9px 0; align-items: flex-start; }
+  .sl-bullets li { display: flex; gap: 11px; font-size: calc(clamp(16px, 2.55cqw, 30px) * var(--fit, 1)); line-height: 1.34; padding: calc(9px * var(--fit, 1)) 0; align-items: flex-start; }
   .sl-bullets .sl-dot { flex: none; font-weight: 800; }
   .tl { position: relative; }
   .tl-item { display: flex; gap: 12px; padding: 0 0 12px 0; position: relative; }
   .tl-item::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: -6px; width: 2px; background: color-mix(in srgb, var(--ln, #888) 40%, transparent); }
   .tl-item:last-child::before { display: none; }
   .tl-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 3px; z-index: 1; }
-  .tl-item b { font-size: clamp(13px, 1.5vw, 16px); }
-  .tl-w { font-size: clamp(12px, 1.4vw, 15px); opacity: .9; line-height: 1.45; }
+  .tl-item b { font-size: calc(clamp(15px, 2.05cqw, 23px) * var(--fit, 1)); }
+  .tl-w { font-size: calc(clamp(14px, 1.95cqw, 22px) * var(--fit, 1)); opacity: .9; line-height: 1.4; }
   .st-grid { display: flex; flex-direction: column; gap: 12px; }
   .st-item { display: flex; gap: 12px; align-items: flex-start; }
   .st-num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
-  .st-item b { font-size: clamp(13px, 1.5vw, 16px); }
-  .st-d { font-size: clamp(12px, 1.4vw, 15px); opacity: .9; line-height: 1.45; }
+  .st-item b { font-size: calc(clamp(15px, 2.05cqw, 23px) * var(--fit, 1)); }
+  .st-d { font-size: calc(clamp(14px, 1.95cqw, 22px) * var(--fit, 1)); opacity: .9; line-height: 1.4; }
   .cmp { display: flex; gap: 16px; }
   .cmp-col { flex: 1; border: 1.5px solid; border-radius: 12px; padding: 14px 16px; }
   .cmp-col ul { list-style: none; margin: 8px 0 0; }
-  .cmp-col li { font-size: clamp(12px, 1.4vw, 15px); padding: 4px 0 4px 16px; position: relative; line-height: 1.45; }
+  .cmp-col li { font-size: calc(clamp(13.5px, 1.8cqw, 20px) * var(--fit, 1)); padding: 4px 0 4px 16px; position: relative; line-height: 1.4; }
   .cmp-col li::before { content: "•"; position: absolute; left: 2px; }
   .slide .sl-body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
   .slide.with-img { flex-direction: row; gap: 30px; align-items: stretch; }
@@ -324,10 +327,10 @@
     font-family: var(--bf); font-weight: 800; font-size: 13.5px; background: var(--acc); color: var(--sbg, #fff); margin-bottom: 3px; }
   .cd-label { font-family: var(--bf); font-size: clamp(9.5px, 1.05vw, 11.5px); font-weight: 800; letter-spacing: 2.2px;
     text-transform: uppercase; color: var(--acc); opacity: .9; }
-  .cd-title { font-size: clamp(14px, 1.6vw, 19px); font-weight: 800; line-height: 1.2; letter-spacing: -.2px; }
-  .cd-text { font-size: clamp(11.5px, 1.32vw, 15px); line-height: 1.45; opacity: .88; }
-  .cards-grid.c4 .cd-title { font-size: clamp(13px, 1.42vw, 17px); }
-  .cards-grid.c4 .cd-text { font-size: clamp(11px, 1.22vw, 14px); }
+  .cd-title { font-size: calc(clamp(15px, 2.0cqw, 23px) * var(--fit, 1)); font-weight: 800; line-height: 1.18; letter-spacing: -.2px; }
+  .cd-text { font-size: calc(clamp(13px, 1.7cqw, 19px) * var(--fit, 1)); line-height: 1.4; opacity: .9; }
+  .cards-grid.c4 .cd-title { font-size: calc(clamp(14px, 1.75cqw, 20px) * var(--fit, 1)); }
+  .cards-grid.c4 .cd-text { font-size: calc(clamp(12px, 1.5cqw, 17px) * var(--fit, 1)); }
 
   /* --- pull quote: oversized mark, big italic line, attribution rule --- */
   .slide.quote-slide { justify-content: center; }
@@ -4491,6 +4494,24 @@ function slRender() {
     html += slSlideHtml(sl, i, s, wantNotes, section);
   });
   $("sl-deck").innerHTML = html;
+  slFit($("sl-deck"));
+}
+// Auto-fit: text is sized big by default (relative to the slide). If a packed slide
+// overflows, nudge just that slide's --fit down until it fits — so info stays as
+// large as possible while never spilling off the slide. Runs in preview + video + PDF.
+function slFit(root) {
+  if (!root || !root.querySelectorAll) return;
+  root.querySelectorAll(".slide.sl-content, .slide.tk-slide").forEach(sl => {
+    // measure the CONTENT body (not the slide box — its decorations sit outside the edges)
+    const body = sl.querySelector(".sl-body") || sl;
+    sl.style.setProperty("--fit", "1");
+    let fit = 1, guard = 0;
+    while (guard++ < 14 && body.scrollHeight > body.clientHeight + 2) {
+      fit -= 0.05;
+      if (fit <= 0.6) { sl.style.setProperty("--fit", "0.6"); break; }
+      sl.style.setProperty("--fit", fit.toFixed(3));
+    }
+  });
 }
 // the running section label for a given slide index (used by Present mode)
 function slSectionFor(idx) {
@@ -4831,7 +4852,7 @@ function slExportPdf() {
       #pd, #pd * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     </style></head><body><div id="pd">${html}</div></body></html>`);
   w.document.close();
-  const go = () => { try { w.focus(); w.print(); } catch (e) {} };
+  const go = () => { try { slFit(w.document.getElementById("pd")); } catch (e) {} try { w.focus(); w.print(); } catch (e) {} };
   // wait for the web fonts (and layout) before printing so nothing falls back to Arial
   try { w.document.fonts.ready.then(() => setTimeout(go, 250)); } catch (e) { setTimeout(go, 1000); }
 }
@@ -5004,6 +5025,7 @@ function voShow(idx, instant) {
   const layIn = $(inA ? "vo-la" : "vo-lb"), layOut = $(inA ? "vo-lb" : "vo-la");
   fit.innerHTML = html;
   fit.querySelectorAll(".sl-imgbox.empty").forEach(el => el.remove());
+  slFit(fit);
   voFit();
   layIn.classList.add("on");
   layOut.classList.remove("on");
