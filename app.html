@@ -2679,10 +2679,6 @@
             <select id="sl-len"><option value="3">3 minutes</option><option value="5" selected>5 minutes</option><option value="10">10 minutes</option><option value="20">20 minutes</option></select>
           </div>
           <div>
-            <label class="field-label" style="margin-top:0;">Bullet detail</label>
-            <select id="sl-detail"><option value="detailed" selected>More detail</option><option value="brief">Short &amp; punchy</option></select>
-          </div>
-          <div>
             <label class="field-label" style="margin-top:0;">Speaker notes</label>
             <select id="sl-notes"><option value="yes" selected>Include them</option><option value="no">No notes</option></select>
           </div>
@@ -4129,16 +4125,10 @@ async function slGenerate() {
   if (!gateGenerate("sl-status")) return;
   const n = SL_SLIDES[$("sl-len").value] || 8;
   const wantNotes = $("sl-notes").value === "yes";
-  const detailed = ($("sl-detail") && $("sl-detail").value || "detailed") === "detailed";
-  const law2 = detailed
-    ? '2. TEACH on the slide, but stay in bullet form. Each bullet is a bold **lead term** then a concise explanatory clause of about 8-16 words — enough real substance to learn from, but still ONE bullet line, never a paragraph. Use 3-5 bullets per content slide.'
-    : '2. MINIMAL text. Slide text is telegraphic keywords, NOT sentences. A bullet is 1-4 words (e.g. "July 1863", "Union victory", "Turning point") — never a full sentence. Max 4 bullets per slide.';
-  const bulletsType = detailed
-    ? '- {"type":"bullets","heading":"short heading","bullets":["**Lead term** — a concise 8-16 word explanation that actually teaches this point"],"image":true,"imgqueries":["subject1","subject2","subject3"],"notes":"..."}  (3-5 informative bullets, still one line each)'
-    : '- {"type":"bullets","heading":"short heading","bullets":["Keyword","Short phrase"],"image":true,"imgqueries":["subject1","subject2"],"notes":"the full spoken explanation"}  (2-4 telegraphic bullets)';
-  const detailNote = detailed
-    ? 'Bullets, timeline entries and step details should carry REAL substance (roughly 8-16 words each) so the slide teaches on its own — but keep each to a SINGLE line, never a paragraph.'
-    : "Keep every slide's text SHORT — if a bullet reads like a sentence, cut it to keywords and move the detail into notes.";
+  // Slides always carry real, teachable substance pulled straight from the material.
+  const law2 = '2. TEACH on the slide. Each bullet is a bold **lead term** followed by a substantive explanation of about 14-26 words — a real fact, definition, cause, mechanism, figure or example taken FROM THE MATERIAL, not a vague summary. Use 4-6 bullets on a content slide. Never a bare keyword; never an empty generality. It is better to keep a genuine detail from the notes than to compress it away.';
+  const bulletsType = '- {"type":"bullets","heading":"short heading","bullets":["**Lead term** — a substantive 14-26 word explanation carrying a real fact, definition, cause, number or example taken straight from the material"],"image":true,"imgqueries":["subject1","subject2","subject3"],"notes":"..."}  (4-6 information-rich bullets, one line each)';
+  const detailNote = 'PACK REAL INFORMATION onto every slide. Mine the material for its actual facts, definitions, names, dates, numbers, causes, mechanisms and examples and put them ON the slides — do not water them down to keywords or generic phrases. Every bullet, timeline entry, step detail and card should be a full, substantive clause (roughly 14-26 words) that genuinely teaches. If the material has more to say about a slide, add another bullet rather than leaving it thin. Cover the material thoroughly across the deck; do not skip whole sections of the notes.';
   $("sl-go").disabled = true;
   setStatus("sl-status", `Building a ${n}-slide deck...`, false, true);
   try {
@@ -4171,8 +4161,8 @@ ${bulletsType}
 Any "bullets", "timeline", "steps" or "cards" slide MAY also carry "callout": "one short high-value line — a warning, a why-it-matters, or the number that anchors the slide" (roughly 10-18 words). Use it on about a third of slides, never on two slides in a row.
 
 Rules: make EXACTLY ${n} slides total (the separate title slide does NOT count). ${detailNote} Include at least 3 non-bullet layouts (cards/timeline/steps/compare/stat/stats/hero/quote) when the material supports it. Put a "section" divider before each major topic. IMAGES — every info slide shows a small COLLAGE of relevant pictures. On EVERY "bullets", "timeline", and "steps" slide set "image":true and provide "imgqueries": an array of 2-3 DIFFERENT specific photo subjects, each tied to a different point/term on that slide (so the slide shows 2-3 images side by side, not one). Give every "section" and "hero" slide a single "imgquery". (Only "compare", "stat", "stats", "cards", "quote" and "takeaways" go without images — those layouts are designed to carry the slide on their own.) These queries are the most important field for a good-looking deck, so make each EXCELLENT: it must name the specific, concrete, PHOTOGRAPHABLE subject that point is about — a real place, object, person-type, scene, or thing, 2-5 words, with enough of the topic that a stock-photo search returns something clearly on-topic. GOOD: "gettysburg civil war battlefield", "mitochondria cell microscope", "great wall of china", "amazon rainforest canopy", "neuron nerve cell". BAD (never do this): vague words like "concept", "idea", "overview", "introduction", "history", "information", "study", "learning", or the bare heading. Every query across the whole deck must be different so no two images repeat. The last slide MUST be type "takeaways".${wantNotes ? " Write 1-2 full sentences of speaker notes on EVERY slide — this is where the real teaching lives." : " Still write brief speaker notes on every slide so the short slide text makes sense."} Also give EVERY slide a "transition": one short spoken sentence (under 12 words) that hands off to the next slide — the last slide's transition closes the talk instead.` },
-      { role: "user", content: "Build the slide deck from this material:\n\n" + material.slice(0, 12000) }
-    ], true, Math.min(6000, 1700 + n * 300));
+      { role: "user", content: "Build the slide deck from this material. Use it thoroughly — pull the real facts, figures and examples onto the slides:\n\n" + material.slice(0, 20000) }
+    ], true, Math.min(7500, 2200 + n * 360));
     const d = parseAIJson(raw);
     // a slide is real if it carries SOMETHING to show — quote and stat slides
     // legitimately have no heading, so don't judge them all by that one field
