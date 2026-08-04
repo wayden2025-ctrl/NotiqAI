@@ -1714,56 +1714,37 @@
   .slide.title-slide.has-cover, .slide.section-slide.has-cover { background-image: none; }
 
   /* ============ VIDEO OVERVIEW ============ */
-  .vo-empty { background: var(--card2); border: 1px dashed var(--line); border-radius: 16px; padding: 26px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
-  .vo-setup { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 6px; }
-  .vo-setup .vo-f { flex: 1 1 220px; min-width: 190px; }
-  .vo-setup select { width: 100%; }
-  /* player */
-  .vo-player { margin-top: 22px; }
-  .vo-screen { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #0a0c10; border-radius: 18px;
-    overflow: hidden; box-shadow: 0 30px 70px -30px rgba(10,14,22,.6); }
-  .vo-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.25,1); transform: scale(1.015); }
-  .vo-layer.on { opacity: 1; transform: scale(1); }
-  .vo-fit { width: 1280px; height: 720px; transform-origin: center center; flex: none; }
-  .vo-fit .slide { width: 1280px; height: 720px; aspect-ratio: auto; margin: 0; border-radius: 0; box-shadow: none; }
-  .vo-fit [data-reveal] { opacity: 1 !important; transform: none !important; }
-  /* captions */
-  .vo-cap { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: 88%;
-    background: rgba(8,11,18,.72); backdrop-filter: blur(6px); color: #fff; font-size: clamp(12px, 1.5vw, 16px);
-    line-height: 1.45; padding: 9px 16px; border-radius: 12px; text-align: center; opacity: 0; transition: opacity .25s ease; pointer-events: none; }
-  .vo-cap.on { opacity: 1; }
-  .vo-screen.no-cap .vo-cap { display: none; }
-  /* big center play / state badge */
-  .vo-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4;
-    background: rgba(8,11,18,.42); cursor: pointer; transition: opacity .3s ease; }
-  .vo-badge.hidden { display: none; }
-  .vo-badge i { width: 74px; height: 74px; border-radius: 50%; background: rgba(255,255,255,.94);
-    display: flex; align-items: center; justify-content: center; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
-  .vo-badge i::after { content: ""; border-style: solid; border-width: 13px 0 13px 22px; border-color: transparent transparent transparent var(--coral); margin-left: 5px; }
-  /* controls */
-  .vo-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
-  .vo-btn { border: 1.5px solid var(--line); background: var(--card1); border-radius: 999px; width: 42px; height: 42px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); transition: border-color .15s, transform .15s; flex: none; }
-  .vo-btn:hover { border-color: var(--amber); transform: translateY(-1px); }
-  .vo-btn.main { width: 50px; height: 50px; background: linear-gradient(180deg, var(--g1), var(--g2)); border-color: transparent; color: #fff; }
-  .vo-prog { flex: 1 1 160px; min-width: 120px; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; cursor: pointer; }
-  .vo-prog i { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--amber), var(--coral)); transition: width .3s linear; }
-  .vo-num { font-size: 13px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
-  /* transcript */
-  .vo-tr { margin-top: 26px; }
-  .vo-tr-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-  .vo-seg { display: flex; gap: 14px; padding: 13px 16px; border-radius: 14px; border: 1px solid var(--line);
-    background: var(--card1); margin-bottom: 9px; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
-  .vo-seg:hover { border-color: var(--amber); transform: translateX(2px); }
-  .vo-seg.active { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 7%, var(--card1)); }
-  .vo-seg .n { flex: none; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    font-family: 'Instrument Serif', serif; font-style: italic; font-size: 15px; color: var(--coral);
-    background: color-mix(in srgb, var(--coral) 11%, transparent); }
-  .vo-seg .tx { flex: 1; }
-  .vo-seg .tt { font-weight: 800; font-size: 14px; margin-bottom: 3px; }
-  .vo-seg .bd { color: var(--muted); font-size: 14px; line-height: 1.55; }
-  @media (max-width: 720px) { .vo-cap { font-size: 11px; bottom: 8px; padding: 6px 11px; } }
+  .vo-open-btn {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    border: 0; border-radius: 999px; padding: 11px 20px; font-family: inherit; font-weight: 800; font-size: 14px; color: #fff;
+    background: linear-gradient(135deg, #7d3fc0, #2a4d8a 60%, #0e7490);
+    box-shadow: 0 12px 26px -10px rgba(60,40,90,.6);
+  }
+  .vo-open-btn:hover { filter: brightness(1.08); }
+  .vo-play { font-size: 11px; }
+  .vo-scrim {
+    position: fixed; inset: 0; z-index: 7000; background: rgba(18,16,24,.55); backdrop-filter: blur(6px);
+    display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 46px 18px;
+  }
+  .vo-scrim.open { display: flex; }
+  .vo-card {
+    background: var(--panel, #fff); border: 1px solid var(--line); border-radius: 22px; width: min(680px, 100%);
+    padding: 26px 28px 30px; box-shadow: 0 50px 100px -30px rgba(20,20,30,.6);
+  }
+  .vo-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
+  .vo-title { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 30px; color: var(--coral); letter-spacing: -.5px; }
+  .vo-x { border: 0; background: rgba(36,29,24,.06); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 16px; flex: none; }
+  .vo-sub { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 6px 0 20px; }
+  .vo-row { margin-bottom: 14px; }
+  .vo-row .field-label { display: block; margin-bottom: 6px; }
+  .vo-check { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ink); margin: 4px 0 22px; cursor: pointer; }
+  .vo-check input { width: 17px; height: 17px; accent-color: var(--coral); }
+  .vo-go { width: 100%; padding: 14px; font-size: 15.5px; }
+  .vo-status { margin-top: 16px; font-size: 13.5px; color: var(--muted); line-height: 1.5; min-height: 18px; text-align: center; }
+  .vo-status.err { color: #a33520; }
+  .vo-video { width: 100%; border-radius: 14px; background: #000; margin-bottom: 16px; display: block; }
+  .vo-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .vo-hint { font-size: 12.5px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
 
   /* ============ PHONES ============ */
   @media (max-width: 640px) {
@@ -2111,7 +2092,6 @@
     border-color: transparent transparent transparent #fff; transition: transform .2s ease; }
   .nqtool:hover .nqm-video i::after { transform: translate(-45%, -50%) scale(1.16); }
 
-
   /* Summary — a full page with the short version pulled out of it. Deliberately a
      different silhouette from Notes, which is also a sheet of lines. */
   .nqm-sum i:nth-child(1) { position: absolute; left: 0; top: 0; width: 43px; height: 40px; border-radius: 7px;
@@ -2181,7 +2161,7 @@
   .nqadd:hover .nqm-add i:nth-child(1) { transform: rotate(-15deg) translate(-4px, -5px); }
   .nqadd:hover .nqm-add i:nth-child(2) { transform: translateY(2px); }
 
-  @media (prefers-reduced-motion: reduce) { .nqmini i, .nqmini, .nqm-slide .bar::after, .nqm-opts i.pick::after { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .nqmini i, .nqmini, .nqm-slide .bar::after, .nqm-opts i.pick::after, .nqm-video i::after { transition: none !important; } }
 
   /* saved folders at the bottom of Create */
   .nqfolders { display: flex; flex-direction: column; gap: 6px; }
@@ -2278,7 +2258,7 @@
           <button class="nqtool nqt3" onclick="nqOpenTool('quiz')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11a3 3 0 1 1 4 2.8c-.9.4-1 .8-1 1.7"/><circle cx="12" cy="18" r=".7" fill="currentColor"/></svg></div><span class="nqmini nqm-opts" aria-hidden="true"><i></i><i class="pick"></i><i></i></span><b>Quiz</b><span>Multiple choice</span></button>
           <button class="nqtool nqt4" onclick="nqOpenTool('test')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div><span class="nqmini nqm-test" aria-hidden="true"><i></i><i></i><i></i></span><b>Test</b><span>Exam-style</span></button>
           <button class="nqtool nqt5" onclick="nqOpenTool('slides')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="nqmini nqm-slide" aria-hidden="true"><i class="fr"></i><i class="bar"></i></span><b>Slides</b><span>A designed deck</span></button>
-          <button class="nqtool nqt6" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><span class="nqmini nqm-video" aria-hidden="true"><i></i></span><b>Video</b><span>Narrated overview</span></button>
+          <button class="nqtool nqt6" data-feature="video" onclick="nqOpenTool('video')"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div><span class="nqmini nqm-video" aria-hidden="true"><i></i></span><b>Video</b><span>Narrated overview</span></button>
           <button class="nqtool nqt8" onclick="openConceptMap()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="6.5" height="5" rx="1.4"/><rect x="14.5" y="9.5" width="6.5" height="5" rx="1.4"/><rect x="3" y="15.5" width="6.5" height="5" rx="1.4"/><path d="M9.5 6h3a2 2 0 0 1 2 2v1.5"/><path d="M9.5 18h3a2 2 0 0 0 2-2v-1.5"/></svg></div><b>Concept map</b><span>Boxes and arrows</span><span class="nqmini nqm-map" aria-hidden="true"><i></i><i></i><i></i></span></button>
           <button class="nqtool nqt7 nqwide" onclick="nqOpenStudyModes()"><div class="nqic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 8v6l10 5 10-5V8"/></svg></div><div><b>Study modes</b><span>Teach-back · Write · Match · Cram · Sprint</span></div><span class="nqmini nqm-modes" aria-hidden="true"><i></i><i></i><i></i></span></button>
         </div>
@@ -2496,10 +2476,10 @@
           <p>Turn notes into a designed deck — cover photo, card grids, pull quotes, stat rows, timelines, speaker notes — then export to PowerPoint, PDF or Google Slides.</p>
           <span class="bento-go">Build my deck</span>
         </div>
-        <div class="bento-card" onclick="showView('video')">
-          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></div>
+        <div class="bento-card" data-feature="video" onclick="showView('video')">
+          <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="14" rx="2"/><path d="M17.5 10l4-2.5v9L17.5 14"/><path d="M8 9.5l3.5 2.5L8 14.5z" fill="currentColor" stroke="none"/></svg></div>
           <h3>Video Overview</h3>
-          <p>Turn any saved deck into a narrated video — a teacher-style voice walks through each slide, with captions and a transcript.</p>
+          <p>Turn any saved deck into a narrated video — a teacher-style AI voice walks through your slides with motion and captions. Download &amp; share.</p>
           <span class="bento-go">Make a video</span>
         </div>
         <div class="bento-card" onclick="openReview()">
@@ -2731,81 +2711,44 @@
       <button class="back-link" onclick="showView('dashboard')">&larr; Dashboard</button>
       <div class="tool-hero">
         <div class="tool-hero-txt">
-          <span class="eyebrow">Watch instead of read</span>
-          <h1 class="page-title">Video <em>overview.</em></h1>
-          <p class="page-sub">Notiq writes a narration for every slide and reads it aloud — each slide holds until its narration finishes, then glides into the next.</p>
+          <span class="eyebrow">Video Overview</span>
+          <h1 class="page-title">Turn a deck into a <em>narrated video.</em></h1>
+          <p class="page-sub">An AI voice walks through one of your saved decks, with motion and captions.</p>
         </div>
         <div class="tool-art" aria-hidden="true"><span class="nqmini nqm-video"><i></i></span></div>
       </div>
 
-      <div class="vo-empty hidden" id="vo-empty">
-        <b>No saved decks yet.</b><br>
-        Build a deck in <b>Slides</b> and save it — then come back here and Notiq will turn it into a narrated video.
-        <div style="margin-top:14px;"><button class="btn-primary" onclick="showView('slides')">Build a deck</button></div>
+      <div class="surface" id="vo-empty" style="display:none; max-width:620px;">
+        <p style="font-size:15.5px; line-height:1.6; margin:0;"><b>Save a slide deck first.</b> Video Overview works from a deck you've saved to a folder. <a href="#" onclick="showView('slides'); return false;" style="color:var(--coral); font-weight:800;">Build &amp; save a deck</a>, then come back here.</p>
       </div>
 
-      <div class="surface" id="vo-setup">
+      <div class="surface" id="vo-form" style="display:none; max-width:620px;">
         <div class="card-head">
-          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 9 4-2v10l-4-2"/></svg></span>
-          <span class="ch-txt"><b>Pick a deck to narrate</b><span>Notiq writes a script per slide, then plays it back</span></span>
+          <span class="ch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="13.5" height="13" rx="2.5"/><path d="M21.5 8.5v7l-5.5-3.5z"/></svg></span>
+          <span class="ch-txt"><b>Which deck should it narrate?</b><span>Pick one of your saved slide decks</span></span>
         </div>
-        <div class="vo-setup">
-          <div class="vo-f">
-            <label class="field-label" for="vo-deck">Deck</label>
-            <select id="vo-deck"></select>
-          </div>
-          <div class="vo-f">
-            <label class="field-label" for="vo-voice">Voice</label>
-            <select id="vo-voice"></select>
-          </div>
-          <div class="vo-f" style="flex:0 0 130px; min-width:120px;">
-            <label class="field-label" for="vo-speed">Speed</label>
-            <select id="vo-speed">
-              <option value="0.9">Slower</option>
-              <option value="1" selected>Normal</option>
-              <option value="1.15">Faster</option>
-            </select>
-          </div>
+        <div class="vo-row">
+          <label class="field-label" style="margin-top:0;">Choose a saved deck</label>
+          <select class="txt-input" id="vo-deck"></select>
         </div>
-        <label class="vo-check" style="display:flex; align-items:center; gap:9px; font-size:14px; margin:14px 0 4px; cursor:pointer;">
-          <input type="checkbox" id="vo-caps" checked style="width:17px; height:17px; accent-color:var(--coral);">
-          Show captions on screen
-        </label>
-        <div class="cta-row"><button class="btn-cta" id="vo-go" onclick="voGenerate()">Create video overview</button></div>
-        <div class="status-line" id="vo-status"></div>
+        <div class="vo-row">
+          <label class="field-label">Narrator voice</label>
+          <select class="txt-input" id="vo-voice"></select>
+        </div>
+        <label class="vo-check"><input type="checkbox" id="vo-captions" checked> Burn in captions</label>
+        <div class="cta-row"><button class="btn-cta" id="vo-go" onclick="voGenerate()">Generate video</button></div>
+        <div class="vo-status" id="vo-status"></div>
       </div>
 
-      <div class="vo-player hidden" id="vo-player">
-        <div class="vo-screen" id="vo-screen">
-          <div class="vo-layer" id="vo-la"><div class="vo-fit" id="vo-fa"></div></div>
-          <div class="vo-layer" id="vo-lb"><div class="vo-fit" id="vo-fb"></div></div>
-          <div class="vo-cap" id="vo-cap"></div>
-          <div class="vo-badge" id="vo-badge" onclick="voToggle()"><i></i></div>
+      <div id="vo-result" class="hidden" style="max-width:840px;">
+        <video id="vo-video" class="vo-video" controls playsinline></video>
+        <div class="vo-actions">
+          <button class="btn-primary" id="vo-download" onclick="voDownload()">Download video</button>
+          <button class="btn-ghost" onclick="voTranscript()">Transcript</button>
+          <button class="btn-ghost" onclick="voSRT()">Captions (.srt)</button>
+          <button class="btn-ghost" onclick="voReset()">Make another</button>
         </div>
-        <div class="vo-bar">
-          <button class="vo-btn" onclick="voPrev()" title="Previous slide" aria-label="Previous slide">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14L7 12z"/><path d="M5 5v14"/></svg>
-          </button>
-          <button class="vo-btn main" id="vo-pp" onclick="voToggle()" title="Play / pause" aria-label="Play or pause">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-          <button class="vo-btn" onclick="voNext()" title="Next slide" aria-label="Next slide">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14l11-7z"/><path d="M19 5v14"/></svg>
-          </button>
-          <div class="vo-prog" id="vo-prog" onclick="voSeekBar(event)"><i id="vo-progi"></i></div>
-          <span class="vo-num" id="vo-num">1 / 1</span>
-          <button class="btn-ghost" onclick="voRestart()">Restart</button>
-          <button class="btn-ghost" onclick="voDownload()">Download</button>
-        </div>
-        <div class="status-line" id="vo-play-status"></div>
-
-        <div class="vo-tr">
-          <div class="vo-tr-head">
-            <div class="section-label" style="margin:0;">Transcript — by slide</div>
-            <button class="btn-ghost" onclick="voCopyTranscript()">Copy all</button>
-          </div>
-          <div id="vo-segs"></div>
-        </div>
+        <p class="vo-hint" id="vo-hint"></p>
       </div>
     </div>
 
@@ -3583,11 +3526,16 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
 // ================= FEATURE SWITCHES =================
+// Video Overview is parked, not deleted. Flip this to true and the whole tool comes
+// back with no other edits: the Create-panel button, the dashboard card, the page and
+// its registry entry all key off this one line, and every bit of code behind it
+// (voGenerate, the narration + filming pipeline, /api/tts) is untouched.
+const VIDEO_ENABLED = false;
 
 // Hides anything tagged data-feature="X" when the matching switch is off, then keeps
 // the tool grid even so removing a card can't orphan the last one in its row.
 function applyFeatureSwitches() {
-  const off = {};
+  const off = { video: !VIDEO_ENABLED };
   document.querySelectorAll("[data-feature]").forEach(el => {
     if (off[el.dataset.feature]) el.style.display = "none";
   });
@@ -4847,350 +4795,439 @@ function slExportPdf() {
 }
 
 // ================= VIDEO OVERVIEW =================
-// Turns a saved slide deck into a narrated video. An LLM writes ONE narration
-// segment per slide; a voice reads it; the slide holds on screen for exactly as
-// long as its own narration, then crossfades into the next one.
-//
-// The voice engine is pluggable. Today it uses the browser's built-in
-// speechSynthesis — free, no API key, works immediately. To upgrade to studio
-// voices later (or self-hosted Piper), implement voSpeakApi() and set
-// VO_ENGINE = "api". Nothing else in the player has to change.
-const VO_ENGINE = "browser";        // "browser" | "api"
+// Turns the current deck into a narrated, animated video: a grounded teacher-style
+// script -> premium AI voice (Gemini TTS) -> Ken Burns slides + captions, recorded
+// in-browser to a downloadable WebM. Plus transcript (.txt) and captions (.srt).
+const VO_VOICES = [
+  { label: "Professional Teacher (F)", gemini: "Kore",       openai: "nova" },
+  { label: "Friendly Tutor (M)",       gemini: "Puck",       openai: "fable" },
+  { label: "Documentary Narrator (M)", gemini: "Charon",     openai: "onyx" },
+  { label: "Calm & Warm (F)",          gemini: "Aoede",      openai: "shimmer" },
+  { label: "Confident Presenter (M)",  gemini: "Orus",       openai: "echo" },
+  { label: "Bright Podcast Host (F)",  gemini: "Leda",       openai: "nova" },
+  { label: "Clear Lecturer (M)",       gemini: "Iapetus",    openai: "alloy" },
+  { label: "Storyteller (F)",          gemini: "Callirrhoe", openai: "shimmer" },
+];
+let voScriptSegs = null, voMeta = null, voBlob = null, voURL = null, voBusy = false, voSavedDecks = [];
 
-let voDecks = [], voDeck = null, voSegs = null;
-let voIdx = 0, voPlaying = false, voToken = 0, voUseA = true;
-let voVoices = [], voSentences = [];
-
-// ---- open the tool: load saved decks + the system's voices ----
+// Open the Video Overview tool: load the user's saved decks into the picker.
 async function voOpenTool() {
+  const vsel = $("vo-voice");
+  if (vsel && !vsel.options.length) vsel.innerHTML = VO_VOICES.map((v, i) => `<option value="${i}">${v.label}</option>`).join("");
+  $("vo-result").classList.add("hidden");
   setStatus("vo-status", "");
-  $("vo-player").classList.add("hidden");
-  voLoadVoices();
   const dsel = $("vo-deck");
   dsel.innerHTML = '<option>Loading your decks…</option>';
+  $("vo-form").style.display = "none";
+  $("vo-empty").style.display = "none";
   let rows = [];
   try {
     const { data } = await sb.from("saved_items").select("id, title, content").eq("type", "slides");
     rows = data || [];
   } catch (e) { rows = []; }
-  voDecks = rows.filter(r => r && r.content && Array.isArray(r.content.slides) && r.content.slides.length);
-  const empty = !voDecks.length;
-  $("vo-empty").classList.toggle("hidden", !empty);
-  $("vo-setup").classList.toggle("hidden", empty);
-  if (empty) return;
-  dsel.innerHTML = voDecks.map((d, i) => `<option value="${i}">${esc(d.title || "Untitled deck")}</option>`).join("");
+  voSavedDecks = rows.filter(r => r && r.content && Array.isArray(r.content.slides) && r.content.slides.length);
+  if (!voSavedDecks.length) { $("vo-empty").style.display = "block"; return; }
+  dsel.innerHTML = voSavedDecks.map((d, i) => `<option value="${i}">${esc(d.title || "Untitled deck")}</option>`).join("");
+  $("vo-form").style.display = "block";
+}
+function voReset() {
+  $("vo-result").classList.add("hidden");
+  $("vo-form").style.display = voSavedDecks.length ? "block" : "none";
+  setStatus("vo-status", "");
 }
 
-function voLoadVoices() {
-  const sel = $("vo-voice");
-  if (!sel || !("speechSynthesis" in window)) { if (sel) sel.innerHTML = '<option>Default voice</option>'; return; }
-  const all = speechSynthesis.getVoices() || [];
-  // prefer natural-sounding English voices, but never hide the rest
-  const en = all.filter(v => /^en(-|_|$)/i.test(v.lang));
-  voVoices = (en.length ? en : all);
-  const nice = n => /google|natural|samantha|siri|premium|enhanced|aria|jenny|zira/i.test(n) ? 0 : 1;
-  voVoices.sort((a, b) => nice(a.name) - nice(b.name) || a.name.localeCompare(b.name));
-  sel.innerHTML = voVoices.length
-    ? voVoices.map((v, i) => `<option value="${i}">${esc(v.name.replace(/\s*\(.*?\)\s*/g, " ").trim())}${/^en-GB/i.test(v.lang) ? " · UK" : ""}</option>`).join("")
-    : '<option value="-1">Default voice</option>';
+// ---- how long a slide is allowed to be talked over ----
+// A slide stays on screen for exactly as long as its narration, so the narration
+// length IS the slide's screen time. Budget it from how much is actually ON the
+// slide: a three-word section divider gets a handful of words, a dense slide gets
+// more. Without this the model happily wrote 60 words over a three-word slide and
+// started explaining the NEXT topic while that slide was still up.
+function voWordBudget(s, i, lenMode) {
+  const mult = lenMode === "short" ? 0.62 : lenMode === "detailed" ? 1.45 : 1;
+  if (i === 0) return Math.round(42 * mult);                 // title / opening
+  if (!s) return 40;
+  if (s.type === "section") return Math.max(6, Math.round(13 * mult));   // just a transition
+  let w = 0;
+  const add = t => { w += String(t == null ? "" : t).trim().split(/\s+/).filter(Boolean).length; };
+  add(s.heading);
+  (s.bullets || []).forEach(add);
+  (s.events || []).forEach(e => { add(e.when); add(e.what); });
+  (s.steps || []).forEach(e => { add(e.title); add(e.detail); });
+  (s.cards || []).forEach(c => { add(c.label); add(c.title); add(c.text); });
+  (s.stats || []).forEach(x => { add(x.value); add(x.label); });
+  [s.left, s.right].filter(Boolean).forEach(c => { add(c.title); (c.points || []).forEach(add); });
+  add(s.big); add(s.caption); add(s.sub); add(s.quote); add(s.callout);
+  return Math.max(16, Math.min(95, Math.round((14 + w * 1.6) * mult)));
 }
-if ("speechSynthesis" in window) {
-  try { speechSynthesis.onvoiceschanged = () => { if ($("vo-voice")) voLoadVoices(); }; } catch (e) {}
-}
-
-// ---- helpers over the deck being narrated ----
-function voTotal() { return voDeck ? voDeck.content.slides.length + 1 : 0; }
-function voSectionFor(idx) {
-  const d = voDeck.content;
-  let section = d.topic || "";
-  for (let k = 0; k <= idx && k < d.slides.length; k++) {
-    if (d.slides[k].type === "section") section = d.slides[k].heading || section;
+// Cut a segment down to its budget on a sentence boundary so it still sounds finished.
+function voFitWords(text, max) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  if (words.length <= max) return String(text || "");
+  const sentences = String(text).match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [String(text)];
+  let out = "", n = 0;
+  for (const sen of sentences) {
+    const c = sen.trim().split(/\s+/).filter(Boolean).length;
+    if (n && n + c > max * 1.2) break;
+    out += sen; n += c;
+    if (n >= max) break;
   }
-  return section;
-}
-// plain text of a slide — what the narration is written from
-function voSlideText(i) {
-  const d = voDeck.content;
-  if (i === 0) return `TITLE SLIDE — ${d.title || "Untitled"}${d.subtitle ? " — " + d.subtitle : ""}`;
-  const sl = d.slides[i - 1] || {};
-  const bits = [];
-  if (sl.heading) bits.push(sl.heading);
-  if (sl.sub) bits.push(sl.sub);
-  if (Array.isArray(sl.bullets)) bits.push(sl.bullets.map(b => (typeof b === "string" ? b : (b && (b.t || b.text || b.h)) || "")).join(" • "));
-  if (Array.isArray(sl.cards)) bits.push(sl.cards.map(c => [c && c.h, c && c.t].filter(Boolean).join(": ")).join(" • "));
-  if (sl.quote) bits.push('"' + sl.quote + '"');
-  if (sl.stat) bits.push(String(sl.stat) + (sl.statLabel ? " — " + sl.statLabel : ""));
-  if (sl.body) bits.push(sl.body);
-  if (sl.notes) bits.push("(speaker notes: " + sl.notes + ")");
-  return bits.filter(Boolean).join(" | ").slice(0, 900) || (sl.heading || "slide");
-}
-function voSlideTitle(i) {
-  const d = voDeck.content;
-  if (i === 0) return d.title || "Title";
-  const sl = d.slides[i - 1] || {};
-  return sl.heading || sl.quote || (sl.stat ? String(sl.stat) : "") || `Slide ${i + 1}`;
+  out = out.trim();
+  if (!out) out = words.slice(0, max).join(" ").replace(/[,;:—-]+$/, "") + ".";
+  return out;
 }
 
-// ---- 1) write the narration: one segment per slide ----
-async function voScript() {
-  const n = voTotal();
-  const outline = Array.from({ length: n }, (_, i) => {
-    // a slide with little text gets a short line, or the viewer stares at it while you talk
-    const txt = voSlideText(i);
-    const budget = Math.max(18, Math.min(70, Math.round(txt.replace(/[^\w\s]/g, " ").split(/\s+/).filter(Boolean).length * 1.7) + 14));
-    return `SLIDE ${i + 1} (budget ~${budget} words)\n${txt}`;
+// ---- grounded, teacher-style narration script ----
+async function voScriptGen() {
+  const deck = slDeck;
+  const lenMode = "auto";   // narration length is derived from each slide's own content
+  const slidesText = deck.slides.map((s, i) => {
+    const b = [];
+    b.push("Narration budget: at most " + voWordBudget(s, i + 1, lenMode) + " spoken words");
+    if (s.heading) b.push("Heading: " + s.heading);
+    if (s.bullets) b.push("Points: " + s.bullets.map(x => String(x).replace(/\*\*/g, "")).join(" | "));
+    if (s.events) b.push("Timeline: " + s.events.map(e => e.when + ": " + e.what).join(" | "));
+    if (s.steps) b.push("Steps: " + s.steps.map(e => e.title + ": " + e.detail).join(" | "));
+    if (s.cards) b.push("Cards: " + s.cards.map(c => [c.label, c.title, c.text].filter(Boolean).join(" — ")).join(" | "));
+    if (s.stats) b.push("Figures: " + s.stats.map(x => x.value + " " + (x.label || "")).join(" | "));
+    if (s.left || s.right) b.push("Compare: " + [s.left, s.right].filter(Boolean).map(c => (c.title || "") + " (" + ((c.points || []).join(", ")) + ")").join(" vs "));
+    if (s.big) b.push("Key fact: " + s.big + (s.caption ? (" — " + s.caption) : ""));
+    if (s.quote) b.push("Quote: “" + s.quote + "”" + (s.attribution ? " — " + s.attribution : ""));
+    if (s.sub) b.push("Supporting line: " + s.sub);
+    if (s.callout) b.push("Callout: " + s.callout);
+    if (s.notes) b.push("Notes: " + s.notes);
+    return "SLIDE " + (i + 1) + " [" + (s.type || "bullets") + "]\n" + b.join("\n");
   }).join("\n\n");
-
+  const lenNote = lenMode === "short" ? "One short sentence per slide. Only the single most important point."
+    : lenMode === "detailed" ? "Two to three sentences per slide where the content is rich; still only the important ideas, never every detail."
+    : "Usually ONE or TWO natural sentences per slide — just the key idea. Give a genuinely rich slide up to three; breeze through a simple slide in a single short sentence.";
+  const need = deck.slides.length + 1;
   const raw = await groq([
-    { role: "system", content: 'You are a warm, clear teacher narrating a slide deck out loud. Respond ONLY with valid JSON: {"segments":["...","..."]} — one spoken segment per slide, in order.' },
-    { role: "user", content:
-`Write the spoken narration for this ${n}-slide deck: "${voDeck.title || "Deck"}".
-
-RULES
-- Return EXACTLY ${n} segments, one per slide, in order.
-- Each segment is what a teacher SAYS while that slide is on screen. Plain spoken English — no headings, no bullet symbols, no markdown, no stage directions, no "slide 3 says".
-- TIMING IS STRICT: the slide stays on screen exactly as long as its narration. Respect each slide's word budget. Never pull in the next slide's content to fill time.
-- Slide 1 opens the video: greet briefly and say what the deck covers.
-- The final slide wraps up with the key takeaway.
-- Explain and connect ideas — don't just read the slide aloud.
-- Write numbers, symbols and formulas the way they are spoken (say "twenty percent", not "20%").
-
-SLIDES
-${outline}` }
-  ], true);
-
-  let segs = [];
-  try { segs = JSON.parse(raw).segments || []; } catch (e) { segs = []; }
-  if (!Array.isArray(segs) || !segs.length) throw new Error("The narration came back empty — try again.");
-  segs = segs.map(s => String(s || "").replace(/\s+/g, " ").trim());
-  while (segs.length < n) segs.push(voSlideTitle(segs.length));       // never leave a silent slide
-  return segs.slice(0, n);
+    { role: "system", content: `You are a warm, expert presenter narrating a slide deck out loud like a great teacher or documentary host — NOT reading the slides. Respond ONLY with valid JSON:
+{"segments":["spoken narration for the title/opening","narration for slide 1", "..."]}
+There must be EXACTLY ${need} strings: the first is a brief, engaging OPENING for the title slide (name the topic and what viewers will learn, in ~2 sentences), then one per content slide in order, and the LAST closes with the single biggest takeaway.
+HOW TO SPEAK:
+- Say ONLY what matters — the ONE key idea of each slide. Skip minor, obvious, or repetitive details entirely.
+- CRITICAL — each segment narrates ONLY its own slide. NEVER describe, preview, or lead into the NEXT slide's content. The viewer is looking at THIS slide while you speak, so everything you say must be about what is on screen right now. A light connector at the very end ("Now…", "But there's a catch…") is fine, but do not start explaining the next topic.
+- NEVER read or enumerate bullet points; blend a slide's points into one flowing thought.
+- A "section" divider slide (just a short title, no body) gets only a SHORT spoken transition — announce the new section in a handful of words and stop (e.g. "Next, the causes." or "Now, how it actually works."). Never pad it; it must be read quickly and move on.
+- TIMING IS STRICT: each slide stays on screen for exactly as long as its narration takes to speak. Every slide below lists a "Narration budget" in words — your segment for that slide MUST fit inside it. A sparse slide with three words on it gets a short line, or the viewer stares at three words while you talk. Never borrow the next slide's content to fill time.
+- Sound like a real person talking: natural rhythm, plain words. Not stiff, not a script being read.
+- ${lenNote}
+- GROUND every sentence ONLY in the provided slide content and notes — never invent facts, names, or numbers; if a slide is thin, keep it to a few words.
+- Plain spoken prose only: no markdown, no lists, no stage directions, no emojis, no slide numbers.` },
+    { role: "user", content: `Deck title: ${deck.title || ""}\nTopic: ${deck.topic || ""}\n\n${slidesText.slice(0, 14000)}` }
+  ], true, Math.min(4000, 900 + deck.slides.length * 170));
+  const d = parseAIJson(raw);
+  let segs = (Array.isArray(d.segments) ? d.segments : []).map(s => String(s || "").replace(/\s+/g, " ").trim());
+  if (segs.length > need) segs = segs.slice(0, need);
+  while (segs.length < need) segs.push("");
+  // Enforce the budget ourselves — the model overruns it on sparse slides, and an
+  // overrun becomes dead screen time on a slide that has nothing left to look at.
+  return segs.map((s, i) => voFitWords(s, voWordBudget(i === 0 ? null : deck.slides[i - 1], i, lenMode)));
 }
 
-// ---- 2) build ----
-async function voGenerate() {
-  if (!voDecks.length) return;
-  if (!gateGenerate("vo-status")) return;
-  voHalt();
-  voDeck = voDecks[+$("vo-deck").value || 0];
-  $("vo-go").disabled = true;
-  setStatus("vo-status", "Writing a narration for every slide…", false, true);
-  try {
-    voSegs = await voScript();
-    voIdx = 0;
-    $("vo-player").classList.remove("hidden");
-    $("vo-screen").classList.toggle("no-cap", !$("vo-caps").checked);
-    voRenderTranscript();
-    voShow(0, true);
-    voSetBadge(true);
-    setStatus("vo-status", "");
-    setStatus("vo-play-status", "Ready — press play.");
-    try { logActivity("generate"); } catch (e) {}
-    $("vo-player").scrollIntoView({ behavior: "smooth", block: "start" });
-  } catch (e) {
-    setStatus("vo-status", e.message || "Couldn't build the narration.", true);
-  }
-  $("vo-go").disabled = false;
-}
-
-// ---- rendering a slide into one of the two crossfading layers ----
-function voShow(idx, instant) {
-  if (!voDeck) return;
-  voIdx = Math.max(0, Math.min(voTotal() - 1, idx));
-  const prevDeck = (typeof slDeck !== "undefined") ? slDeck : null;
-  let html = "";
-  try {
-    slDeck = voDeck.content;                       // reuse the deck's real look
-    const s = slEffStyle();
-    html = voIdx === 0
-      ? slTitleHtml(s)
-      : slSlideHtml(voDeck.content.slides[voIdx - 1], voIdx - 1, s, false, voSectionFor(voIdx - 1));
-  } catch (e) {
-    html = `<div class="slide"><div class="sl-body"><h2>${esc(voSlideTitle(voIdx))}</h2></div></div>`;
-  } finally { slDeck = prevDeck; }
-
-  const inA = instant ? true : !voUseA;
-  const fit = $(inA ? "vo-fa" : "vo-fb");
-  const layIn = $(inA ? "vo-la" : "vo-lb"), layOut = $(inA ? "vo-lb" : "vo-la");
-  fit.innerHTML = html;
-  fit.querySelectorAll(".sl-imgbox.empty").forEach(el => el.remove());
-  voFit();
-  layIn.classList.add("on");
-  layOut.classList.remove("on");
-  voUseA = inA;
-
-  $("vo-num").textContent = (voIdx + 1) + " / " + voTotal();
-  $("vo-progi").style.width = (((voIdx + 1) / voTotal()) * 100) + "%";
-  document.querySelectorAll("#vo-segs .vo-seg").forEach((el, i) => el.classList.toggle("active", i === voIdx));
-}
-function voFit() {
-  const scr = $("vo-screen"); if (!scr) return;
-  const sc = scr.clientWidth / 1280;
-  ["vo-fa", "vo-fb"].forEach(id => { const el = $(id); if (el) el.style.transform = `scale(${sc})`; });
-}
-window.addEventListener("resize", () => { if (voDeck) voFit(); });
-
-// ---- captions ----
-function voSplitSentences(text) {
-  const out = []; const re = /[^.!?]+[.!?]*\s*/g; let m;
-  while ((m = re.exec(text))) { const t = m[0]; if (t.trim()) out.push({ at: m.index, txt: t.trim() }); }
-  return out.length ? out : [{ at: 0, txt: text }];
-}
-function voCaption(txt) {
-  const el = $("vo-cap"); if (!el) return;
-  if (!txt) { el.classList.remove("on"); return; }
-  el.textContent = txt; el.classList.add("on");
-}
-
-// ---- the voice layer (swap this to upgrade voices) ----
-function voSpeak(text, token) {
-  const rate = parseFloat($("vo-speed").value) || 1;
-  if (VO_ENGINE === "api") return voSpeakApi(text, rate, token);
-  return voSpeakBrowser(text, rate, token);
-}
-function voSpeakBrowser(text, rate, token) {
-  return new Promise(resolve => {
-    if (!("speechSynthesis" in window)) { setTimeout(resolve, Math.max(2200, text.length * 45)); return; }
-    try { speechSynthesis.cancel(); } catch (e) {}
-    voSentences = voSplitSentences(text);
-    let si = -1;
-    const setSentence = (charIndex) => {
-      let k = 0;
-      for (let i = 0; i < voSentences.length; i++) if (voSentences[i].at <= charIndex) k = i;
-      if (k !== si) { si = k; voCaption(voSentences[k].txt); }
-    };
-    setSentence(0);
-
-    const u = new SpeechSynthesisUtterance(text);
-    const v = voVoices[+$("vo-voice").value];
-    if (v) { u.voice = v; u.lang = v.lang; }
-    u.rate = rate; u.pitch = 1; u.volume = 1;
-    let done = false;
-    const finish = () => { if (done) return; done = true; clearInterval(ping); resolve(); };
-    u.onend = finish;
-    u.onerror = finish;
-    u.onboundary = (e) => { if (typeof e.charIndex === "number") setSentence(e.charIndex); };
-    // Chrome silently stops long utterances unless it's nudged
-    const ping = setInterval(() => {
-      if (token !== voToken) { finish(); return; }
-      try { if (speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {}
-    }, 8000);
-    try { speechSynthesis.speak(u); } catch (e) { finish(); }
-  });
-}
-// Studio-voice path — wire up /api/tts (or self-hosted Piper) and set VO_ENGINE="api".
-async function voSpeakApi(text, rate, token) {
+// ---- one TTS call per slide, so each slide's audio matches its own screen time ----
+// Errors carry the provider's status so the caller can tell "wait for the quota to
+// refill" apart from "this is broken" — they need very different retry behaviour.
+async function voSynth(text, vObj, actx) {
   const r = await fetch("/api/tts", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text: text.slice(0, 7000), voice: vObj.gemini, ovoice: vObj.openai }),
   });
-  if (!r.ok) throw new Error("Voice service unavailable.");
-  const { audio } = await r.json();
-  return new Promise(resolve => {
-    const a = new Audio(audio); a.playbackRate = rate;
-    voCaption(text);
-    a.onended = resolve; a.onerror = resolve;
-    if (token !== voToken) { resolve(); return; }
-    voAudioEl = a; a.play().catch(() => resolve());
-  });
-}
-let voAudioEl = null;
-
-// ---- playback: each slide holds until its narration finishes ----
-function voHalt() {
-  voToken++; voPlaying = false;
-  try { speechSynthesis.cancel(); } catch (e) {}
-  if (voAudioEl) { try { voAudioEl.pause(); } catch (e) {} voAudioEl = null; }
-  voCaption("");
-  voSetPlayIcon(false);
-}
-function voSetPlayIcon(playing) {
-  const b = $("vo-pp"); if (!b) return;
-  b.innerHTML = playing
-    ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
-    : '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-}
-function voSetBadge(show) { const b = $("vo-badge"); if (b) b.classList.toggle("hidden", !show); }
-
-function voToggle() { voPlaying ? voPause() : voPlay(); }
-function voPause() {
-  voHalt();
-  setStatus("vo-play-status", "Paused.");
-  voSetBadge(true);
-}
-async function voPlay() {
-  if (!voSegs || !voDeck) return;
-  voHalt();
-  const token = ++voToken;
-  voPlaying = true;
-  voSetPlayIcon(true);
-  voSetBadge(false);
-  setStatus("vo-play-status", "");
-  for (let i = voIdx; i < voTotal(); i++) {
-    if (token !== voToken) return;
-    voShow(i, i === voIdx && i === 0 && !$("vo-la").classList.contains("on"));
-    try { await voSpeak(voSegs[i] || voSlideTitle(i), token); }
-    catch (e) { if (token === voToken) { setStatus("vo-play-status", e.message || "Voice failed.", true); voHalt(); return; } }
-    if (token !== voToken) return;
-    await new Promise(r => setTimeout(r, 420));         // the breath where the crossfade happens
-    if (token !== voToken) return;
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    const err = new Error(e.error || "Narration engine unavailable. Make sure GEMINI_API_KEY is set in Vercel.");
+    err.status = e.status || r.status;
+    err.rateLimited = err.status === 429 || /quota|rate.?limit|too many requests|resource.?exhausted/i.test(err.message);
+    throw err;
   }
-  if (token !== voToken) return;
-  voPlaying = false; voSetPlayIcon(false); voCaption(""); voSetBadge(true);
-  setStatus("vo-play-status", "Finished — press play to watch again.");
-}
-function voNext() { if (!voSegs) return; const was = voPlaying; voHalt(); voShow(Math.min(voIdx + 1, voTotal() - 1)); if (was) voPlay(); }
-function voPrev() { if (!voSegs) return; const was = voPlaying; voHalt(); voShow(Math.max(voIdx - 1, 0)); if (was) voPlay(); }
-function voRestart() { if (!voSegs) return; voHalt(); voShow(0, true); voPlay(); }
-function voSeek(i) { if (!voSegs) return; const was = voPlaying; voHalt(); voShow(i); if (was) voPlay(); }
-function voSeekBar(ev) {
-  if (!voSegs) return;
-  const r = $("vo-prog").getBoundingClientRect();
-  voSeek(Math.min(voTotal() - 1, Math.floor(((ev.clientX - r.left) / r.width) * voTotal())));
+  const j = await r.json();
+  const bin = atob(String(j.audio || "").split(",")[1] || "");
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return voTrimSilence(await actx.decodeAudioData(bytes.buffer), actx);
 }
 
-// ---- transcript, split by slide ----
-function voRenderTranscript() {
-  $("vo-segs").innerHTML = voSegs.map((s, i) =>
-    `<div class="vo-seg${i === voIdx ? " active" : ""}" onclick="voSeek(${i})" title="Jump to this slide">
-       <span class="n">${i + 1}</span>
-       <span class="tx"><span class="tt">${esc(voSlideTitle(i))}</span><span class="bd">${esc(s)}</span></span>
-     </div>`).join("");
-}
-function voCopyTranscript() {
-  const txt = voSegs.map((s, i) => `${i + 1}. ${voSlideTitle(i)}\n${s}`).join("\n\n");
-  try { navigator.clipboard.writeText(txt); setStatus("vo-play-status", "Transcript copied ✓"); }
-  catch (e) { setStatus("vo-play-status", "Couldn't copy — select the text instead.", true); }
+// Gemini TTS pads its output with silence — sometimes several seconds of it, and
+// more on a short line than a long one. Because a slide holds for its narration's
+// full duration, that padding was pure dead air with the slide frozen on screen.
+// Trim it (in 20ms windows so a stray sample doesn't fool us) so a slide lasts as
+// long as its speech and no longer.
+function voTrimSilence(buf, actx) {
+  try {
+    const sr = buf.sampleRate, n = buf.length, data = buf.getChannelData(0);
+    const win = Math.max(1, Math.round(sr * 0.02)), thr = 0.008;
+    const loud = w => {
+      const end = Math.min(n, (w + 1) * win);
+      for (let i = w * win; i < end; i++) if (Math.abs(data[i]) > thr) return true;
+      return false;
+    };
+    const wins = Math.ceil(n / win);
+    let a = 0, b = wins - 1;
+    while (a < wins && !loud(a)) a++;
+    while (b > a && !loud(b)) b--;
+    if (a >= b) return buf;                                     // all silence — leave it alone
+    let s = Math.max(0, a * win - Math.round(sr * 0.06));       // small lead-in
+    let e = Math.min(n, (b + 1) * win + Math.round(sr * 0.18)); // let the last word breathe
+    if (e - s >= n - Math.round(sr * 0.12)) return buf;         // nothing worth trimming
+    const out = actx.createBuffer(buf.numberOfChannels, e - s, sr);
+    for (let c = 0; c < buf.numberOfChannels; c++) out.getChannelData(c).set(buf.getChannelData(c).subarray(s, e));
+    return out;
+  } catch (err) { return buf; }
 }
 
-// ---- download ----
-// A real video file needs capturable audio. The browser's speechSynthesis can't be
-// recorded, so with the built-in voice we export the transcript + timed captions;
-// switching VO_ENGINE to "api" gives real audio and unlocks a video file.
+// ---- rasterize each slide (with the real theme) to a 1280x720 canvas ----
+let _h2cTried = false;
+async function loadHtml2Canvas() {
+  if (window.html2canvas) return;
+  // html2canvas-pro: maintained fork that understands modern CSS color functions
+  // (color-mix, color(srgb …), oklch). Plain html2canvas 1.4.1 THROWS on these —
+  // current Chrome serializes our color-mix(in srgb, …) slide styles as
+  // color(srgb …), which made every slide render fail into a blank dark frame.
+  // Drop-in: same window.html2canvas global and API.
+  const cdns = [
+    "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js",
+    "https://unpkg.com/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js",
+    // last-resort legacy fallback (may blank modern-color slides, but better than nothing)
+    "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
+  ];
+  for (const src of cdns) { try { await loadScriptOnce(src); if (window.html2canvas) return; } catch (e) { /* next */ } }
+  throw new Error("Couldn't load the video renderer — check your connection or ad-blocker.");
+}
+async function voRasterize() {
+  await loadHtml2Canvas();
+  const s = slEffStyle();
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:fixed; left:-99999px; top:0; width:1280px; height:720px; z-index:-1; overflow:hidden;";
+  document.body.appendChild(stage);
+  const htmls = [slTitleHtml(s)];
+  let section = slDeck.topic || "";
+  slDeck.slides.forEach((sl, i) => { if (sl.type === "section") section = sl.heading || section; htmls.push(slSlideHtml(sl, i, s, false, section)); });
+  try { await document.fonts.ready; } catch (e) {}
+  const imgs = [];
+  for (const h of htmls) {
+    stage.innerHTML = h;
+    const el = stage.querySelector(".slide") || stage;
+    if (el.style) { el.style.width = "1280px"; el.style.height = "720px"; el.style.margin = "0"; el.style.aspectRatio = "auto"; el.style.borderRadius = "0"; }
+    stage.querySelectorAll(".sl-imgbox.empty, .sl-notes, .sl-num, .sl-imgx").forEach(x => x.remove());
+    await new Promise(r => setTimeout(r, 50));
+    try {
+      const c = await html2canvas(el, { width: 1280, height: 720, scale: 1, backgroundColor: s.bg || "#0a0c10", logging: false, useCORS: true, imageTimeout: 4000 });
+      imgs.push(c);
+    } catch (e) { const c = document.createElement("canvas"); c.width = 1280; c.height = 720; const g = c.getContext("2d"); g.fillStyle = s.bg || "#0a0c10"; g.fillRect(0, 0, 1280, 720); imgs.push(c); }
+  }
+  stage.remove();
+  return imgs;
+}
+
+// ---- draw one Ken Burns frame + captions ----
+function voRoundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function voDrawSlide(ctx, img, p, W, H) {
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  if (!img) return;
+  const zoom = 1.05 + 0.07 * p;                 // slow zoom in
+  const dw = W * zoom, dh = H * zoom;
+  const dx = -(dw - W) / 2 - (p - 0.5) * 26;    // gentle pan
+  const dy = -(dh - H) / 2;
+  try { ctx.drawImage(img, dx, dy, dw, dh); } catch (e) {}
+}
+function voDrawCaption(ctx, text, W, H) {
+  if (!text) return;
+  ctx.font = "600 27px 'Hanken Grotesk', system-ui, sans-serif";
+  const maxW = W - 200, words = text.split(/\s+/), lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW) { if (cur) lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur);
+  const show = lines.slice(-3), lh = 38, bh = show.length * lh + 26, by = H - bh - 30;
+  ctx.fillStyle = "rgba(6,8,14,.66)"; voRoundRect(ctx, 70, by, W - 140, bh, 16); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  show.forEach((ln, i) => ctx.fillText(ln, W / 2, by + 13 + lh / 2 + i * lh));
+  ctx.textAlign = "left";
+}
+
+// ---- record the video (real time) ----
+const VO_GAP = 0.4;   // silent breath between slides — the transition happens here (kept short so slides don't linger after their narration)
+async function voRender(imgs, buffers, durs, says, burn, actx, onProgress) {
+  const W = 1280, H = 720, FPS = 30, GAP = VO_GAP, XF = 0.38;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+  const dest = actx.createMediaStreamDestination();
+  // each slide occupies its narration time, then a short silent gap for the transition
+  const starts = []; let acc = 0;
+  durs.forEach((d, i) => { starts.push(acc); acc += d + (i < durs.length - 1 ? GAP : 0.5); });
+  const total = acc;
+  const mimes = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
+  const mime = mimes.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  const vstream = cv.captureStream(FPS);
+  const stream = new MediaStream([...vstream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4500000 } : undefined);
+  const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const finished = new Promise(res => { rec.onstop = () => res(new Blob(chunks, { type: (mime.indexOf("mp4") >= 0 ? "video/mp4" : "video/webm") })); });
+  const t0 = actx.currentTime + 0.25;
+  // schedule each slide's narration to start exactly when its slide appears
+  buffers.forEach((b, i) => { if (!b) return; const src = actx.createBufferSource(); src.buffer = b; src.connect(dest); src.connect(actx.destination); src.start(t0 + starts[i]); });
+  rec.start();
+  await new Promise(resolve => {
+    let done = false, raf = 0, iv = 0, lastDraw = -1, lastPr = -1;
+    const stop = () => { if (done) return; done = true; cancelAnimationFrame(raf); clearInterval(iv); resolve(); };
+    function frame() {
+      if (done) return;
+      const now = actx.currentTime - t0;
+      if (now >= total) { stop(); return; }
+      if (now - lastDraw < 0.011) return;    // rAF and the timer both drive this; don't draw twice
+      lastDraw = now;
+      // current slide = the last one whose start time has passed
+      let idx = 0;
+      for (let i = 0; i < starts.length; i++) { if (now >= starts[i]) idx = i; else break; }
+      const spoken = durs[idx];
+      const into = now - starts[idx];
+      const p = Math.max(0, Math.min(1, into / spoken));      // Ken Burns over the narrated part
+      voDrawSlide(ctx, imgs[idx], p, W, H);
+      // during the silent gap after narration, crossfade smoothly into the next slide
+      const intoGap = into - spoken;
+      if (idx < imgs.length - 1 && intoGap > 0) {
+        const a = Math.min(1, intoGap / XF);
+        ctx.globalAlpha = a; voDrawSlide(ctx, imgs[idx + 1], 0, W, H); ctx.globalAlpha = 1;
+      }
+      // caption shows only while this slide is actually being narrated
+      if (burn && intoGap <= 0) voDrawCaption(ctx, says[idx] || "", W, H);
+      if (onProgress && now - lastPr > 0.25) { lastPr = now; onProgress(now / total); }
+    }
+    function loop() { if (done) return; frame(); raf = requestAnimationFrame(loop); }
+    raf = requestAnimationFrame(loop);
+    // requestAnimationFrame stops firing the moment the tab is hidden or the window
+    // is covered — but the narration is scheduled on the audio clock and keeps going.
+    // That froze the picture on one slide while the voice moved on to the next ones.
+    // Filming makes the tab audible, so its timers stay unthrottled: this interval
+    // keeps frames flowing (and the slides on time) even when the tab isn't visible.
+    iv = setInterval(frame, Math.round(1000 / FPS));
+  });
+  try { rec.stop(); } catch (e) {}
+  return await finished;
+}
+
+// ---- orchestrator ----
+async function voGenerate() {
+  if (voBusy) return;
+  const cvTest = document.createElement("canvas");
+  if (!window.MediaRecorder || !cvTest.captureStream) { setStatus("vo-status", "Your browser can't record video. Use Chrome or Edge on a computer.", true); return; }
+  const di = parseInt($("vo-deck").value, 10);
+  if (isNaN(di) || !voSavedDecks[di]) { setStatus("vo-status", "Pick a saved deck first.", true); return; }
+  voBusy = true; $("vo-go").disabled = true;
+  const vObj = VO_VOICES[parseInt($("vo-voice").value, 10) || 0];
+  const burn = $("vo-captions").checked;
+  const actx = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    if (actx.state === "suspended") await actx.resume();
+    // load the chosen saved deck and refill its images (they're stripped on save)
+    const item = voSavedDecks[di];
+    slDeck = item.content || {}; slDeck.savedId = item.id;
+    slStyle = (slDeck.style === "auto" || (slDeck.style && SL_STYLES[slDeck.style])) ? slDeck.style : "auto";
+    setStatus("vo-status", "Loading the deck and its images…", false, true);
+    try { await slAutoImages(); } catch (e) {}
+    setStatus("vo-status", "Writing a narration script from your slides…", false, true);
+    const says = await voScriptGen();
+    setStatus("vo-status", "Rendering your slides…", false, true);
+    const imgs = await voRasterize();
+    // Narrate EACH slide separately so its audio lines up exactly with that slide —
+    // the slide only advances once its own narration has finished.
+    // Guarantee EVERY slide gets its own spoken line. If the script came back
+    // short or empty for a slide, speak a short line drawn from the slide itself,
+    // so no slide flashes by in silence — that silent tail was why the end of the
+    // video raced ahead with no voice. says[0]=title, says[i]=slDeck.slides[i-1].
+    const slideFallback = (i) => {
+      if (i === 0) return (slDeck.title || "Overview") + (slDeck.subtitle ? ". " + slDeck.subtitle : "");
+      const s = slDeck.slides[i - 1] || {};
+      const h = (s.heading || "").trim();
+      if (s.type === "section") return h || "Next section.";
+      if (s.type === "takeaways") return "In short: " + (s.bullets || []).slice(0, 3).map(x => String(x).replace(/\*\*/g, "")).join(". ");
+      if (s.type === "quote") return (s.attribution ? s.attribution + " put it this way. " : "") + String(s.quote || "");
+      if (s.type === "hero") return [h, s.sub].filter(Boolean).join(". ");
+      if (s.cards && s.cards.length) return [h, s.cards.slice(0, 3).map(c => c.title).filter(Boolean).join(", ")].filter(Boolean).join(": ");
+      if (s.stats && s.stats.length) return [h, s.stats.map(x => x.value + " " + (x.label || "")).join(", ")].filter(Boolean).join(": ");
+      if (s.big) return (h ? h + ". " : "") + String(s.big) + (s.caption ? ". " + s.caption : "");
+      const pts = (s.bullets || []).slice(0, 2).map(x => String(x).replace(/\*\*/g, "")).join(". ");
+      return [h, pts].filter(Boolean).join(". ") || h || "This slide.";
+    };
+    const buffers = [];
+    let paceMs = 220;   // grows once the provider pushes back, so we stop hammering it
+    for (let i = 0; i < says.length; i++) {
+      const label = "Recording narration… (" + (i + 1) + "/" + says.length + ")";
+      setStatus("vo-status", label, false, true);
+      // never send an empty string to the TTS API (it 400s, which would now abort the
+      // whole render) — a thin slide still gets something sayable
+      const text = ((says[i] || "").trim()) || (slideFallback(i) || "").trim() || (slDeck.title || "Next.");
+      says[i] = text;   // keep captions + transcript aligned with what's actually spoken
+      let buf = null, lastErr = null;
+      // The free TTS tier limits requests PER MINUTE. Quick successive retries all
+      // land inside the same window and all fail, which is how a video used to end up
+      // with narration that stops partway and silent slides after it. On a quota error
+      // wait past the window instead — and count down so it doesn't look frozen.
+      for (let a = 0; a < 4 && !buf; a++) {
+        try { buf = await voSynth(text, vObj, actx); }
+        catch (e) {
+          lastErr = e;
+          if (a === 3) break;
+          if (e.rateLimited) {
+            paceMs = Math.max(paceMs, 7000);
+            for (let s = [15, 30, 45][a] || 45; s > 0; s--) {
+              setStatus("vo-status", label + " — free narration quota is full, retrying in " + s + "s…", false, true);
+              await new Promise(r => setTimeout(r, 1000));
+            }
+          } else await new Promise(r => setTimeout(r, 1500 * (a + 1)));
+          setStatus("vo-status", label, false, true);
+        }
+      }
+      // A silent slide makes the whole video wrong, so stop and say why rather than
+      // filming a deck the voice abandons halfway through.
+      if (!buf) throw new Error("Narration stopped at slide " + (i + 1) + " of " + says.length + ". " +
+        ((lastErr && lastErr.message) || "The narration engine didn't respond.") +
+        (lastErr && lastErr.rateLimited ? " Wait a minute for the quota to refill, then hit Generate again." : ""));
+      buffers.push(buf);
+      await new Promise(r => setTimeout(r, paceMs));
+    }
+    // Screen time per slide = its narration, with a floor so a very short line
+    // (a section divider, a one-clause slide) doesn't flash past before it's read.
+    const durs = buffers.map((b, i) => {
+      const type = i === 0 ? "title" : ((slDeck.slides[i - 1] || {}).type || "bullets");
+      const floor = i === 0 ? 3 : type === "section" ? 1.9 : 2.6;
+      return Math.max(floor, b ? b.duration : 2);
+    });
+    voScriptSegs = says; voMeta = says.map((s, i) => ({ say: s, seconds: durs[i] }));
+    setStatus("vo-status", "Filming the video — this plays through in real time, hang tight…", false, true);
+    const blob = await voRender(imgs, buffers, durs, says, burn, actx, pr => setStatus("vo-status", "Filming… " + Math.round(pr * 100) + "%", false, true));
+    try { actx.close(); } catch (e) {}
+    logActivity("made:video");   // videos download rather than save, so this is the only trace
+    voBlob = blob; if (voURL) URL.revokeObjectURL(voURL); voURL = URL.createObjectURL(blob);
+    $("vo-video").src = voURL;
+    $("vo-form").style.display = "none"; $("vo-result").classList.remove("hidden");
+    $("vo-hint").textContent = (blob.type.indexOf("mp4") >= 0 ? "MP4" : "WebM") + " · " + (Math.round(blob.size / 1e5) / 10) + " MB. WebM plays in browsers and uploads to YouTube/Drive; ask me if you need a true .mp4.";
+    logActivity("generate");
+    setStatus("vo-status", "");
+  } catch (e) {
+    try { actx.close(); } catch (x) {}
+    setStatus("vo-status", (e && e.message) || "Couldn't make the video — try again.", true);
+  }
+  voBusy = false; $("vo-go").disabled = false;
+}
+
 function voDownload() {
-  if (!voSegs) return;
-  const base = (voDeck.title || "notiq-overview").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").toLowerCase();
-  const txt = `${voDeck.title || "Video overview"}\n\n` +
-    voSegs.map((s, i) => `${i + 1}. ${voSlideTitle(i)}\n${s}`).join("\n\n");
-  voSaveBlob(new Blob([txt], { type: "text/plain" }), base + "-transcript.txt");
-  // rough .srt so the transcript lines up with the narration timings
-  const wps = 2.6 * (parseFloat($("vo-speed").value) || 1);
-  let t = 0;
-  const pad = (n, w) => String(Math.floor(n)).padStart(w, "0");
-  const stamp = (sec) => `${pad(sec / 3600, 2)}:${pad((sec % 3600) / 60, 2)}:${pad(sec % 60, 2)},${pad((sec % 1) * 1000, 3)}`;
-  const srt = voSegs.map((s, i) => {
-    const dur = Math.max(1.6, s.split(/\s+/).filter(Boolean).length / wps);
-    const a = t, b = t + dur; t = b + 0.42;
-    return `${i + 1}\n${stamp(a)} --> ${stamp(b)}\n${s}\n`;
-  }).join("\n");
-  voSaveBlob(new Blob([srt], { type: "text/plain" }), base + ".srt");
-  setStatus("vo-play-status", "Downloaded the transcript and captions (.srt). A video file needs studio voices — ask to switch the voice engine on.");
+  if (!voBlob) return;
+  const a = document.createElement("a"); a.href = voURL;
+  a.download = (slDeck.title || "video-overview").replace(/[^\w \-]+/g, "").slice(0, 60) + (voBlob.type.indexOf("mp4") >= 0 ? ".mp4" : ".webm");
+  document.body.appendChild(a); a.click(); a.remove();
 }
-function voSaveBlob(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = name; document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+function voDownloadText(name, text) {
+  const b = new Blob([text], { type: "text/plain" }); const u = URL.createObjectURL(b);
+  const a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 1500);
+}
+function voTranscript() { if (voScriptSegs) voDownloadText((slDeck.title || "transcript").replace(/[^\w \-]+/g, "").slice(0, 60) + ".txt", voScriptSegs.filter(Boolean).join("\n\n")); }
+function voSrtTime(s) { const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = Math.floor(s % 60), ms = Math.floor((s % 1) * 1000); return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0") + "," + String(ms).padStart(3, "0"); }
+function voSRT() {
+  if (!voMeta) return;
+  let out = "", t = 0, n = 1;
+  voMeta.forEach(m => { const en = t + (m.seconds || 2); if (m.say) { out += (n++) + "\n" + voSrtTime(t) + " --> " + voSrtTime(en) + "\n" + m.say + "\n\n"; } t = en + VO_GAP; });
+  voDownloadText((slDeck.title || "captions").replace(/[^\w \-]+/g, "").slice(0, 60) + ".srt", out);
 }
 
 // ================= TALK WITH AI =================
@@ -6395,8 +6432,8 @@ function showView(name) {
   if (ws) ws.style.display = "none";
   if (mainEl) mainEl.style.display = "";
   if (name === "slides") setTimeout(openSlides, 0);
+  if (name === "video" && !VIDEO_ENABLED) { showView("dashboard"); return; }
   if (name === "video") setTimeout(voOpenTool, 0);
-  if (name !== "video") { try { voHalt(); } catch (e) {} }   // never leave a voice talking behind you
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   const tgt = $("view-" + name); if (tgt) tgt.classList.remove("hidden");
   // A view's setup runs HERE, so it happens no matter which route opened it — a
@@ -6517,6 +6554,7 @@ const NQ_TOOL_VIEW = { analytics: "analytics", notes: "notes", summary: "summary
 const NQ_TOOL_TITLE = { analytics: "Analytics", notes: "Notes", summary: "Summary", flashcards: "Flashcards", quiz: "Quiz", test: "Test", slides: "Slides", video: "Video Overview", study: "Study modes", import: "Add material" };
 let nqAddBaseCount = 0;
 function nqOpenTool(name) {
+  if (name === "video" && !VIDEO_ENABLED) return;
   const create = document.getElementById("nqcreate");
   const body = document.getElementById("nq-viewer-body");
   const view = document.getElementById("view-" + (NQ_TOOL_VIEW[name] || name));
