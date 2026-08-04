@@ -1716,6 +1716,21 @@
   /* covers still win — no motif behind a cover photo */
   .slide.title-slide.has-cover, .slide.section-slide.has-cover { background-image: none; }
 
+  /* ============ INLINE FONT-SIZE POPUP (slide editing) ============ */
+  .sl-fs {
+    position: fixed; z-index: 6500; display: none; gap: 2px; align-items: center;
+    background: #1c2230; border: 1px solid rgba(255,255,255,.14); border-radius: 9px;
+    padding: 3px; box-shadow: 0 10px 24px -8px rgba(0,0,0,.5);
+  }
+  .sl-fs.on { display: inline-flex; }
+  .sl-fs button {
+    border: 0; background: transparent; color: #eef2fb; cursor: pointer;
+    font-family: inherit; font-weight: 800; font-size: 12.5px; line-height: 1;
+    padding: 5px 7px; border-radius: 6px; min-width: 24px;
+  }
+  .sl-fs button:hover { background: rgba(255,255,255,.15); }
+  .sl-fs .sl-fs-reset { font-size: 13px; font-weight: 600; color: #aab4c6; }
+
   /* ============ VIDEO OVERVIEW ============ */
   .vo-empty { background: var(--card2); border: 1px dashed var(--line); border-radius: 16px; padding: 26px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
   .vo-setup { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 6px; }
@@ -2709,6 +2724,12 @@
           <button class="btn-ghost" onclick="slExportGoogle()">Google Slides</button>
         </div>
         <div id="sl-deck"></div>
+        <!-- tiny font-size control that pops next to the text you're editing -->
+        <div id="sl-fs" class="sl-fs">
+          <button type="button" onmousedown="event.preventDefault()" onclick="slFsAdjust(-1)" title="Smaller">A&#8722;</button>
+          <button type="button" onmousedown="event.preventDefault()" onclick="slFsAdjust(1)" title="Bigger">A+</button>
+          <button type="button" class="sl-fs-reset" onmousedown="event.preventDefault()" onclick="slFsAdjust(0)" title="Reset size">&#8634;</button>
+        </div>
       </div>
 
       <div id="sl-present" class="hidden" onclick="slPresentAdvance(1)">
@@ -4445,6 +4466,54 @@ function slBindEdit() {
     const t = ((e.clipboardData || window.clipboardData).getData("text/plain") || "").replace(/\r?\n/g, " ");
     document.execCommand("insertText", false, t);
   });
+  // show the tiny font-size popup next to whatever text box you're editing
+  deck.addEventListener("focusin", (e) => { const el = e.target.closest("[data-e]"); if (el) slFsShow(el); });
+  deck.addEventListener("focusout", () => setTimeout(() => {
+    const a = document.activeElement;
+    if (!a || !a.closest || (!a.closest("[data-e]") && !a.closest(".sl-fs"))) slFsHide();
+  }, 120));
+  window.addEventListener("scroll", () => { if (slFsTarget) slFsShow(slFsTarget); }, true);
+}
+let slFsTarget = null;
+function slFsKey(el) { return (el.dataset.e || "") + "|" + (el.dataset.i != null ? el.dataset.i : "") + "|" + (el.dataset.side || ""); }
+function slFsShow(el) {
+  slFsTarget = el;
+  const pop = $("sl-fs"); if (!pop) return;
+  pop.classList.add("on");
+  const r = el.getBoundingClientRect();
+  const pw = pop.offsetWidth || 100, ph = pop.offsetHeight || 30;
+  let top = r.top - ph - 6; if (top < 8) top = r.bottom + 6;
+  let left = r.left; if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8; if (left < 8) left = 8;
+  pop.style.top = top + "px"; pop.style.left = left + "px";
+}
+function slFsHide() { slFsTarget = null; const p = $("sl-fs"); if (p) p.classList.remove("on"); }
+function slFsApplyOne(el, f) {
+  el.style.fontSize = "";
+  if (f && f !== 1) { const base = parseFloat(getComputedStyle(el).fontSize) || 16; el.style.fontSize = (base * f).toFixed(2) + "px"; }
+}
+// dir: -1 smaller, +1 bigger, 0 reset — persists per text box on the deck
+function slFsAdjust(dir) {
+  const el = slFsTarget; if (!el || !slDeck) return;
+  const wrap = el.closest("[data-si]"); const si = wrap ? parseInt(wrap.dataset.si, 10) : -1;
+  let store;
+  if (si < 0) store = slDeck._fs || (slDeck._fs = {});
+  else { const sl = slDeck.slides[si]; if (!sl) return; store = sl._fs || (sl._fs = {}); }
+  const key = slFsKey(el);
+  let f = store[key] || 1;
+  f = dir === 0 ? 1 : Math.max(0.5, Math.min(2.2, Math.round((f + dir * 0.1) * 100) / 100));
+  store[key] = f;
+  slFsApplyOne(el, f);
+  slFsShow(el); el.focus();
+}
+// re-apply saved per-box sizes after any (re)render
+function slApplyFontScales(root) {
+  if (!root || !root.querySelectorAll || !slDeck) return;
+  root.querySelectorAll("[data-e]").forEach(el => {
+    const wrap = el.closest("[data-si]"); const si = wrap ? parseInt(wrap.dataset.si, 10) : -1;
+    const store = si < 0 ? (slDeck._fs || {}) : ((slDeck.slides[si] && slDeck.slides[si]._fs) || {});
+    const f = store[slFsKey(el)];
+    if (f && f !== 1) slFsApplyOne(el, f); else el.style.fontSize = "";
+  });
 }
 function slEditSync(el) {
   if (!slDeck) return;
@@ -4493,8 +4562,10 @@ function slRender() {
     if (sl.type === "section") section = sl.heading || section;
     html += slSlideHtml(sl, i, s, wantNotes, section);
   });
+  slFsHide();
   $("sl-deck").innerHTML = html;
   slFit($("sl-deck"));
+  slApplyFontScales($("sl-deck"));
 }
 // Auto-fit: text is sized big by default (relative to the slide). If a packed slide
 // overflows, nudge just that slide's --fit down until it fits — so info stays as
@@ -4852,7 +4923,7 @@ function slExportPdf() {
       #pd, #pd * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     </style></head><body><div id="pd">${html}</div></body></html>`);
   w.document.close();
-  const go = () => { try { slFit(w.document.getElementById("pd")); } catch (e) {} try { w.focus(); w.print(); } catch (e) {} };
+  const go = () => { try { const pd = w.document.getElementById("pd"); slFit(pd); slApplyFontScales(pd); } catch (e) {} try { w.focus(); w.print(); } catch (e) {} };
   // wait for the web fonts (and layout) before printing so nothing falls back to Arial
   try { w.document.fonts.ready.then(() => setTimeout(go, 250)); } catch (e) { setTimeout(go, 1000); }
 }
