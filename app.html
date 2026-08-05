@@ -1758,6 +1758,16 @@
   .vo-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4;
     background: rgba(8,11,18,.42); cursor: pointer; transition: opacity .3s ease; }
   .vo-badge.hidden { display: none; }
+  /* logo watermark, top-left of every video slide */
+  .vo-brand { position: absolute; top: 14px; left: 16px; z-index: 5; display: flex; align-items: center; gap: 7px; pointer-events: none;
+    background: rgba(10,14,22,.42); backdrop-filter: blur(3px); padding: 5px 11px 5px 6px; border-radius: 999px; }
+  .vo-brand img { width: 22px; height: 22px; border-radius: 6px; display: block; }
+  .vo-brand span { color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .2px; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  /* closing "Built using Notiq AI" card */
+  .vo-outro { position: absolute; inset: 0; z-index: 6; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: #05070c; }
+  .vo-outro.on { display: flex; }
+  .vo-outro img { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 20px 50px -18px rgba(0,0,0,.7); }
+  .vo-outro b { color: #fff; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; font-size: 40px; letter-spacing: -.5px; }
   .vo-badge i { width: 74px; height: 74px; border-radius: 50%; background: rgba(255,255,255,.94);
     display: flex; align-items: center; justify-content: center; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
   .vo-badge i::after { content: ""; border-style: solid; border-width: 13px 0 13px 22px; border-color: transparent transparent transparent var(--coral); margin-left: 5px; }
@@ -2802,6 +2812,8 @@
           <div class="vo-layer" id="vo-la"><div class="vo-fit" id="vo-fa"></div></div>
           <div class="vo-layer" id="vo-lb"><div class="vo-fit" id="vo-fb"></div></div>
           <div class="vo-cap" id="vo-cap"></div>
+          <div class="vo-brand"><img src="logo.png" alt=""><span>Notiq&nbsp;AI</span></div>
+          <div class="vo-outro" id="vo-outro"><img src="logo.png" alt=""><b>Built using Notiq&nbsp;AI</b></div>
           <div class="vo-badge" id="vo-badge" onclick="voToggle()"><i></i></div>
         </div>
         <div class="vo-bar">
@@ -5192,6 +5204,7 @@ function voHalt() {
   try { speechSynthesis.cancel(); } catch (e) {}
   if (voAudioEl) { try { voAudioEl.pause(); } catch (e) {} voAudioEl = null; }
   voCaption("");
+  const o = $("vo-outro"); if (o) o.classList.remove("on");
   voSetPlayIcon(false);
 }
 function voSetPlayIcon(playing) {
@@ -5226,6 +5239,12 @@ async function voPlay() {
     if (token !== voToken) return;
   }
   if (token !== voToken) return;
+  // closing brand card
+  const outro = $("vo-outro"); if (outro) outro.classList.add("on");
+  voCaption("");
+  await new Promise(r => setTimeout(r, 3000));
+  if (token !== voToken) return;
+  if (outro) outro.classList.remove("on");
   voPlaying = false; voSetPlayIcon(false); voCaption(""); voSetBadge(true);
   setStatus("vo-play-status", "Finished — press play to watch again.");
 }
@@ -5286,6 +5305,37 @@ function voSaveBlob(blob, name) {
 // ---- REAL VIDEO FILE EXPORT ----
 // Renders each slide to a canvas, narrates with capturable AI voice (Gemini), and
 // records canvas+audio to a downloadable WebM (which YouTube/Drive accept directly).
+let voBrandImg = null;
+function voLoadImg(src) { return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; }); }
+// small Notiq logo + wordmark, top-left of every recorded frame
+function voDrawBrand(ctx) {
+  if (!voBrandImg || !voBrandImg.complete) return;
+  const x = 26, y = 22, s = 42, txt = "Notiq AI";
+  ctx.save();
+  ctx.font = "800 22px 'Hanken Grotesk', system-ui, sans-serif";
+  const tw = ctx.measureText(txt).width;
+  ctx.fillStyle = "rgba(10,14,22,.42)";
+  voRR(ctx, x - 9, y - 8, s + 26 + tw + 12, s + 16, (s + 16) / 2); ctx.fill();
+  voRR(ctx, x, y, s, s, 10); ctx.clip();
+  try { ctx.drawImage(voBrandImg, x, y, s, s); } catch (e) {}
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = "#fff"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  ctx.font = "800 22px 'Hanken Grotesk', system-ui, sans-serif";
+  ctx.fillText(txt, x + s + 13, y + s / 2 + 1);
+  ctx.restore();
+}
+// the black closing card
+function voOutroCanvas() {
+  const c = document.createElement("canvas"); c.width = 1280; c.height = 720;
+  const g = c.getContext("2d");
+  g.fillStyle = "#05070c"; g.fillRect(0, 0, 1280, 720);
+  if (voBrandImg && voBrandImg.complete) { const s = 118; g.save(); voRR(g, 640 - s / 2, 244, s, s, 26); g.clip(); try { g.drawImage(voBrandImg, 640 - s / 2, 244, s, s); } catch (e) {} g.restore(); }
+  g.fillStyle = "#ffffff"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.font = "italic 400 48px 'Instrument Serif', Georgia, serif";
+  g.fillText("Built using Notiq AI", 640, 440);
+  return c;
+}
 async function loadHtml2Canvas() {
   if (window.html2canvas) return;
   const cdns = [
@@ -5328,6 +5378,7 @@ async function voRasterizeAll() {
     catch (e) { const c = document.createElement("canvas"); c.width = 1280; c.height = 720; const g = c.getContext("2d"); g.fillStyle = s.bg || "#0a0c10"; g.fillRect(0, 0, 1280, 720); imgs.push(c); }
   }
   stage.remove(); slDeck = prevDeck;
+  imgs.push(voOutroCanvas());   // black "Built using Notiq AI" closing card
   return imgs;
 }
 function voRR(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
@@ -5349,6 +5400,7 @@ async function voRecord(imgs, buffers, actx, burn, onP) {
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const ctx = cv.getContext("2d");
   const dest = actx.createMediaStreamDestination();
   const durs = buffers.map(b => b ? b.duration : 1.8);
+  if (durs.length) durs[durs.length - 1] = 3.4;   // hold the closing card
   const starts = []; let acc = 0; durs.forEach((d, i) => { starts.push(acc); acc += d + (i < durs.length - 1 ? GAP : 0.5); });
   const total = acc;
   const mimes = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
@@ -5368,9 +5420,11 @@ async function voRecord(imgs, buffers, actx, burn, onP) {
       const into = now - starts[idx], spoken = durs[idx];
       const p = Math.max(0, Math.min(1, into / spoken));
       voDrawImg(ctx, imgs[idx], p, W, H);
+      const isOutro = idx === imgs.length - 1;
+      if (!isOutro) voDrawBrand(ctx);                 // logo top-left on every real slide
       const intoGap = into - spoken;
       if (idx < imgs.length - 1 && intoGap > 0) { const a = Math.min(1, intoGap / XF); ctx.globalAlpha = a; voDrawImg(ctx, imgs[idx + 1], 0, W, H); ctx.globalAlpha = 1; }
-      if (burn && intoGap <= 0) voDrawCap(ctx, voSegs[idx] || "", W, H);
+      if (burn && intoGap <= 0 && !isOutro) voDrawCap(ctx, voSegs[idx] || "", W, H);
       if (onP) onP(now / total);
       requestAnimationFrame(frame);
     }
@@ -5402,7 +5456,9 @@ async function voExportVideo() {
       buffers.push(buf);
       await new Promise(r => setTimeout(r, 150));
     }
+    buffers.push(null);   // silent hold for the closing "Built using Notiq AI" card
     setStatus("vo-play-status", "Rendering slides…", false, true);
+    voBrandImg = await voLoadImg("logo.png");
     const imgs = await voRasterizeAll();
     const burn = $("vo-caps") ? $("vo-caps").checked : true;
     setStatus("vo-play-status", "Filming the video — plays through in real time, hang tight…", false, true);
