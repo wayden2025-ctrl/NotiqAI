@@ -4939,8 +4939,22 @@ function slExportPdf() {
     </style></head><body><div id="pd">${html}</div></body></html>`);
   w.document.close();
   const go = () => { try { const pd = w.document.getElementById("pd"); slFit(pd); slApplyFontScales(pd); } catch (e) {} try { w.focus(); w.print(); } catch (e) {} };
-  // wait for the web fonts (and layout) before printing so nothing falls back to Arial
-  try { w.document.fonts.ready.then(() => setTimeout(go, 250)); } catch (e) { setTimeout(go, 1000); }
+  // wait for BOTH the web fonts AND every image (incl. CSS background data-URIs) to
+  // decode before printing — otherwise the print fires before pictures are painted
+  const ready = async () => {
+    try { await w.document.fonts.ready; } catch (e) {}
+    try {
+      const waits = [];
+      Array.from(w.document.images).forEach(im => { if (!im.complete) waits.push(new Promise(r => { im.onload = im.onerror = r; })); });
+      w.document.querySelectorAll('[style*="background-image"]').forEach(el => {
+        const m = (el.getAttribute("style") || "").match(/url\((['"]?)(data:[^'")]+)\1\)/);
+        if (m) { const im = new w.Image(); waits.push(new Promise(r => { im.onload = im.onerror = r; })); im.src = m[2]; }
+      });
+      await Promise.all(waits);
+    } catch (e) {}
+    setTimeout(go, 350);
+  };
+  try { ready(); } catch (e) { setTimeout(go, 1200); }
 }
 
 // ================= VIDEO OVERVIEW =================
@@ -5451,16 +5465,51 @@ function voSlideCanvas(i, s, imgMap) {
   }
   return c;
 }
+function voIsBlank(cv) {
+  try {
+    const t = document.createElement("canvas"); t.width = 32; t.height = 18;
+    const g = t.getContext("2d"); g.drawImage(cv, 0, 0, 32, 18);
+    const d = g.getImageData(0, 0, 32, 18).data; let diff = 0;
+    for (let i = 4; i < d.length; i += 4) diff += Math.abs(d[i] - d[0]) + Math.abs(d[i + 1] - d[1]) + Math.abs(d[i + 2] - d[2]);
+    return diff < 1500;   // essentially one flat colour => nothing rendered
+  } catch (e) { return false; }
+}
 async function voRasterizeAll() {
-  const prevDeck = slDeck; slDeck = voDeck.content; const s = slEffStyle(); slDeck = prevDeck;
+  const prev0 = slDeck; slDeck = voDeck.content; const s = slEffStyle(); slDeck = prev0;
   try { await document.fonts.ready; } catch (e) {}
-  // preload every image (cover + slide pictures) as drawable Images
+  // preload every image as a drawable Image (used by the fallback renderer)
   const urls = new Set(); if (voDeck.content.cover) urls.add(voDeck.content.cover);
   voDeck.content.slides.forEach(sl => { if (sl.img) urls.add(sl.img); if (Array.isArray(sl.imgs)) sl.imgs.forEach(u => u && urls.add(u)); });
   const imgMap = new Map();
   await Promise.all([...urls].map(async u => { const im = await voLoadImg(u); if (im) imgMap.set(u, im); }));
+  // PRIMARY: screenshot the real, decorated slide DOM. FALLBACK: draw it ourselves.
+  let h2c = false; try { await loadHtml2Canvas(); h2c = !!window.html2canvas; } catch (e) {}
+  const prevDeck = slDeck; slDeck = voDeck.content;
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:fixed; left:-99999px; top:0; width:1280px; height:720px; overflow:hidden; background:" + (s.bg || "#0a0c10") + ";";
+  document.body.appendChild(stage);
   const imgs = [];
-  for (let i = 0; i < voTotal(); i++) imgs.push(voSlideCanvas(i, s, imgMap));
+  for (let i = 0; i < voTotal(); i++) {
+    let cv = null;
+    if (h2c) {
+      try {
+        const html = i === 0 ? slTitleHtml(s) : slSlideHtml(voDeck.content.slides[i - 1], i - 1, s, false, voSectionFor(i - 1));
+        stage.innerHTML = html;
+        const el = stage.querySelector(".slide") || stage;
+        if (el.style) { el.style.width = "1280px"; el.style.height = "720px"; el.style.margin = "0"; el.style.aspectRatio = "auto"; el.style.borderRadius = "0"; el.style.containerType = "normal"; }
+        stage.querySelectorAll(".sl-imgbox.empty, .sl-notes, .sl-num, .sl-imgx").forEach(x => x.remove());
+        slFit(stage); slApplyFontScales(stage);
+        // bake computed font sizes to px so removing container queries can't zero them
+        el.querySelectorAll("*").forEach(n => { try { n.style.fontSize = getComputedStyle(n).fontSize; } catch (e) {} });
+        await new Promise(r => setTimeout(r, 30));
+        const shot = await html2canvas(el, { width: 1280, height: 720, windowWidth: 1280, windowHeight: 720, scale: 1, backgroundColor: s.bg || "#0a0c10", useCORS: true, imageTimeout: 6000, logging: false, onclone: (doc) => { doc.querySelectorAll(".slide").forEach(x => { x.style.containerType = "normal"; }); } });
+        if (shot && !voIsBlank(shot)) cv = shot;
+      } catch (e) { cv = null; }
+    }
+    if (!cv) cv = voSlideCanvas(i, s, imgMap);
+    imgs.push(cv);
+  }
+  stage.remove(); slDeck = prevDeck;
   imgs.push(voOutroCanvas());   // black "Built using Notiq AI" closing card
   return imgs;
 }
