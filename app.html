@@ -5355,34 +5355,117 @@ async function voTtsBuffer(text, actx) {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return await actx.decodeAudioData(bytes.buffer);
 }
-async function voRasterizeAll() {
-  await loadHtml2Canvas();
-  const prevDeck = slDeck; slDeck = voDeck.content;
-  const s = slEffStyle();
-  const stage = document.createElement("div");
-  stage.style.cssText = "position:fixed; left:-99999px; top:0; width:1280px; height:720px; overflow:hidden;";
-  document.body.appendChild(stage);
-  try { await document.fonts.ready; } catch (e) {}
-  const imgs = [];
-  for (let i = 0; i < voTotal(); i++) {
-    let html;
-    try { html = i === 0 ? slTitleHtml(s) : slSlideHtml(voDeck.content.slides[i - 1], i - 1, s, false, voSectionFor(i - 1)); }
-    catch (e) { html = `<div class="slide"><div class="sl-body"><h2>${esc(voSlideTitle(i))}</h2></div></div>`; }
-    stage.innerHTML = html;
-    const el = stage.querySelector(".slide") || stage;
-    if (el.style) { el.style.width = "1280px"; el.style.height = "720px"; el.style.margin = "0"; el.style.aspectRatio = "auto"; el.style.borderRadius = "0"; }
-    stage.querySelectorAll(".sl-imgbox.empty, .sl-notes, .sl-num, .sl-imgx").forEach(x => x.remove());
-    slFit(stage); slApplyFontScales(stage);
-    await new Promise(r => setTimeout(r, 40));
-    try { imgs.push(await html2canvas(el, { width: 1280, height: 720, scale: 1, backgroundColor: s.bg || "#0a0c10", logging: false, useCORS: true, imageTimeout: 5000 })); }
-    catch (e) { const c = document.createElement("canvas"); c.width = 1280; c.height = 720; const g = c.getContext("2d"); g.fillStyle = s.bg || "#0a0c10"; g.fillRect(0, 0, 1280, 720); imgs.push(c); }
+function voHexA(hex, a) {
+  hex = String(hex || "#000").replace("#", "");
+  if (hex.length === 3) hex = hex.split("").map(ch => ch + ch).join("");
+  const n = parseInt(hex, 16) || 0;
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+function voWrap(ctx, text, maxW) {
+  const words = String(text || "").replace(/\*\*/g, "").split(/\s+/).filter(Boolean);
+  const lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+function voCoverInto(g, im, x, y, w, h) {
+  if (!im) return; const ir = im.width / im.height, rr = w / h; let dw, dh;
+  if (ir > rr) { dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
+  g.drawImage(im, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+// Draw a slide straight onto a 1280x720 canvas from the deck DATA — reliable, no
+// html2canvas (which can't handle this app's color-mix / container-query CSS).
+function voSlideCanvas(i, s, imgMap) {
+  const W = 1280, H = 720, PAD = 88;
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  const deck = voDeck.content, isTitle = i === 0, sl = isTitle ? null : deck.slides[i - 1];
+  const type = isTitle ? "title" : (sl.type || "bullets");
+  const banner = isTitle || type === "section" || type === "hero";
+  const bg = banner ? (s.titleBg || "#12203a") : (s.bg || "#ffffff");
+  const fg = banner ? (s.titleFg || "#ffffff") : (s.fg || "#1e293b");
+  const acc = s.accent || "#2a4d8a";
+  const tf = s.tf || "'Instrument Serif',Georgia,serif", bf = s.bf || "'Hanken Grotesk',system-ui,sans-serif";
+  const upper = s.head === "upper";
+  const headStyle = s.head === "serif" ? "italic 400" : "700";
+  const setHead = px => { g.font = `${headStyle} ${px}px ${tf}`; };
+  const setBody = (px, w) => { g.font = `${w || "500"} ${px}px ${bf}`; };
+  const cap = t => upper ? String(t).toUpperCase() : String(t);
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const cover = isTitle ? deck.cover : ((type === "section" || type === "hero") ? (sl.img || (sl.imgs && sl.imgs[0])) : null);
+  if (cover && imgMap.get(cover)) { g.save(); voCoverInto(g, imgMap.get(cover), 0, 0, W, H); g.restore(); g.fillStyle = voHexA(bg, .52); g.fillRect(0, 0, W, H); }
+
+  if (isTitle) {
+    g.textAlign = "left"; g.textBaseline = "alphabetic";
+    if (deck.date) { setBody(20, "800"); g.fillStyle = voHexA(fg, .85); g.fillText(String(deck.date).toUpperCase(), PAD, 250); }
+    g.fillStyle = acc; g.fillRect(PAD, 286, 92, 8);
+    setHead(84); g.fillStyle = fg; let y = 372;
+    voWrap(g, deck.title || "Untitled", W - PAD * 2).slice(0, 3).forEach(ln => { g.fillText(cap(ln), PAD, y); y += 92; });
+    if (deck.subtitle) { setBody(30, "600"); g.fillStyle = voHexA(fg, .9); voWrap(g, deck.subtitle, W - PAD * 2).slice(0, 2).forEach(ln => { g.fillText(ln, PAD, y + 4); y += 40; }); }
+    return c;
   }
-  stage.remove(); slDeck = prevDeck;
+  if (type === "section" || type === "hero") {
+    g.textAlign = "center"; g.textBaseline = "middle";
+    setBody(20, "800"); g.fillStyle = acc; g.fillText(type === "hero" ? "" : "SECTION", W / 2, H / 2 - 96);
+    setHead(70); g.fillStyle = fg; let y = H / 2 - 6;
+    const head = type === "hero" ? (sl.heading || "") : (sl.heading || "");
+    const tl = voWrap(g, head, W - PAD * 2).slice(0, 3); y = H / 2 - (tl.length - 1) * 40;
+    tl.forEach(ln => { g.fillText(cap(ln), W / 2, y); y += 80; });
+    if (type === "hero" && sl.sub) { setBody(26, "600"); g.fillStyle = voHexA(fg, .92); voWrap(g, sl.sub, W - PAD * 2 - 200).slice(0, 2).forEach(ln => { g.fillText(ln, W / 2, y + 8); y += 36; }); }
+    return c;
+  }
+  if (type === "quote") {
+    g.textAlign = "center"; g.textBaseline = "middle";
+    setHead(50); g.fillStyle = fg;
+    const tl = voWrap(g, "“" + (sl.quote || "") + "”", W - PAD * 2).slice(0, 5); let y = H / 2 - (tl.length - 1) * 33;
+    tl.forEach(ln => { g.fillText(ln, W / 2, y); y += 66; });
+    if (sl.attribution) { setBody(22, "700"); g.fillStyle = acc; g.fillText("— " + sl.attribution, W / 2, y + 12); }
+    return c;
+  }
+  if (type === "stat") {
+    g.textAlign = "center"; g.textBaseline = "middle";
+    setHead(150); g.fillStyle = acc; g.fillText(String(sl.big || ""), W / 2, H / 2 - 18);
+    if (sl.caption) { setBody(30, "600"); g.fillStyle = fg; voWrap(g, sl.caption, W - 300).slice(0, 2).forEach((ln, k) => g.fillText(ln, W / 2, H / 2 + 92 + k * 40)); }
+    return c;
+  }
+  // ---- content slides: heading + body, images on the right ----
+  const imgs = (sl.imgs && sl.imgs.length) ? sl.imgs : (sl.img ? [sl.img] : []);
+  const pics = imgs.map(u => imgMap.get(u)).filter(Boolean).slice(0, 2);
+  const contentW = pics.length ? (W - PAD * 2 - 420) : (W - PAD * 2);
+  g.textAlign = "left"; g.textBaseline = "alphabetic";
+  g.fillStyle = acc; g.fillRect(0, 92, 8, 56);
+  setHead(46); g.fillStyle = acc; let y = 138;
+  voWrap(g, sl.heading || "", contentW).slice(0, 2).forEach(ln => { g.fillText(cap(ln), PAD, y); y += 52; });
+  g.fillStyle = acc; g.fillRect(PAD, y - 8, 56, 4);
+  let by = y + 40;
+  const drawWrapped = (text, size, color, indent) => { setBody(size, "500"); g.fillStyle = color; voWrap(g, text, contentW - indent).slice(0, 3).forEach(ln => { g.fillText(ln, PAD + indent, by); by += size * 1.4; }); by += 12; };
+  if (type === "timeline") (sl.events || []).slice(0, 6).forEach(e => { setBody(22, "800"); g.fillStyle = acc; g.fillText(String(e.when || ""), PAD, by); by += 30; drawWrapped(e.what || "", 21, fg, 0); });
+  else if (type === "steps") (sl.steps || []).slice(0, 6).forEach((st, k) => { setBody(23, "800"); g.fillStyle = acc; g.fillText((k + 1) + ".  " + (st.title || ""), PAD, by); by += 32; if (st.detail) drawWrapped(st.detail, 21, fg, 26); });
+  else if (type === "cards") (sl.cards || []).slice(0, 4).forEach(cd => { setBody(23, "800"); g.fillStyle = acc; g.fillText(cd.title || cd.label || "", PAD, by); by += 30; if (cd.text) drawWrapped(cd.text, 20, fg, 0); });
+  else if (type === "compare") { const cols = [sl.left, sl.right], colW = (contentW - 40) / 2; cols.forEach((col, ci) => { if (!col) return; const cx = PAD + ci * (colW + 40); let cy = y + 40; setBody(24, "800"); g.fillStyle = acc; g.fillText(col.title || "", cx, cy); cy += 38; setBody(20, "500"); g.fillStyle = fg; (col.points || []).slice(0, 5).forEach(pt => { voWrap(g, "• " + String(pt).replace(/\*\*/g, ""), colW).slice(0, 2).forEach(ln => { g.fillText(ln, cx, cy); cy += 27; }); cy += 5; }); }); }
+  else if (type === "stats") { const st = (sl.stats || []).slice(0, 3), colW = contentW / (st.length || 1); st.forEach((x, k) => { const cx = PAD + k * colW; setHead(60); g.fillStyle = acc; g.fillText(String(x.value || ""), cx, by + 46); setBody(18, "700"); g.fillStyle = fg; voWrap(g, x.label || "", colW - 20).slice(0, 2).forEach((ln, li) => g.fillText(ln, cx, by + 84 + li * 24)); }); }
+  else if (type === "takeaways") (sl.bullets || []).slice(0, 5).forEach(b => { setBody(24, "800"); g.fillStyle = acc; g.fillText("✓", PAD, by); drawWrapped(String(b).replace(/\*\*/g, ""), 23, fg, 40); });
+  else (sl.bullets || []).slice(0, 6).forEach(b => { setBody(22, "800"); g.fillStyle = acc; g.fillText("▸", PAD, by); drawWrapped(String(b).replace(/\*\*/g, ""), 22, fg, 30); });
+  // images stacked on the right
+  if (pics.length) {
+    const iw = 380, ix = W - PAD - iw, gap = 16, ih = (H - 250 - (pics.length - 1) * gap) / pics.length; let iy = 160;
+    pics.forEach(im => { g.save(); voRR(g, ix, iy, iw, ih, 14); g.clip(); voCoverInto(g, im, ix, iy, iw, ih); g.restore(); iy += ih + gap; });
+  }
+  return c;
+}
+async function voRasterizeAll() {
+  const prevDeck = slDeck; slDeck = voDeck.content; const s = slEffStyle(); slDeck = prevDeck;
+  try { await document.fonts.ready; } catch (e) {}
+  // preload every image (cover + slide pictures) as drawable Images
+  const urls = new Set(); if (voDeck.content.cover) urls.add(voDeck.content.cover);
+  voDeck.content.slides.forEach(sl => { if (sl.img) urls.add(sl.img); if (Array.isArray(sl.imgs)) sl.imgs.forEach(u => u && urls.add(u)); });
+  const imgMap = new Map();
+  await Promise.all([...urls].map(async u => { const im = await voLoadImg(u); if (im) imgMap.set(u, im); }));
+  const imgs = [];
+  for (let i = 0; i < voTotal(); i++) imgs.push(voSlideCanvas(i, s, imgMap));
   imgs.push(voOutroCanvas());   // black "Built using Notiq AI" closing card
   return imgs;
 }
 function voRR(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-function voDrawImg(ctx, img, p, W, H) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); if (!img) return; const z = 1.04 + 0.06 * p; const dw = W * z, dh = H * z; try { ctx.drawImage(img, -(dw - W) / 2 - (p - 0.5) * 22, -(dh - H) / 2, dw, dh); } catch (e) {} }
+function voDrawImg(ctx, img, p, W, H) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); if (!img) return; try { ctx.drawImage(img, 0, 0, W, H); } catch (e) {} }
 function voDrawCap(ctx, text, W, H) {
   if (!text) return;
   ctx.font = "600 27px 'Hanken Grotesk', system-ui, sans-serif";
