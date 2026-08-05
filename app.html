@@ -38,7 +38,9 @@
     --tipbg: #241d18; --tipfg: #ffffff;
     --rail-w: 68px;
   }
-  html { background: var(--bgC1, #f8f5f1); }
+  /* always reserve the scrollbar gutter so pages that cross the viewport height
+     don't shift/"shake" sideways as the scrollbar appears and disappears */
+  html { background: var(--bgC1, #f8f5f1); overflow-y: scroll; scrollbar-gutter: stable; }
   body {
     font-family: 'Hanken Grotesk', system-ui, sans-serif;
     color: var(--ink);
@@ -2815,7 +2817,8 @@
           <div class="vo-prog" id="vo-prog" onclick="voSeekBar(event)"><i id="vo-progi"></i></div>
           <span class="vo-num" id="vo-num">1 / 1</span>
           <button class="btn-ghost" onclick="voRestart()">Restart</button>
-          <button class="btn-ghost" onclick="voDownload()">Download</button>
+          <button class="btn-primary" id="vo-dlvid" onclick="voExportVideo()" title="Record a shareable video file">&#8681; Download video</button>
+          <button class="btn-ghost" onclick="voDownload()">Transcript &amp; captions</button>
         </div>
         <div class="status-line" id="vo-play-status"></div>
 
@@ -5278,6 +5281,141 @@ function voSaveBlob(blob, name) {
   const a = document.createElement("a");
   a.href = url; a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+}
+
+// ---- REAL VIDEO FILE EXPORT ----
+// Renders each slide to a canvas, narrates with capturable AI voice (Gemini), and
+// records canvas+audio to a downloadable WebM (which YouTube/Drive accept directly).
+async function loadHtml2Canvas() {
+  if (window.html2canvas) return;
+  const cdns = [
+    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+    "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
+    "https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js",
+  ];
+  for (const src of cdns) { try { await loadScriptOnce(src); if (window.html2canvas) return; } catch (e) {} }
+  throw new Error("Couldn't load the video renderer — check your connection or ad-blocker.");
+}
+async function voTtsBuffer(text, actx) {
+  const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: String(text).slice(0, 1500) }) });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e && e.error) || "Narration engine unavailable."); }
+  const j = await r.json();
+  const bin = atob(String(j.audio || "").split(",")[1] || "");
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return await actx.decodeAudioData(bytes.buffer);
+}
+async function voRasterizeAll() {
+  await loadHtml2Canvas();
+  const prevDeck = slDeck; slDeck = voDeck.content;
+  const s = slEffStyle();
+  const stage = document.createElement("div");
+  stage.style.cssText = "position:fixed; left:-99999px; top:0; width:1280px; height:720px; overflow:hidden;";
+  document.body.appendChild(stage);
+  try { await document.fonts.ready; } catch (e) {}
+  const imgs = [];
+  for (let i = 0; i < voTotal(); i++) {
+    let html;
+    try { html = i === 0 ? slTitleHtml(s) : slSlideHtml(voDeck.content.slides[i - 1], i - 1, s, false, voSectionFor(i - 1)); }
+    catch (e) { html = `<div class="slide"><div class="sl-body"><h2>${esc(voSlideTitle(i))}</h2></div></div>`; }
+    stage.innerHTML = html;
+    const el = stage.querySelector(".slide") || stage;
+    if (el.style) { el.style.width = "1280px"; el.style.height = "720px"; el.style.margin = "0"; el.style.aspectRatio = "auto"; el.style.borderRadius = "0"; }
+    stage.querySelectorAll(".sl-imgbox.empty, .sl-notes, .sl-num, .sl-imgx").forEach(x => x.remove());
+    slFit(stage); slApplyFontScales(stage);
+    await new Promise(r => setTimeout(r, 40));
+    try { imgs.push(await html2canvas(el, { width: 1280, height: 720, scale: 1, backgroundColor: s.bg || "#0a0c10", logging: false, useCORS: true, imageTimeout: 5000 })); }
+    catch (e) { const c = document.createElement("canvas"); c.width = 1280; c.height = 720; const g = c.getContext("2d"); g.fillStyle = s.bg || "#0a0c10"; g.fillRect(0, 0, 1280, 720); imgs.push(c); }
+  }
+  stage.remove(); slDeck = prevDeck;
+  return imgs;
+}
+function voRR(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function voDrawImg(ctx, img, p, W, H) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); if (!img) return; const z = 1.04 + 0.06 * p; const dw = W * z, dh = H * z; try { ctx.drawImage(img, -(dw - W) / 2 - (p - 0.5) * 22, -(dh - H) / 2, dw, dh); } catch (e) {} }
+function voDrawCap(ctx, text, W, H) {
+  if (!text) return;
+  ctx.font = "600 27px 'Hanken Grotesk', system-ui, sans-serif";
+  const maxW = W - 200, words = String(text).split(/\s+/), lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW) { if (cur) lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur);
+  const show = lines.slice(-3), lh = 38, bh = show.length * lh + 26, by = H - bh - 30;
+  ctx.fillStyle = "rgba(6,8,14,.66)"; voRR(ctx, 70, by, W - 140, bh, 16); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  show.forEach((ln, i) => ctx.fillText(ln, W / 2, by + 13 + lh / 2 + i * lh));
+  ctx.textAlign = "left";
+}
+async function voRecord(imgs, buffers, actx, burn, onP) {
+  const W = 1280, H = 720, FPS = 30, GAP = 0.42, XF = 0.45;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const ctx = cv.getContext("2d");
+  const dest = actx.createMediaStreamDestination();
+  const durs = buffers.map(b => b ? b.duration : 1.8);
+  const starts = []; let acc = 0; durs.forEach((d, i) => { starts.push(acc); acc += d + (i < durs.length - 1 ? GAP : 0.5); });
+  const total = acc;
+  const mimes = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
+  const mime = mimes.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  const stream = new MediaStream([...cv.captureStream(FPS).getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 5000000 } : undefined);
+  const chunks = []; rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const done = new Promise(res => { rec.onstop = () => res(new Blob(chunks, { type: mime.indexOf("mp4") >= 0 ? "video/mp4" : "video/webm" })); });
+  const t0 = actx.currentTime + 0.25;
+  buffers.forEach((b, i) => { if (!b) return; const src = actx.createBufferSource(); src.buffer = b; src.connect(dest); src.connect(actx.destination); src.start(t0 + starts[i]); });
+  rec.start();
+  await new Promise(resolve => {
+    function frame() {
+      const now = actx.currentTime - t0;
+      if (now >= total) { resolve(); return; }
+      let idx = 0; for (let i = 0; i < starts.length; i++) { if (now >= starts[i]) idx = i; else break; }
+      const into = now - starts[idx], spoken = durs[idx];
+      const p = Math.max(0, Math.min(1, into / spoken));
+      voDrawImg(ctx, imgs[idx], p, W, H);
+      const intoGap = into - spoken;
+      if (idx < imgs.length - 1 && intoGap > 0) { const a = Math.min(1, intoGap / XF); ctx.globalAlpha = a; voDrawImg(ctx, imgs[idx + 1], 0, W, H); ctx.globalAlpha = 1; }
+      if (burn && intoGap <= 0) voDrawCap(ctx, voSegs[idx] || "", W, H);
+      if (onP) onP(now / total);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+  try { rec.stop(); } catch (e) {}
+  return await done;
+}
+let voExporting = false;
+async function voExportVideo() {
+  if (voExporting) return;
+  if (!voSegs || !voDeck) { setStatus("vo-play-status", "Generate the narration first.", true); return; }
+  const cvTest = document.createElement("canvas");
+  if (!window.MediaRecorder || !cvTest.captureStream) { setStatus("vo-play-status", "Your browser can't record video — use Chrome or Edge on a computer.", true); return; }
+  voHalt();
+  voExporting = true;
+  const btn = $("vo-dlvid"); if (btn) btn.disabled = true;
+  const actx = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    if (actx.state === "suspended") await actx.resume();
+    setStatus("vo-play-status", "Loading slide images…", false, true);
+    { const pd = slDeck; try { slDeck = voDeck.content; await slAutoImages(); } catch (e) {} finally { slDeck = pd; } }
+    const buffers = [];
+    for (let i = 0; i < voTotal(); i++) {
+      setStatus("vo-play-status", "Recording narration… (" + (i + 1) + "/" + voTotal() + ")", false, true);
+      const text = voSegs[i] || voSlideTitle(i);
+      let buf = null;
+      for (let a = 0; a < 3 && !buf; a++) { try { buf = await voTtsBuffer(text, actx); } catch (e) { if (a === 2 && i === 0) throw e; if (a < 2) await new Promise(r => setTimeout(r, 1300)); } }
+      buffers.push(buf);
+      await new Promise(r => setTimeout(r, 150));
+    }
+    setStatus("vo-play-status", "Rendering slides…", false, true);
+    const imgs = await voRasterizeAll();
+    const burn = $("vo-caps") ? $("vo-caps").checked : true;
+    setStatus("vo-play-status", "Filming the video — plays through in real time, hang tight…", false, true);
+    const blob = await voRecord(imgs, buffers, actx, burn, p => setStatus("vo-play-status", "Filming… " + Math.round(p * 100) + "%", false, true));
+    const base = (voDeck.title || "notiq-overview").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").toLowerCase() || "notiq-overview";
+    voSaveBlob(blob, base + (blob.type.indexOf("mp4") >= 0 ? ".mp4" : ".webm"));
+    setStatus("vo-play-status", "Video downloaded ✓ — " + (blob.type.indexOf("mp4") >= 0 ? "MP4" : "WebM (uploads straight to YouTube; VLC/browsers play it)") + ".");
+  } catch (e) {
+    setStatus("vo-play-status", (e && e.message) || "Couldn't export the video.", true);
+  }
+  try { actx.close(); } catch (e) {}
+  voExporting = false;
+  if (btn) btn.disabled = false;
 }
 
 // ================= TALK WITH AI =================
